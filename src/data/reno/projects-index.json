@@ -1,0 +1,9 @@
+{
+  "defaultProjectId": "99-regent",
+  "projects": [
+    {
+      "id": "99-regent",
+      "file": "99-regent.json"
+    }
+  ]
+}

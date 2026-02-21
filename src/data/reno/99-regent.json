@@ -1,0 +1,978 @@
+{
+  "id": "99-regent",
+  "name": "99 Regent",
+  "address": "99 Regent St, Toronto, ON",
+  "phase": "Planning",
+  "targetCompletion": "2026-08-15",
+  "overview": {
+    "projectType": "Convert existing single detached home into a 7-plex",
+    "area": {
+      "groundFloorSqFtApprox": 1000,
+      "basementSqFtApprox": 1000
+    },
+    "basementExteriorWalls": "Already in place and recently renovated",
+    "occupancyPlan": {
+      "groundFloorUnits": 4,
+      "basementUnits": 3,
+      "totalUnits": 7
+    }
+  },
+  "sections": [
+    {
+      "id": "permits-design",
+      "title": "Permits, Design, and Inspections",
+      "description": "Permit set, code coordination, and inspection planning for a Toronto multiplex conversion."
+    },
+    {
+      "id": "envelope-insulation",
+      "title": "Building Envelope and Insulation",
+      "description": "Continuous insulation + cavity insulation on ground floor; basement floor insulation assembly."
+    },
+    {
+      "id": "plumbing",
+      "title": "Plumbing",
+      "description": "Full plumbing rework: DWV, water distribution, shutoffs, fixture rough-ins, firestopping."
+    },
+    {
+      "id": "hvac",
+      "title": "Heating and Cooling (HVAC)",
+      "description": "Heat pumps (primary), condensate strategy, electrical coordination; optional gas backup (if pursued)."
+    },
+    {
+      "id": "ventilation",
+      "title": "Ventilation (Kitchen + Bathroom + General)",
+      "description": "Bathroom exhaust and kitchen hood venting, terminations, make-up air (if required), sealing."
+    },
+    {
+      "id": "fire-sound",
+      "title": "Fire and Sound Assemblies",
+      "description": "Basement ceiling fire rating + soundproofing (resilient channel, damping, double Type X, sealing)."
+    },
+    {
+      "id": "finishes",
+      "title": "Interior Finishes (Basement + Ground Floor)",
+      "description": "Tile, flooring, underlayment, waterproofing, trims, transitions."
+    },
+    {
+      "id": "structural-carpentry",
+      "title": "Structural / Carpentry / Access",
+      "description": "New basement stair, 3-step transition stair at garage conversion, framing/hardware."
+    },
+    {
+      "id": "garage-conversion",
+      "title": "Garage Conversion (to Legal Living Room)",
+      "description": "Remove garage door, infill wall with window, insulation, drywall/finishes, exterior tie-in."
+    },
+    {
+      "id": "doors-entrances",
+      "title": "Doors and Entrances",
+      "description": "Two exterior entrances for different units with weather sealing and hardware."
+    },
+    {
+      "id": "electrical-lowvoltage",
+      "title": "Electrical / Low-Voltage and Tenant Services",
+      "description": "Intercom/doorbell for 7 endpoints + structured wiring to avoid future wall cuts; basic electrical coordination."
+    },
+    {
+      "id": "ceiling-roof",
+      "title": "Ceiling Work and Roof (Summer Scope)",
+      "description": "Ceiling work not covered elsewhere; roof replacement + added ventilation."
+    }
+  ],
+  "items": [
+    {
+      "id": "perm-1",
+      "sectionId": "permits-design",
+      "title": "Prepare permit drawings + scope package for multiplex conversion",
+      "status": "todo",
+      "description": "Assemble the permit set, including unit layouts, life-safety approach, mechanical/plumbing/electrical notes, and required details for a Toronto multiplex conversion.",
+      "note": "Include fire separations/alarms/egress strategy early so downstream assemblies are not reworked.",
+      "materials": [],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "perm-2",
+      "sectionId": "permits-design",
+      "title": "Inspection plan (rough-in → close-up → final)",
+      "status": "todo",
+      "description": "Define inspection checkpoints and prerequisites (photos, checklists, access).",
+      "note": "Create a single list of inspection-ready evidence (photos of rough-in before closure, inventory for missing items).",
+      "materials": [],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "env-1",
+      "sectionId": "envelope-insulation",
+      "title": "Ground floor walls: continuous insulation layer",
+      "status": "todo",
+      "description": "Install continuous insulation (interior/exterior as designed) and integrate air/vapour control layers.",
+      "note": "Confirm thickness/spec and fastening strategy; ensure continuity at transitions and openings.",
+      "materials": [
+        {
+          "id": "mat-env-1",
+          "name": "Rigid insulation boards (spec per design)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Continuous insulation"
+        },
+        {
+          "id": "mat-env-2",
+          "name": "Compatible tape/sealant",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "For seams and transitions"
+        },
+        {
+          "id": "mat-env-3",
+          "name": "Fasteners / strapping (if required)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Per assembly design"
+        },
+        {
+          "id": "mat-env-4",
+          "name": "Air/vapour control layers (membrane/primer/tapes)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Only as required by design"
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "env-2",
+      "sectionId": "envelope-insulation",
+      "title": "Ground floor walls: 2x4 cavity insulation + vapour/air sealing",
+      "status": "todo",
+      "description": "Install cavity insulation (batts or spray foam per design/fire requirements) and complete vapour barrier and sealing where applicable.",
+      "note": "Coordinate with electrical/plumbing rough-ins to avoid gaps and compression.",
+      "materials": [
+        {
+          "id": "mat-env-5",
+          "name": "2x4 cavity insulation (batts or spray foam)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Per design + fire requirements"
+        },
+        {
+          "id": "mat-env-6",
+          "name": "Vapour barrier poly",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "If applicable"
+        },
+        {
+          "id": "mat-env-7",
+          "name": "Acoustic sealant",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "If applicable"
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "env-3",
+      "sectionId": "envelope-insulation",
+      "title": "Basement floor insulation system",
+      "status": "todo",
+      "description": "Install basement floor insulation assembly (rigid foam/subfloor panels/sleepers as designed) including vapour/underlayment strategy.",
+      "note": "Confirm moisture management and floor height impacts with door/stair transitions.",
+      "materials": [
+        {
+          "id": "mat-env-8",
+          "name": "Rigid foam / subfloor panels / sleepers (per design)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Floor insulation system"
+        },
+        {
+          "id": "mat-env-9",
+          "name": "Vapour barrier / underlayment materials",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "As designed"
+        },
+        {
+          "id": "mat-env-10",
+          "name": "Concrete-compatible adhesives, fasteners, tapes",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "As required"
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "pl-1",
+      "sectionId": "plumbing",
+      "title": "Full plumbing rework (DWV + water distribution)",
+      "status": "todo",
+      "description": "Redo plumbing: drain/waste/vent, water distribution, cleanouts, valves, manifolds, and unit shutoffs.",
+      "note": "Plan for 7 kitchens total; bathrooms/laundry per final design. Coordinate penetrations + firestopping.",
+      "materials": [
+        {
+          "id": "mat-pl-1",
+          "name": "DWV piping (ABS/PVC) + fittings + cleanouts",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Drain/waste/vent"
+        },
+        {
+          "id": "mat-pl-2",
+          "name": "Water distribution piping (PEX/copper) + fittings",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Hot/cold distribution"
+        },
+        {
+          "id": "mat-pl-3",
+          "name": "Manifolds + valves + shut-offs per unit",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Serviceability"
+        },
+        {
+          "id": "mat-pl-4",
+          "name": "Backflow prevention components (as required)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Per design/inspection requirements"
+        },
+        {
+          "id": "mat-pl-5",
+          "name": "Fixture rough-in kits (kitchens/bathrooms/laundry as designed)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Scope depends on final layout"
+        },
+        {
+          "id": "mat-pl-6",
+          "name": "Sump/ejector components (only if design requires)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Conditional"
+        },
+        {
+          "id": "mat-pl-7",
+          "name": "Firestopping materials for rated penetrations",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "All rated assemblies"
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "hv-1",
+      "sectionId": "hvac",
+      "title": "Heat pump system planning (multi-zone) + install allowances",
+      "status": "todo",
+      "description": "Define heat pump approach (outdoor units + indoor heads/air handlers), routing, mounting, line sets, and service clearances.",
+      "note": "Include condensate drainage plan and electrical coordination early.",
+      "materials": [
+        {
+          "id": "mat-hv-1",
+          "name": "Outdoor heat pump units (per design)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Primary HVAC"
+        },
+        {
+          "id": "mat-hv-2",
+          "name": "Indoor heads/air handlers (per design)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Multi-zone strategy"
+        },
+        {
+          "id": "mat-hv-3",
+          "name": "Refrigerant line sets + covers",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Routing + protection"
+        },
+        {
+          "id": "mat-hv-4",
+          "name": "Mounting brackets/pads + fasteners",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Outdoor unit mounting"
+        },
+        {
+          "id": "mat-hv-5",
+          "name": "Condensate drains/pumps and piping",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Leak/odour/mould prevention"
+        },
+        {
+          "id": "mat-hv-6",
+          "name": "Electrical disconnects and whips (coordinate with electrical)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Per equipment requirements"
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "hv-2",
+      "sectionId": "hvac",
+      "title": "Optional: gas backup heating allowances (if pursued)",
+      "status": "todo",
+      "description": "If you decide to include gas backup heating, plan furnace/coil integration and gas venting/piping after final HVAC design.",
+      "note": "Keep as conditional scope until design is locked.",
+      "materials": [
+        {
+          "id": "mat-hv-7",
+          "name": "Gas furnace/coil integration components (conditional)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Only after final design"
+        },
+        {
+          "id": "mat-hv-8",
+          "name": "Gas piping/valves/venting components (conditional)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Only after final design"
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "vent-1",
+      "sectionId": "ventilation",
+      "title": "Bathroom exhaust venting (all bathrooms)",
+      "status": "todo",
+      "description": "Install exhaust fans, insulated ducting, terminations, dampers, and sealing for all bathrooms per layout.",
+      "note": "Coordinate routes early to avoid conflicts with framing and rated assemblies.",
+      "materials": [
+        {
+          "id": "mat-vent-1",
+          "name": "Bathroom exhaust fans (quantity per layout)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-vent-2",
+          "name": "Insulated ducting",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-vent-3",
+          "name": "Exterior hoods / roof-wall caps",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-vent-4",
+          "name": "Backdraft dampers",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-vent-5",
+          "name": "Clamps/tape + sealants",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "vent-2",
+      "sectionId": "ventilation",
+      "title": "Kitchen hood venting (all kitchens)",
+      "status": "todo",
+      "description": "Provide ducted kitchen hood venting sized per hood specs with proper terminations and dampers; plan make-up air if required.",
+      "note": "Prefer smooth metal duct where required; confirm termination locations with roof scope.",
+      "materials": [
+        {
+          "id": "mat-vent-6",
+          "name": "Kitchen hood ducting sized per hood specs",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Smooth metal preferred where required"
+        },
+        {
+          "id": "mat-vent-7",
+          "name": "Exterior termination (wall/roof cap) + dampers",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-vent-8",
+          "name": "Make-up air provisions (if required)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Conditional on hood capacity/code"
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "vent-3",
+      "sectionId": "ventilation",
+      "title": "Air sealing around penetrations (rated + non-rated)",
+      "status": "todo",
+      "description": "Seal penetrations with fire-rated products where needed and standard sealing elsewhere; coordinate with fire/sound assemblies.",
+      "note": "Track every penetration through rated assemblies to avoid missed firestopping.",
+      "materials": [
+        {
+          "id": "mat-vent-9",
+          "name": "Fire-rated sealants (where needed)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-vent-10",
+          "name": "Standard sealants/foams (elsewhere)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "fs-1",
+      "sectionId": "fire-sound",
+      "title": "Basement ceiling: resilient channel + damping + double 5/8 Type X",
+      "status": "todo",
+      "description": "Sound isolation and fire-rated ceiling assembly including resilient channels, damping layer, double Type X drywall, sealing, and penetration treatment.",
+      "note": "Confirm exact assembly requirements with the permit set and inspection requirements.",
+      "materials": [
+        {
+          "id": "mat-fs-1",
+          "name": "Resilient channels",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Sound isolation"
+        },
+        {
+          "id": "mat-fs-2",
+          "name": "Green Glue (damping compound)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Between drywall layers"
+        },
+        {
+          "id": "mat-fs-3",
+          "name": "5/8\" fire-rated drywall (Type X)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Double layer"
+        },
+        {
+          "id": "mat-fs-4",
+          "name": "Drywall screws (correct length for layers + channels)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-fs-5",
+          "name": "Joint compound, tape, corner bead",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-fs-6",
+          "name": "Putty pads for electrical boxes (if used)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Where required"
+        },
+        {
+          "id": "mat-fs-7",
+          "name": "Fire-rated caulk + mineral wool",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Penetrations"
+        },
+        {
+          "id": "mat-fs-8",
+          "name": "Acoustic sealant",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Perimeter + key junctions"
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "fin-1",
+      "sectionId": "finishes",
+      "title": "Tile package (wet areas and as designed)",
+      "status": "todo",
+      "description": "Tile materials and install consumables for bathrooms/kitchens/backsplashes as designed.",
+      "note": "Confirm quantities from final drawings and allow waste factor.",
+      "materials": [
+        {
+          "id": "mat-fin-1",
+          "name": "Tile (as designed)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-fin-2",
+          "name": "Thinset/mortar",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-fin-3",
+          "name": "Grout",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-fin-4",
+          "name": "Spacers + leveling system",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-fin-5",
+          "name": "Waterproofing membrane + primers",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Wet areas"
+        },
+        {
+          "id": "mat-fin-6",
+          "name": "Backer boards",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Where required"
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "fin-2",
+      "sectionId": "finishes",
+      "title": "Flooring package (basement + ground floor as designed)",
+      "status": "todo",
+      "description": "Non-tile flooring materials plus underlayment, transitions, trims, and moisture layers where required.",
+      "note": "Coordinate floor build-up thickness with doors, stairs, and thresholds.",
+      "materials": [
+        {
+          "id": "mat-fin-7",
+          "name": "Flooring material (as designed)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-fin-8",
+          "name": "Underlayment / moisture barriers (as required)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-fin-9",
+          "name": "Transitions, trims/baseboards",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-fin-10",
+          "name": "Adhesives/fasteners",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "str-1",
+      "sectionId": "structural-carpentry",
+      "title": "New basement stair (full stair down)",
+      "status": "todo",
+      "description": "Build/install basement stair including framing and safety elements.",
+      "note": "Confirm opening size, headroom, and guard/handrail requirements in drawings.",
+      "materials": [
+        {
+          "id": "mat-str-1",
+          "name": "Stringers/treads/risers (or prefab stair)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-str-2",
+          "name": "Handrails/guards",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-str-3",
+          "name": "Framing lumber, hangers, fasteners",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "str-2",
+      "sectionId": "structural-carpentry",
+      "title": "3-step stair between converted garage and main living room",
+      "status": "todo",
+      "description": "Build the short transition stair and finish to match interior flooring/trim.",
+      "note": "Confirm whether railing/guard is triggered based on height and configuration.",
+      "materials": [
+        {
+          "id": "mat-str-4",
+          "name": "Framing and finish materials",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-str-5",
+          "name": "Railing/guard (if required)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Conditional"
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "gar-1",
+      "sectionId": "garage-conversion",
+      "title": "Remove garage door and build infill wall with window",
+      "status": "todo",
+      "description": "Convert garage opening into framed wall assembly with window, insulation, interior finishes, and exterior tie-in.",
+      "note": "Confirm wall assembly details (air/vapour control + insulation continuity).",
+      "materials": [
+        {
+          "id": "mat-gar-1",
+          "name": "Framing lumber",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-gar-2",
+          "name": "Sheathing",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-gar-3",
+          "name": "Building wrap / air barrier materials",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-gar-4",
+          "name": "Insulation (continuous + cavity as required)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-gar-5",
+          "name": "Interior drywall/finishes",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-gar-6",
+          "name": "Window unit(s)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-gar-7",
+          "name": "Flashing, shims, sealants, trim",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-gar-8",
+          "name": "Exterior cladding tie-in materials",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Match/blend with existing"
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "door-1",
+      "sectionId": "doors-entrances",
+      "title": "Install two exterior entrance doors for different units",
+      "status": "todo",
+      "description": "Provide exterior door assemblies, flashing, weather sealing, and hardware.",
+      "note": "Decide keyed vs smart lock strategy; ensure unit addressing/labels align with intercom.",
+      "materials": [
+        {
+          "id": "mat-door-1",
+          "name": "Exterior doors + frames",
+          "quantity": 2,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-door-2",
+          "name": "Hardware sets + deadbolts/locks",
+          "quantity": 2,
+          "estimatedPrice": 0,
+          "note": "Smart locks optional"
+        },
+        {
+          "id": "mat-door-3",
+          "name": "Weatherstripping + thresholds",
+          "quantity": 2,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-door-4",
+          "name": "Flashing/sealants + trim",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "elv-1",
+      "sectionId": "electrical-lowvoltage",
+      "title": "Tenant entry / delivery intercom (7 endpoints)",
+      "status": "todo",
+      "description": "Plan and rough-in multi-tenant intercom/doorbell system so deliveries can reach each unit.",
+      "note": "Prefer conduit and a central structured panel for serviceability.",
+      "materials": [
+        {
+          "id": "mat-elv-1",
+          "name": "Entrance panel (video/audio)",
+          "quantity": 1,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-elv-2",
+          "name": "Tenant indoor stations or app-based endpoints",
+          "quantity": 7,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-elv-3",
+          "name": "Power supply",
+          "quantity": 1,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-elv-4",
+          "name": "Low-voltage wiring + conduit + backboxes",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-elv-5",
+          "name": "Network connectivity allowances (if IP-based)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "elv-2",
+      "sectionId": "electrical-lowvoltage",
+      "title": "Internet provisioning (structured wiring, no future wall cuts)",
+      "status": "todo",
+      "description": "Provide conduit pathways and structured cabling from telecom entry to comms closet and into suites.",
+      "note": "Run conduit with pull strings; label everything; plan ONT/modem location and power.",
+      "materials": [
+        {
+          "id": "mat-elv-6",
+          "name": "Conduit (Smurf tube/ENT) + pull strings",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Telecom entry → comms closet → suites"
+        },
+        {
+          "id": "mat-elv-7",
+          "name": "Junction boxes / access panels",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-elv-8",
+          "name": "Patch panels, keystone jacks, wall plates",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-elv-9",
+          "name": "Cat6/Cat6A cable",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "In-suite drops per plan"
+        },
+        {
+          "id": "mat-elv-10",
+          "name": "Comms closet enclosure + power/UPS allowance (optional)",
+          "quantity": 1,
+          "estimatedPrice": 0,
+          "note": "Optional but useful"
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "elv-3",
+      "sectionId": "electrical-lowvoltage",
+      "title": "Electrical capacity and rough-in coordination",
+      "status": "todo",
+      "description": "Confirm panel capacity, dedicated circuits for HVAC/major loads, and rough-in schedule alignment with framing and inspections.",
+      "note": "Keep this high-level here; detailed electrical takeoff can be a later pass.",
+      "materials": [],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "roof-1",
+      "sectionId": "ceiling-roof",
+      "title": "Ceiling work not covered elsewhere",
+      "status": "todo",
+      "description": "Complete ceiling framing/strapping and drywall where required outside the basement ceiling assembly scope.",
+      "note": "Coordinate lighting, ducting, and access panels before closure.",
+      "materials": [
+        {
+          "id": "mat-roof-1",
+          "name": "Framing/strapping as needed",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-roof-2",
+          "name": "Drywall materials + insulation (if required)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    },
+    {
+      "id": "roof-2",
+      "sectionId": "ceiling-roof",
+      "title": "Roof replacement and add roof ventilation (summer scope)",
+      "status": "todo",
+      "description": "Replace roof and add ventilation components as designed (ridge/soffit/baffles, etc.).",
+      "note": "Coordinate roof penetrations for bathroom/kitchen vents and any HVAC line routing.",
+      "materials": [
+        {
+          "id": "mat-roof-3",
+          "name": "Roofing materials (shingles/underlayment/ice & water shield/flashing)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": ""
+        },
+        {
+          "id": "mat-roof-4",
+          "name": "Ventilation components (ridge vent / soffit vents / baffles)",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Per design"
+        },
+        {
+          "id": "mat-roof-5",
+          "name": "Any required intake/exhaust balancing components",
+          "quantity": 0,
+          "estimatedPrice": 0,
+          "note": "Per design"
+        }
+      ],
+      "expenses": [],
+      "estimate": 0
+    }
+  ],
+  "notes": [
+    {
+      "id": "n-photos",
+      "title": "Documentation habit",
+      "content": "Photograph all rough-in work (plumbing, electrical, HVAC) before wall/ceiling closure. Store by section + date.",
+      "linkedSectionId": null
+    },
+    {
+      "id": "n-blocked",
+      "title": "Blocked item review",
+      "content": "Review blocked items weekly with an owner and target unblock date; avoid hidden dependencies.",
+      "linkedSectionId": null
+    },
+    {
+      "id": "n-procure",
+      "title": "Procurement batching",
+      "content": "Batch procurement runs and supplier calls weekly to reduce context switching; keep a running takeoff list by section.",
+      "linkedSectionId": null
+    },
+    {
+      "id": "n-inspect",
+      "title": "Inspection prep",
+      "content": "Maintain an inspection checklist and ensure key materials (firestopping, access panels, labels) are ready before booking.",
+      "linkedSectionId": "permits-design"
+    }
+  ]
+}
