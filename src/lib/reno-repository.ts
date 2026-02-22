@@ -28,6 +28,7 @@ type UpdateItemFieldsInput = {
   title: string;
   estimate: number;
   status: ItemStatus;
+  unitId?: string | null;
   estimatedCompletionDate?: string;
   actualCompletionDate?: string;
   performers: string[];
@@ -399,10 +400,21 @@ export class JsonProjectRepository implements ProjectRepository {
       if (!item) {
         throw new Error(`Unknown itemId: ${itemId}`);
       }
+      if (typeof payload.unitId === "string") {
+        const unitExists = project.units.some(
+          (entry) => entry.id === payload.unitId,
+        );
+        if (!unitExists) {
+          throw new Error(`Unknown unitId: ${payload.unitId}`);
+        }
+      }
 
       item.title = payload.title;
       item.estimate = payload.estimate;
       item.status = payload.status;
+      if (payload.unitId !== undefined) {
+        item.unitId = payload.unitId ?? null;
+      }
       item.estimatedCompletionDate =
         payload.estimatedCompletionDate || undefined;
       item.actualCompletionDate = payload.actualCompletionDate || undefined;
@@ -607,6 +619,9 @@ export class JsonProjectRepository implements ProjectRepository {
   ): Promise<RenovationProject> {
     return this.mutateProject(projectId, (project) => {
       project.units = project.units.filter((unit) => unit.id !== unitId);
+      project.items = project.items.map((item) =>
+        item.unitId === unitId ? { ...item, unitId: null } : item,
+      );
       return project;
     });
   }
@@ -857,6 +872,14 @@ export class JsonProjectRepository implements ProjectRepository {
       );
       if (!sectionExists) {
         throw new Error(`Unknown sectionId: ${sectionId}`);
+      }
+      if (item.unitId) {
+        const unitExists = project.units.some(
+          (unit) => unit.id === item.unitId,
+        );
+        if (!unitExists) {
+          throw new Error(`Unknown unitId: ${item.unitId}`);
+        }
       }
 
       project.items = [{ ...item, sectionId }, ...project.items];

@@ -56,6 +56,10 @@ export function getItemById(project: RenovationProject, itemId: string) {
   return project.items.find((item) => item.id === itemId);
 }
 
+export function getItemsByUnitId(project: RenovationProject, unitId: string) {
+  return project.items.filter((item) => item.unitId === unitId);
+}
+
 export function getTotalActualForItem(item: RenovationItem) {
   return item.expenses.reduce((sum, expense) => sum + expense.amount, 0);
 }

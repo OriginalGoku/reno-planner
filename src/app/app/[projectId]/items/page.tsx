@@ -13,6 +13,7 @@ export default async function AllItemsPage({ params }: AllItemsPageProps) {
     <AllItemsWireframe
       projectId={project.id}
       sections={project.sections}
+      units={project.units}
       items={project.items}
     />
   );

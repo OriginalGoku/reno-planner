@@ -10,6 +10,7 @@ import {
   type ItemStatus,
   type RenovationItem,
   type RenovationSection,
+  type RenovationUnit,
 } from "@/lib/reno-data-loader";
 import { updateItemStatusAction } from "@/lib/reno-actions";
 import {
@@ -21,18 +22,21 @@ import {
 type AllItemsWireframeProps = {
   projectId: string;
   sections: RenovationSection[];
+  units: RenovationUnit[];
   items: RenovationItem[];
 };
 
 export function AllItemsWireframe({
   projectId,
   sections,
+  units,
   items,
 }: AllItemsWireframeProps) {
   const [localItems, setLocalItems] = useState(items);
   const [query, setQuery] = useState("");
   const [sectionFilter, setSectionFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [unitFilter, setUnitFilter] = useState("");
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -46,10 +50,15 @@ export function AllItemsWireframe({
         item.note.toLowerCase().includes(loweredQuery);
       const matchesSection = !sectionFilter || item.sectionId === sectionFilter;
       const matchesStatus = !statusFilter || item.status === statusFilter;
+      const matchesUnit =
+        !unitFilter ||
+        (unitFilter === "__project_wide__"
+          ? !item.unitId
+          : item.unitId === unitFilter);
 
-      return matchesQuery && matchesSection && matchesStatus;
+      return matchesQuery && matchesSection && matchesStatus && matchesUnit;
     });
-  }, [localItems, query, sectionFilter, statusFilter]);
+  }, [localItems, query, sectionFilter, statusFilter, unitFilter]);
 
   const estimateTotal = useMemo(
     () => filteredItems.reduce((sum, item) => sum + item.estimate, 0),
@@ -116,7 +125,7 @@ export function AllItemsWireframe({
       </section>
 
       <section className="rounded-lg border p-4">
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-4">
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -147,6 +156,19 @@ export function AllItemsWireframe({
               </option>
             ))}
           </select>
+          <select
+            value={unitFilter}
+            onChange={(event) => setUnitFilter(event.target.value)}
+            className="rounded-md border bg-background px-3 py-2 text-sm"
+          >
+            <option value="">All units</option>
+            <option value="__project_wide__">Project-wide items</option>
+            {units.map((unit) => (
+              <option key={unit.id} value={unit.id}>
+                {unit.name}
+              </option>
+            ))}
+          </select>
         </div>
       </section>
 
@@ -171,7 +193,7 @@ export function AllItemsWireframe({
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
                         <Link
-                          href={`/app/${projectId}/items/${item.id}`}
+                          href={`/app/${projectId}/sections/${section.id}#item-${item.id}`}
                           className="font-medium underline-offset-2 hover:underline"
                         >
                           {item.title}

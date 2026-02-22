@@ -142,7 +142,7 @@ export function AppSidebar() {
           ...mainFloorUnits.map((unit) => ({
             id: unit.id,
             title: unit.name,
-            href: `/app/${project.id}/units#unit-${unit.id}`,
+            href: `/app/${project.id}/units/${unit.id}`,
           })),
         ]
       : []),
@@ -156,7 +156,7 @@ export function AppSidebar() {
           ...basementUnits.map((unit) => ({
             id: unit.id,
             title: unit.name,
-            href: `/app/${project.id}/units#unit-${unit.id}`,
+            href: `/app/${project.id}/units/${unit.id}`,
           })),
         ]
       : []),

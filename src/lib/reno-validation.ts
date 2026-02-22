@@ -258,6 +258,12 @@ export function validateProjectData(value: unknown): RenovationProject {
       typeof item.sectionId === "string",
       "Item.sectionId must be a string.",
     );
+    ensure(
+      item.unitId === undefined ||
+        item.unitId === null ||
+        typeof item.unitId === "string",
+      "Item.unitId must be a string or null when provided.",
+    );
     ensure(typeof item.title === "string", "Item.title must be a string.");
     ensure(
       typeof item.status === "string" &&
@@ -350,6 +356,16 @@ export function validateProjectData(value: unknown): RenovationProject {
       ensure(
         isOptionalString(expense.note),
         "Expense.note must be a string when provided.",
+      );
+    }
+  }
+
+  const unitIds = new Set(project.units.map((unit) => unit.id));
+  for (const item of project.items) {
+    if (typeof item.unitId === "string") {
+      ensure(
+        unitIds.has(item.unitId),
+        `Item.unitId "${item.unitId}" must reference an existing unit.`,
       );
     }
   }

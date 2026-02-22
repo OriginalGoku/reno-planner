@@ -249,13 +249,14 @@ server.registerResource(
     if (!unit) {
       throw new Error(`Unknown unitId: ${unitId}`);
     }
+    const items = project.items.filter((entry) => entry.unitId === unitId);
 
     return {
       contents: [
         {
           uri: `resource://unit/${projectId}/${unitId}`,
           mimeType: "application/json",
-          text: JSON.stringify(unit, null, 2),
+          text: JSON.stringify({ ...unit, items }, null, 2),
         },
       ],
     };
@@ -822,7 +823,8 @@ server.registerTool(
         throw new Error(`Unknown unitId: ${unitId}`);
       }
 
-      return asToolResult({ unit });
+      const items = project.items.filter((entry) => entry.unitId === unitId);
+      return asToolResult({ unit, items });
     } catch (error) {
       return asToolError(error);
     }
@@ -1313,10 +1315,11 @@ server.registerTool(
     inputSchema: {
       projectId: z.string().optional(),
       sectionId: z.string().optional(),
+      unitId: z.string().optional(),
       status: z.enum(["todo", "in_progress", "blocked", "done"]).optional(),
     },
   },
-  async ({ projectId, sectionId, status }) => {
+  async ({ projectId, sectionId, unitId, status }) => {
     try {
       const resolvedProjectId = await resolveProjectId(projectId);
       const project = await renoService.getProjectById(resolvedProjectId);
@@ -1326,8 +1329,9 @@ server.registerTool(
 
       const items = project.items.filter((item) => {
         const sectionMatch = !sectionId || item.sectionId === sectionId;
+        const unitMatch = !unitId || item.unitId === unitId;
         const statusMatch = !status || item.status === status;
-        return sectionMatch && statusMatch;
+        return sectionMatch && unitMatch && statusMatch;
       });
       return asToolResult({ items });
     } catch (error) {
@@ -1376,6 +1380,7 @@ server.registerTool(
       title: z.string(),
       estimate: z.number(),
       status: z.enum(["todo", "in_progress", "blocked", "done"]),
+      unitId: z.string().nullable().optional(),
       estimatedCompletionDate: z.string().optional(),
       actualCompletionDate: z.string().optional(),
       performers: z.array(z.string()),
@@ -1535,6 +1540,7 @@ server.registerTool(
     inputSchema: {
       projectId: z.string().optional(),
       sectionId: z.string(),
+      unitId: z.string().nullable().optional(),
       title: z.string(),
       estimate: z.number().optional(),
     },

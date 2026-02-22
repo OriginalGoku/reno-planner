@@ -170,6 +170,19 @@
   ],
   "items": [
     {
+      "id": "0afb338d-fb41-4164-8449-3e3cf62afead",
+      "sectionId": "structural-carpentry",
+      "unitId": "4853af39-0e6b-40b8-8888-d4163d15f4c3",
+      "title": "Test Unit 1 item",
+      "status": "todo",
+      "estimate": 1000,
+      "description": "",
+      "note": "",
+      "materials": [],
+      "expenses": [],
+      "performers": []
+    },
+    {
       "id": "4d60e519-d300-42ad-8b72-56e3a273b854",
       "sectionId": "structural-carpentry",
       "title": "Basement - Right Unit (Moving wall)",

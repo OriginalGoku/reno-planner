@@ -161,6 +161,7 @@ export async function addSectionItemAction(payload: {
   sectionId: string;
   title: string;
   estimate?: number;
+  unitId?: string | null;
 }) {
   await renoService.addSectionItem(payload);
 

@@ -397,7 +397,11 @@ export function SectionItemsWireframe({
           const actual = getTotalActualForItem(item);
 
           return (
-            <div key={item.id} className="rounded-lg border p-4">
+            <div
+              key={item.id}
+              id={`item-${item.id}`}
+              className="scroll-mt-24 rounded-lg border p-4"
+            >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="space-y-1">
                   <Link

@@ -53,6 +53,7 @@ export type RenovationMaterial = {
 export type RenovationItem = {
   id: string;
   sectionId: string;
+  unitId?: string | null;
   title: string;
   status: ItemStatus;
   estimate: number;

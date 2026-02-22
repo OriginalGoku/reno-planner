@@ -26,6 +26,7 @@ export type UpdateItemFieldsInput = {
   title: string;
   estimate: number;
   status: ItemStatus;
+  unitId?: string | null;
   estimatedCompletionDate?: string;
   actualCompletionDate?: string;
   performers: string[];
@@ -224,6 +225,7 @@ export const renoService = {
         title: payload.title,
         estimate: payload.estimate,
         status: payload.status,
+        unitId: payload.unitId,
         estimatedCompletionDate: payload.estimatedCompletionDate,
         actualCompletionDate: payload.actualCompletionDate,
         performers: payload.performers,
@@ -655,6 +657,7 @@ export const renoService = {
     sectionId: string;
     title: string;
     estimate?: number;
+    unitId?: string | null;
   }) {
     return projectRepository.addSectionItem(
       payload.projectId,
@@ -662,6 +665,7 @@ export const renoService = {
       {
         id: crypto.randomUUID(),
         sectionId: payload.sectionId,
+        unitId: payload.unitId ?? null,
         title: payload.title,
         status: "todo",
         estimate: payload.estimate ?? 0,

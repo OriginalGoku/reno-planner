@@ -95,6 +95,18 @@ function buildBreadcrumbs(
     return crumbs;
   }
 
+  if (segments[2] === "units" && segments[3]) {
+    const unit = project.units.find((entry) => entry.id === segments[3]);
+    crumbs.push({
+      label: "Units",
+      href: `/app/${project.id}/units`,
+    });
+    crumbs.push({
+      label: unit?.name ?? titleCase(segments[3]),
+    });
+    return crumbs;
+  }
+
   if (segments[2] === "services" && segments[3] && segments[4]) {
     const serviceSection = project.serviceSections.find(
       (entry) => entry.id === segments[3],
