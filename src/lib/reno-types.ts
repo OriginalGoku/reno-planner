@@ -7,7 +7,9 @@ export type UnitFloor = "main" | "basement";
 export type UnitStatus = "planned" | "in_progress" | "done";
 
 export type UnitRoomType =
-  | "kitchen_living_area"
+  | "kitchen"
+  | "living_area"
+  | "bedroom"
   | "bathroom"
   | "storage"
   | "other";

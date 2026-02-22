@@ -56,7 +56,9 @@ const unitStatusOptions: Array<{ value: UnitStatus; label: string }> = [
 ];
 
 const roomTypeOptions: Array<{ value: UnitRoomType; label: string }> = [
-  { value: "kitchen_living_area", label: "Kitchen / Living Area" },
+  { value: "kitchen", label: "Kitchen" },
+  { value: "living_area", label: "Living Area" },
+  { value: "bedroom", label: "Bedroom" },
   { value: "bathroom", label: "Bathroom" },
   { value: "storage", label: "Storage" },
   { value: "other", label: "Other" },
@@ -103,7 +105,7 @@ function emptyUnitDraft(): UnitDraft {
 
 function emptyRoomDraft(): RoomDraft {
   return {
-    roomType: "kitchen_living_area",
+    roomType: "kitchen",
     widthMm: "",
     lengthMm: "",
     heightMm: "",
@@ -166,7 +168,7 @@ export function UnitsWireframe({
       rooms: [
         {
           id: `local-room-${Date.now()}-1`,
-          roomType: "kitchen_living_area",
+          roomType: "kitchen",
           widthMm: 0,
           lengthMm: 0,
           heightMm: 0,
@@ -174,7 +176,7 @@ export function UnitsWireframe({
         },
         {
           id: `local-room-${Date.now()}-2`,
-          roomType: "bathroom",
+          roomType: "living_area",
           widthMm: 0,
           lengthMm: 0,
           heightMm: 0,
@@ -182,15 +184,7 @@ export function UnitsWireframe({
         },
         {
           id: `local-room-${Date.now()}-3`,
-          roomType: "storage",
-          widthMm: 0,
-          lengthMm: 0,
-          heightMm: 0,
-          description: "",
-        },
-        {
-          id: `local-room-${Date.now()}-4`,
-          roomType: "other",
+          roomType: "bathroom",
           widthMm: 0,
           lengthMm: 0,
           heightMm: 0,

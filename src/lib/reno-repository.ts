@@ -263,6 +263,15 @@ export class JsonProjectRepository implements ProjectRepository {
             unit.bedrooms >= 0
               ? unit.bedrooms
               : 0,
+          rooms: Array.isArray(unit.rooms)
+            ? unit.rooms.map((room) => ({
+                ...room,
+                roomType:
+                  room.roomType === "kitchen_living_area"
+                    ? "kitchen"
+                    : room.roomType,
+              }))
+            : [],
         }));
       }
       if (!Array.isArray(projectLike.attachments)) {

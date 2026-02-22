@@ -1265,7 +1265,7 @@
       "rooms": [
         {
           "id": "c98c92c9-55c1-4af7-ab77-b69995b18f49",
-          "roomType": "kitchen_living_area",
+          "roomType": "kitchen",
           "widthMm": 0,
           "lengthMm": 0,
           "heightMm": 0,

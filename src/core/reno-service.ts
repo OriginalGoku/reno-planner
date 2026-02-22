@@ -331,7 +331,15 @@ export const renoService = {
       rooms: [
         {
           id: crypto.randomUUID(),
-          roomType: "kitchen_living_area",
+          roomType: "kitchen",
+          widthMm: 0,
+          lengthMm: 0,
+          heightMm: 0,
+          description: "",
+        },
+        {
+          id: crypto.randomUUID(),
+          roomType: "living_area",
           widthMm: 0,
           lengthMm: 0,
           heightMm: 0,
@@ -340,22 +348,6 @@ export const renoService = {
         {
           id: crypto.randomUUID(),
           roomType: "bathroom",
-          widthMm: 0,
-          lengthMm: 0,
-          heightMm: 0,
-          description: "",
-        },
-        {
-          id: crypto.randomUUID(),
-          roomType: "storage",
-          widthMm: 0,
-          lengthMm: 0,
-          heightMm: 0,
-          description: "",
-        },
-        {
-          id: crypto.randomUUID(),
-          roomType: "other",
           widthMm: 0,
           lengthMm: 0,
           heightMm: 0,

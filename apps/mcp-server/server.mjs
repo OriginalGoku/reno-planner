@@ -262,6 +262,122 @@ server.registerResource(
   },
 );
 
+server.registerResource(
+  "reno-section-resource",
+  new ResourceTemplate("resource://section/{projectId}/{sectionId}", {
+    list: async () => {
+      const projectIds = await renoService.listProjectIds();
+      const projects = await Promise.all(
+        projectIds.map((projectId) => renoService.getProjectById(projectId)),
+      );
+
+      return {
+        resources: projects
+          .filter((project) => project !== null)
+          .flatMap((project) =>
+            project.sections.map((section) => ({
+              uri: `resource://section/${project.id}/${section.id}`,
+              name: section.id,
+              title: section.title,
+              mimeType: "application/json",
+              description: `${project.name} / Section`,
+            })),
+          ),
+      };
+    },
+  }),
+  {
+    title: "Reno Section",
+    description: "Read one section by projectId and sectionId",
+    mimeType: "application/json",
+  },
+  async (_uri, variables) => {
+    const projectId = variables.projectId;
+    const sectionId = variables.sectionId;
+    if (!projectId || !sectionId) {
+      throw new Error("projectId and sectionId are required.");
+    }
+
+    const project = await renoService.getProjectById(projectId);
+    if (!project) {
+      throw new Error(`Unknown projectId: ${projectId}`);
+    }
+
+    const section = project.sections.find((entry) => entry.id === sectionId);
+    if (!section) {
+      throw new Error(`Unknown sectionId: ${sectionId}`);
+    }
+
+    return {
+      contents: [
+        {
+          uri: `resource://section/${projectId}/${sectionId}`,
+          mimeType: "application/json",
+          text: JSON.stringify(section, null, 2),
+        },
+      ],
+    };
+  },
+);
+
+server.registerResource(
+  "reno-note-resource",
+  new ResourceTemplate("resource://note/{projectId}/{noteId}", {
+    list: async () => {
+      const projectIds = await renoService.listProjectIds();
+      const projects = await Promise.all(
+        projectIds.map((projectId) => renoService.getProjectById(projectId)),
+      );
+
+      return {
+        resources: projects
+          .filter((project) => project !== null)
+          .flatMap((project) =>
+            project.notes.map((note) => ({
+              uri: `resource://note/${project.id}/${note.id}`,
+              name: note.id,
+              title: note.title,
+              mimeType: "application/json",
+              description: `${project.name} / Lessons learned`,
+            })),
+          ),
+      };
+    },
+  }),
+  {
+    title: "Reno Note",
+    description: "Read one note by projectId and noteId",
+    mimeType: "application/json",
+  },
+  async (_uri, variables) => {
+    const projectId = variables.projectId;
+    const noteId = variables.noteId;
+    if (!projectId || !noteId) {
+      throw new Error("projectId and noteId are required.");
+    }
+
+    const project = await renoService.getProjectById(projectId);
+    if (!project) {
+      throw new Error(`Unknown projectId: ${projectId}`);
+    }
+
+    const note = project.notes.find((entry) => entry.id === noteId);
+    if (!note) {
+      throw new Error(`Unknown noteId: ${noteId}`);
+    }
+
+    return {
+      contents: [
+        {
+          uri: `resource://note/${projectId}/${noteId}`,
+          mimeType: "application/json",
+          text: JSON.stringify(note, null, 2),
+        },
+      ],
+    };
+  },
+);
+
 server.registerTool(
   "reno_list_projects",
   {
@@ -426,7 +542,14 @@ server.registerTool(
     inputSchema: {
       projectId: z.string().optional(),
       unitId: z.string(),
-      roomType: z.enum(["kitchen_living_area", "bathroom", "storage", "other"]),
+      roomType: z.enum([
+        "kitchen",
+        "living_area",
+        "bedroom",
+        "bathroom",
+        "storage",
+        "other",
+      ]),
       widthMm: z.number(),
       lengthMm: z.number(),
       heightMm: z.number(),
@@ -459,7 +582,14 @@ server.registerTool(
       projectId: z.string().optional(),
       unitId: z.string(),
       roomId: z.string(),
-      roomType: z.enum(["kitchen_living_area", "bathroom", "storage", "other"]),
+      roomType: z.enum([
+        "kitchen",
+        "living_area",
+        "bedroom",
+        "bathroom",
+        "storage",
+        "other",
+      ]),
       widthMm: z.number(),
       lengthMm: z.number(),
       heightMm: z.number(),
@@ -880,6 +1010,36 @@ server.registerTool(
         ok: true,
         projectId: resolvedProjectId,
         itemId: input.itemId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_update_item_status",
+  {
+    description: "Quickly update item status only",
+    inputSchema: {
+      projectId: z.string().optional(),
+      itemId: z.string(),
+      status: z.enum(["todo", "in_progress", "blocked", "done"]),
+    },
+  },
+  async ({ projectId, itemId, status }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      await renoService.updateItemStatus({
+        projectId: resolvedProjectId,
+        itemId,
+        status,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        itemId,
+        status,
       });
     } catch (error) {
       return asToolError(error);
@@ -1338,6 +1498,34 @@ server.registerTool(
         projectId: resolvedProjectId,
       });
       return asToolResult({ ok: true, projectId: resolvedProjectId });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_list_notes",
+  {
+    description: "List lessons-learned notes, optionally filtered by section",
+    inputSchema: {
+      projectId: z.string().optional(),
+      linkedSectionId: z.string().nullable().optional(),
+    },
+  },
+  async ({ projectId, linkedSectionId }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      const project = await renoService.getProjectById(resolvedProjectId);
+      if (!project) {
+        throw new Error(`Unknown projectId: ${resolvedProjectId}`);
+      }
+
+      const notes = project.notes.filter((note) => {
+        if (linkedSectionId === undefined) return true;
+        return (note.linkedSectionId ?? null) === linkedSectionId;
+      });
+      return asToolResult({ notes });
     } catch (error) {
       return asToolError(error);
     }

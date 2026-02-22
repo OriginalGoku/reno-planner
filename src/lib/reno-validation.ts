@@ -43,7 +43,9 @@ const VALID_ATTACHMENT_SCOPES: AttachmentScopeType[] = [
 const VALID_UNIT_FLOORS: UnitFloor[] = ["main", "basement"];
 const VALID_UNIT_STATUS: UnitStatus[] = ["planned", "in_progress", "done"];
 const VALID_UNIT_ROOM_TYPES: UnitRoomType[] = [
-  "kitchen_living_area",
+  "kitchen",
+  "living_area",
+  "bedroom",
   "bathroom",
   "storage",
   "other",
