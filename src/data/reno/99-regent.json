@@ -1255,14 +1255,127 @@
   ],
   "units": [
     {
-      "id": "4853af39-0e6b-40b8-8888-d4163d15f4c3",
-      "name": "Unit 1 - Front 1 Bedroom",
+      "id": "21d8f69c-d8d1-433b-962c-6bccf8c75ee1",
+      "name": "Unit 4 - Back Bachelor",
+      "floor": "main",
+      "bedrooms": 0,
+      "totalAreaSqm": 12,
+      "status": "planned",
+      "description": "This is a very small bachelor unit. The entrance is from the back yard. The entrance is adjacent to Unit 3. For this unit we need to build a new bathroom and kitchen. \nSince this unit is very small, the insulation for the outside walls in this unit will have to be 2\" continuous rigid foam + 2 X 2 framing + 2\" rigid foam in the cavity (instead of Bats). This should run on the outside wall (11' 6\" on one side and 14' 5\" on the other side with a height of 8'). The other sides of this unit is adjacent to the bathroom of unit 3 and the living room of unit 3. The living room side must be properly sound insulated (wall length: 11' 6\")\nThere is good natural light in this unit (window size: 1.6square meters)",
+      "rooms": [
+        {
+          "id": "14fc0d8a-d831-44c6-a7cd-801215898017",
+          "roomType": "kitchen",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        },
+        {
+          "id": "1d7030df-f21f-4ec7-b887-506e2ee3f3ae",
+          "roomType": "living_area",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        },
+        {
+          "id": "b5fb94f6-48a1-45a8-81c8-72eb7c0587e2",
+          "roomType": "bathroom",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "id": "226f9419-10e6-40a6-b6b7-0e2b218f2b56",
+      "name": "Unit 3 - Back (1 bd)",
       "floor": "main",
       "bedrooms": 1,
       "totalAreaSqm": 40,
       "status": "planned",
-      "description": "",
+      "description": "We need to create the entrance door for this unit. We also need to build stairs that will provide access for this unit as well as the other bachelor unit that is located at the back. The entrance to this unit and the other unit are side by side so one stair can service both. \nThis unit is using the existing bathroom on the ground floor so we don't need to build a new bathroom for this unit but we need to add washer and dryer for this unit. \nThis unit is sharing walls with the Bachelor unit from the back (Unit 4) and also with the bedroom of Unit 1.\nWe need extensive sound insulation for this unit.",
       "rooms": [
+        {
+          "id": "91508240-391b-4c61-bd49-3d2e14876721",
+          "roomType": "kitchen",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        },
+        {
+          "id": "da56c12d-f034-4474-a4cf-b3403a88ab66",
+          "roomType": "living_area",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        },
+        {
+          "id": "7d759615-b10e-4448-8f2c-7f5c8913da85",
+          "roomType": "bathroom",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "id": "d9ce27fd-671c-4acf-9321-0e997a7e3a68",
+      "name": "Unit 2 - Garage (1 Bd)",
+      "floor": "main",
+      "bedrooms": 1,
+      "totalAreaSqm": 30,
+      "status": "planned",
+      "description": "Currently the Garage is non livable space. It requires full insulation as well as ceiling insulation. We also need to replace the current garage door with proper wall and windows. \nWe also need to build a 3 step stairs from the garage to the main building and we need to open the door from the garage to the main unit (in addition to the stairs). \nThe Garage floor has a slope towards the outside and this slope must be fixed in order to make the space livable. The garage floor is currently cement.",
+      "rooms": [
+        {
+          "id": "d6837f65-1a69-4028-b59a-f2bf40fbd852",
+          "roomType": "kitchen",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        },
+        {
+          "id": "122e43bc-c775-45c3-b41a-1b93a9eee95b",
+          "roomType": "living_area",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        },
+        {
+          "id": "ca82b97b-6d77-4727-971c-23979c8b6c35",
+          "roomType": "bathroom",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "id": "4853af39-0e6b-40b8-8888-d4163d15f4c3",
+      "name": "Unit 1 - Front (1 Bd)",
+      "floor": "main",
+      "bedrooms": 1,
+      "totalAreaSqm": 40,
+      "status": "planned",
+      "description": "Entrance from the front of the property. Currently there is a wooden stair to access the unit but we must provide proper stairs for this unit. \nThe entrance leads to the living room/kitchen area. \nThe unit has a bedroom and one bathrom",
+      "rooms": [
+        {
+          "id": "9ea8026e-c578-446d-a406-4ab35dd02f73",
+          "roomType": "bedroom",
+          "widthMm": 3600,
+          "lengthMm": 3000,
+          "heightMm": 2500,
+          "description": ""
+        },
         {
           "id": "c98c92c9-55c1-4af7-ab77-b69995b18f49",
           "roomType": "kitchen",
@@ -1274,22 +1387,6 @@
         {
           "id": "2f477ba4-683f-4877-a030-28721137eb9a",
           "roomType": "bathroom",
-          "widthMm": 0,
-          "lengthMm": 0,
-          "heightMm": 0,
-          "description": ""
-        },
-        {
-          "id": "18572dbf-76bc-4263-a9d8-8628defd23b6",
-          "roomType": "storage",
-          "widthMm": 0,
-          "lengthMm": 0,
-          "heightMm": 0,
-          "description": ""
-        },
-        {
-          "id": "58f2fee0-d001-46e5-ac89-dd060c05fe02",
-          "roomType": "other",
           "widthMm": 0,
           "lengthMm": 0,
           "heightMm": 0,

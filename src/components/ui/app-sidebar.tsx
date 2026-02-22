@@ -43,7 +43,8 @@ import { useRouter } from "next/navigation";
 type NavChild = {
   id: string;
   title: string;
-  href: string;
+  href?: string;
+  isGroupLabel?: boolean;
 };
 
 type NavItem = {
@@ -122,6 +123,44 @@ export function AppSidebar() {
     });
   }
 
+  const mainFloorUnits = project.units
+    .filter((unit) => unit.floor === "main")
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const basementUnits = project.units
+    .filter((unit) => unit.floor === "basement")
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const unitNavChildren: NavChild[] = [
+    ...(mainFloorUnits.length
+      ? [
+          {
+            id: "group-main-floor",
+            title: "Main Floor",
+            isGroupLabel: true,
+          },
+          ...mainFloorUnits.map((unit) => ({
+            id: unit.id,
+            title: unit.name,
+            href: `/app/${project.id}/units#unit-${unit.id}`,
+          })),
+        ]
+      : []),
+    ...(basementUnits.length
+      ? [
+          {
+            id: "group-basement",
+            title: "Basement",
+            isGroupLabel: true,
+          },
+          ...basementUnits.map((unit) => ({
+            id: unit.id,
+            title: unit.name,
+            href: `/app/${project.id}/units#unit-${unit.id}`,
+          })),
+        ]
+      : []),
+  ];
+
   const mainNav: NavItem[] = [
     {
       title: "Dashboard",
@@ -149,11 +188,7 @@ export function AppSidebar() {
       href: `/app/${project.id}/units`,
       icon: Home,
       childKind: "unit",
-      children: project.units.map((unit) => ({
-        id: unit.id,
-        title: unit.name,
-        href: `/app/${project.id}/units#unit-${unit.id}`,
-      })),
+      children: unitNavChildren,
     },
     {
       title: "Purchases",
@@ -218,11 +253,17 @@ export function AppSidebar() {
                           <SidebarMenuSub>
                             {item.children.map((child) => (
                               <SidebarMenuSubItem key={child.id}>
-                                <SidebarMenuSubButton asChild>
-                                  <Link href={child.href}>
-                                    <span>{child.title}</span>
-                                  </Link>
-                                </SidebarMenuSubButton>
+                                {child.isGroupLabel ? (
+                                  <div className="px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                    {child.title}
+                                  </div>
+                                ) : child.href ? (
+                                  <SidebarMenuSubButton asChild>
+                                    <Link href={child.href}>
+                                      <span>{child.title}</span>
+                                    </Link>
+                                  </SidebarMenuSubButton>
+                                ) : null}
                                 {item.childKind === "section" ? (
                                   <div className="absolute top-1 right-1 flex gap-1 opacity-0 transition-opacity group-hover/menu-sub-item:opacity-100">
                                     <button
