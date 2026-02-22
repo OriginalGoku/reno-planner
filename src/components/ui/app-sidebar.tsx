@@ -35,6 +35,7 @@ import {
   Receipt,
   Settings,
   Trash2,
+  Wrench,
 } from "lucide-react";
 import { useRenoData } from "@/components/reno/reno-data-provider";
 import { deleteSectionAction, updateSectionAction } from "@/lib/reno-actions";
@@ -52,7 +53,7 @@ type NavItem = {
   href: string;
   icon: ComponentType<{ className?: string }>;
   children?: NavChild[];
-  childKind?: "section" | "unit";
+  childKind?: "section" | "unit" | "service-subsection";
 };
 
 export function AppSidebar() {
@@ -161,6 +162,21 @@ export function AppSidebar() {
       : []),
   ];
 
+  const serviceNavItems: NavItem[] = project.serviceSections.flatMap(
+    (serviceSection) =>
+      serviceSection.subsections.map((subsection) => ({
+        title: subsection.name,
+        href: `/app/${project.id}/services/${serviceSection.id}/${subsection.id}`,
+        icon: Wrench,
+        childKind: "service-subsection" as const,
+        children: subsection.fields.map((field) => ({
+          id: `${serviceSection.id}-${subsection.id}-${field.id}`,
+          title: field.name,
+          href: `/app/${project.id}/services/${serviceSection.id}/${subsection.id}#service-field-${serviceSection.id}-${subsection.id}-${field.id}`,
+        })),
+      })),
+  );
+
   const mainNav: NavItem[] = [
     {
       title: "Dashboard",
@@ -190,6 +206,7 @@ export function AppSidebar() {
       childKind: "unit",
       children: unitNavChildren,
     },
+    ...serviceNavItems,
     {
       title: "Purchases",
       href: `/app/${project.id}/purchases`,
@@ -227,7 +244,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {mainNav.map((item) => (
                 <Collapsible
-                  key={item.title}
+                  key={`${item.title}-${item.href}`}
                   asChild
                   defaultOpen={item.title === project.name}
                 >

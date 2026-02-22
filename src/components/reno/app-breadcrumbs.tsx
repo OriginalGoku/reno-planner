@@ -28,6 +28,7 @@ const ROUTE_LABELS: Record<string, string> = {
   purchases: "Purchases",
   expenses: "Expenses",
   units: "Units",
+  services: "Mechanical & Building Services",
   notes: "Lessons learned",
   settings: "Settings",
 };
@@ -90,6 +91,19 @@ function buildBreadcrumbs(
 
     crumbs.push({
       label: item?.title ?? titleCase(segments[3]),
+    });
+    return crumbs;
+  }
+
+  if (segments[2] === "services" && segments[3] && segments[4]) {
+    const serviceSection = project.serviceSections.find(
+      (entry) => entry.id === segments[3],
+    );
+    const subsection = serviceSection?.subsections.find(
+      (entry) => entry.id === segments[4],
+    );
+    crumbs.push({
+      label: subsection?.name ?? titleCase(segments[4]),
     });
     return crumbs;
   }

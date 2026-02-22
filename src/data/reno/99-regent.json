@@ -1255,6 +1255,111 @@
   ],
   "units": [
     {
+      "id": "c87a494b-998a-40a5-a490-5eed5414af36",
+      "name": "Unit 7 - Back (1 Bd)",
+      "floor": "basement",
+      "bedrooms": 1,
+      "totalAreaSqm": 40,
+      "status": "planned",
+      "description": "This unit has access to the existing bathroom in the basement. This unit is on the right side of the stair case going down to the basement. For this unit, we need to move the walls of the existing bedroom (so we need to build 2 sides of the wall for the bedroom (10' on one side and 8' on the other) There is also a side to the outside wall that requires proper insulation (rigid foam + 2X4 + batt).\nThere was an existing window in this unit which was closed by the previous owner and we should open it again. \nWe need to plan for a kitchen in this unit for the future expansion plan.",
+      "rooms": [
+        {
+          "id": "4ebfb15d-8c90-4bcd-ab73-9d6c86ba547b",
+          "roomType": "kitchen",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        },
+        {
+          "id": "25bad322-673b-418a-9fad-915537d1afd0",
+          "roomType": "living_area",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        },
+        {
+          "id": "c371ca38-f0cd-4553-95bf-477a1751836a",
+          "roomType": "bathroom",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "id": "4420d9bc-7b09-4e6b-a47a-5446230efa98",
+      "name": "Unit 6 - Center (Bachelor)",
+      "floor": "basement",
+      "bedrooms": 0,
+      "totalAreaSqm": 30,
+      "status": "planned",
+      "description": "We need to build a kitchen and a bathroom for this unit. The existing furnace is now in this unit which needs to be removed. The bathroom is going to be build in the place of the current Furnace.\nThere is a wall of 12' 4\" separating this unit from unit 5 which needs to be properly sound insulated. The kitchen of unit 6 is placed against this wall.",
+      "rooms": [
+        {
+          "id": "1a8a6c53-71d6-4e9b-8154-1b64cd2f1dce",
+          "roomType": "kitchen",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        },
+        {
+          "id": "ac3f8c2c-410c-4a62-bb26-ca1f7af0f25c",
+          "roomType": "living_area",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        },
+        {
+          "id": "20438ecd-09a8-4aa8-966f-3495bb3ef3a2",
+          "roomType": "bathroom",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "id": "79c144f5-bde7-404b-bad9-dd432ddd48aa",
+      "name": "Unit 5 - Front (1bd)",
+      "floor": "basement",
+      "bedrooms": 1,
+      "totalAreaSqm": 35,
+      "status": "planned",
+      "description": "This unit is the one on the left side of the stairs. The bedroom will be built in the next stage of development. \nCurrently we need to build the bathroom in the existing Cold storage. The cold storage has 3 sides which are connected directly to the outside so proper insulation is required. I'd like to do 2\" continuous Rigid foam on 3 sides + 2X2 Framing + 2\" rigid foam in the cavity to save space instead of the 2X4 + bat insulation. The bathroom is connected to the main living room on the longer side (16' 7\" doesn't need too much insulation so on this side, we can fill the 2X2 with thinner batt to save cost or keep the entire place with rigid foam).\nAlso, we need to plan for a kitchen in this unit for the next phase of the development.",
+      "rooms": [
+        {
+          "id": "63c83224-c2cf-4376-991b-3345e5900baf",
+          "roomType": "kitchen",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        },
+        {
+          "id": "7d89f395-6cdb-4a18-b64a-641bec961b50",
+          "roomType": "living_area",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        },
+        {
+          "id": "d8b80a7b-d810-42a9-8c33-0b79687c8165",
+          "roomType": "bathroom",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        }
+      ]
+    },
+    {
       "id": "21d8f69c-d8d1-433b-962c-6bccf8c75ee1",
       "name": "Unit 4 - Back Bachelor",
       "floor": "main",
@@ -1391,6 +1496,96 @@
           "lengthMm": 0,
           "heightMm": 0,
           "description": ""
+        }
+      ]
+    }
+  ],
+  "serviceSections": [
+    {
+      "id": "mechanical-building-services",
+      "name": "Mechanical & Building Services",
+      "subsections": [
+        {
+          "id": "mechanical-systems",
+          "name": "Mechanical Systems",
+          "fields": [
+            {
+              "id": "ms-hot-water",
+              "name": "Hot Water",
+              "notes": "",
+              "linkedSections": [
+                "plumbing",
+                "hvac",
+                "electrical"
+              ]
+            },
+            {
+              "id": "ms-heating-cooling",
+              "name": "Heating & Cooling",
+              "notes": "",
+              "linkedSections": [
+                "hvac",
+                "electrical",
+                "ventilation"
+              ]
+            },
+            {
+              "id": "ms-electrical-service",
+              "name": "Electrical Service",
+              "notes": "",
+              "linkedSections": [
+                "electrical"
+              ]
+            },
+            {
+              "id": "ms-ventilation-exhaust",
+              "name": "Ventilation & Exhaust",
+              "notes": "",
+              "linkedSections": [
+                "ventilation",
+                "hvac"
+              ]
+            },
+            {
+              "id": "ms-internet-low-voltage",
+              "name": "Internet & Low Voltage",
+              "notes": "",
+              "linkedSections": [
+                "electrical-lowvoltage"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "property-operations",
+          "name": "Property Operations",
+          "fields": [
+            {
+              "id": "po-mail",
+              "name": "Mail",
+              "notes": "",
+              "linkedSections": [
+                "entrances",
+                "structural-carpentry"
+              ]
+            },
+            {
+              "id": "po-garbage-recycling",
+              "name": "Garbage & Recycling",
+              "notes": "",
+              "linkedSections": [
+                "garage-conversion"
+              ]
+            },
+            {
+              "id": "po-snow-removal-melting",
+              "name": "Snow Removal & Melting",
+              "notes": "",
+              "linkedSections": [
+                "electrical"
+              ]
+            }
+          ]
         }
       ]
     }

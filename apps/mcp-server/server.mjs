@@ -378,6 +378,69 @@ server.registerResource(
   },
 );
 
+server.registerResource(
+  "reno-service-section-resource",
+  new ResourceTemplate(
+    "resource://service-section/{projectId}/{serviceSectionId}",
+    {
+      list: async () => {
+        const projectIds = await renoService.listProjectIds();
+        const projects = await Promise.all(
+          projectIds.map((projectId) => renoService.getProjectById(projectId)),
+        );
+
+        return {
+          resources: projects
+            .filter((project) => project !== null)
+            .flatMap((project) =>
+              project.serviceSections.map((section) => ({
+                uri: `resource://service-section/${project.id}/${section.id}`,
+                name: section.id,
+                title: section.name,
+                mimeType: "application/json",
+                description: `${project.name} / Service Section`,
+              })),
+            ),
+        };
+      },
+    },
+  ),
+  {
+    title: "Reno Service Section",
+    description: "Read one service section by projectId and serviceSectionId",
+    mimeType: "application/json",
+  },
+  async (_uri, variables) => {
+    const projectId = variables.projectId;
+    const serviceSectionId = variables.serviceSectionId;
+    if (!projectId || !serviceSectionId) {
+      throw new Error("projectId and serviceSectionId are required.");
+    }
+
+    const project = await renoService.getProjectById(projectId);
+    if (!project) {
+      throw new Error(`Unknown projectId: ${projectId}`);
+    }
+
+    const section = project.serviceSections.find(
+      (entry) => entry.id === serviceSectionId,
+    );
+    if (!section) {
+      throw new Error(`Unknown serviceSectionId: ${serviceSectionId}`);
+    }
+
+    return {
+      contents: [
+        {
+          uri: `resource://service-section/${projectId}/${serviceSectionId}`,
+          mimeType: "application/json",
+          text: JSON.stringify(section, null, 2),
+        },
+      ],
+    };
+  },
+);
+
 server.registerTool(
   "reno_list_projects",
   {
@@ -388,6 +451,327 @@ server.registerTool(
     try {
       const projectIds = await renoService.listProjectIds();
       return asToolResult({ projectIds });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_list_service_sections",
+  {
+    description: "List service sections and their subsections/fields",
+    inputSchema: {
+      projectId: z.string().optional(),
+    },
+  },
+  async ({ projectId }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      const project = await renoService.getProjectById(resolvedProjectId);
+      if (!project) {
+        throw new Error(`Unknown projectId: ${resolvedProjectId}`);
+      }
+      return asToolResult({ serviceSections: project.serviceSections });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_add_service_section",
+  {
+    description: "Add a top-level service section/menu",
+    inputSchema: {
+      projectId: z.string().optional(),
+      name: z.string(),
+    },
+  },
+  async ({ projectId, name }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      await renoService.addServiceSection({
+        projectId: resolvedProjectId,
+        name,
+      });
+      return asToolResult({ ok: true, projectId: resolvedProjectId });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_update_service_section",
+  {
+    description: "Update a service section name",
+    inputSchema: {
+      projectId: z.string().optional(),
+      serviceSectionId: z.string(),
+      name: z.string(),
+    },
+  },
+  async ({ projectId, serviceSectionId, name }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      await renoService.updateServiceSection({
+        projectId: resolvedProjectId,
+        serviceSectionId,
+        name,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        serviceSectionId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_delete_service_section",
+  {
+    description: "Delete a service section (and all subsections/fields)",
+    inputSchema: {
+      projectId: z.string().optional(),
+      serviceSectionId: z.string(),
+      confirm: z.boolean().optional(),
+    },
+  },
+  async ({ projectId, serviceSectionId, confirm }) => {
+    try {
+      assertDestructiveAllowed("reno_delete_service_section", confirm);
+      const resolvedProjectId = await resolveProjectId(projectId);
+      await renoService.deleteServiceSection({
+        projectId: resolvedProjectId,
+        serviceSectionId,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        serviceSectionId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_add_service_subsection",
+  {
+    description: "Add a subsection under a service section",
+    inputSchema: {
+      projectId: z.string().optional(),
+      serviceSectionId: z.string(),
+      name: z.string(),
+    },
+  },
+  async ({ projectId, serviceSectionId, name }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      await renoService.addServiceSubsection({
+        projectId: resolvedProjectId,
+        serviceSectionId,
+        name,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        serviceSectionId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_update_service_subsection",
+  {
+    description: "Update a service subsection name",
+    inputSchema: {
+      projectId: z.string().optional(),
+      serviceSectionId: z.string(),
+      subsectionId: z.string(),
+      name: z.string(),
+    },
+  },
+  async ({ projectId, serviceSectionId, subsectionId, name }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      await renoService.updateServiceSubsection({
+        projectId: resolvedProjectId,
+        serviceSectionId,
+        subsectionId,
+        name,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        serviceSectionId,
+        subsectionId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_delete_service_subsection",
+  {
+    description: "Delete a service subsection (and all fields)",
+    inputSchema: {
+      projectId: z.string().optional(),
+      serviceSectionId: z.string(),
+      subsectionId: z.string(),
+      confirm: z.boolean().optional(),
+    },
+  },
+  async ({ projectId, serviceSectionId, subsectionId, confirm }) => {
+    try {
+      assertDestructiveAllowed("reno_delete_service_subsection", confirm);
+      const resolvedProjectId = await resolveProjectId(projectId);
+      await renoService.deleteServiceSubsection({
+        projectId: resolvedProjectId,
+        serviceSectionId,
+        subsectionId,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        serviceSectionId,
+        subsectionId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_add_service_field",
+  {
+    description: "Add a field under a service subsection",
+    inputSchema: {
+      projectId: z.string().optional(),
+      serviceSectionId: z.string(),
+      subsectionId: z.string(),
+      name: z.string(),
+      notes: z.string().optional(),
+      linkedSections: z.array(z.string()).optional(),
+    },
+  },
+  async ({
+    projectId,
+    serviceSectionId,
+    subsectionId,
+    name,
+    notes,
+    linkedSections,
+  }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      await renoService.addServiceField({
+        projectId: resolvedProjectId,
+        serviceSectionId,
+        subsectionId,
+        name,
+        notes: notes ?? "",
+        linkedSections: linkedSections ?? [],
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        serviceSectionId,
+        subsectionId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_update_service_field",
+  {
+    description: "Update a service field",
+    inputSchema: {
+      projectId: z.string().optional(),
+      serviceSectionId: z.string(),
+      subsectionId: z.string(),
+      fieldId: z.string(),
+      name: z.string(),
+      notes: z.string().optional(),
+      linkedSections: z.array(z.string()).optional(),
+    },
+  },
+  async ({
+    projectId,
+    serviceSectionId,
+    subsectionId,
+    fieldId,
+    name,
+    notes,
+    linkedSections,
+  }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      await renoService.updateServiceField({
+        projectId: resolvedProjectId,
+        serviceSectionId,
+        subsectionId,
+        fieldId,
+        name,
+        notes: notes ?? "",
+        linkedSections: linkedSections ?? [],
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        serviceSectionId,
+        subsectionId,
+        fieldId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_delete_service_field",
+  {
+    description: "Delete a service field",
+    inputSchema: {
+      projectId: z.string().optional(),
+      serviceSectionId: z.string(),
+      subsectionId: z.string(),
+      fieldId: z.string(),
+      confirm: z.boolean().optional(),
+    },
+  },
+  async ({ projectId, serviceSectionId, subsectionId, fieldId, confirm }) => {
+    try {
+      assertDestructiveAllowed("reno_delete_service_field", confirm);
+      const resolvedProjectId = await resolveProjectId(projectId);
+      await renoService.deleteServiceField({
+        projectId: resolvedProjectId,
+        serviceSectionId,
+        subsectionId,
+        fieldId,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        serviceSectionId,
+        subsectionId,
+        fieldId,
+      });
     } catch (error) {
       return asToolError(error);
     }

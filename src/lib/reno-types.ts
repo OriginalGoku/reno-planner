@@ -99,6 +99,25 @@ export type RenovationNote = {
   linkedSectionId?: string | null;
 };
 
+export type ServiceField = {
+  id: string;
+  name: string;
+  notes: string;
+  linkedSections: string[];
+};
+
+export type ServiceSubsection = {
+  id: string;
+  name: string;
+  fields: ServiceField[];
+};
+
+export type ServiceSection = {
+  id: string;
+  name: string;
+  subsections: ServiceSubsection[];
+};
+
 export type AttachmentScopeType = "project" | "section" | "item" | "expense";
 
 export type RenovationAttachment = {
@@ -162,6 +181,7 @@ export type RenovationProject = {
   sections: RenovationSection[];
   items: RenovationItem[];
   units: RenovationUnit[];
+  serviceSections: ServiceSection[];
   notes: RenovationNote[];
   attachments: RenovationAttachment[];
 };

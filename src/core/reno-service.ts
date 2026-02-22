@@ -12,6 +12,9 @@ import type {
   ProjectOverview,
   RenovationAttachment,
   RenovationProject,
+  ServiceField,
+  ServiceSection,
+  ServiceSubsection,
   UnitFloor,
   UnitRoomType,
   UnitStatus,
@@ -132,6 +135,49 @@ export type UpdateProjectMetaInput = {
   overview: ProjectOverview;
 };
 
+export type AddServiceSectionInput = {
+  projectId: string;
+  name: string;
+};
+
+export type UpdateServiceSectionInput = {
+  projectId: string;
+  serviceSectionId: string;
+  name: string;
+};
+
+export type AddServiceSubsectionInput = {
+  projectId: string;
+  serviceSectionId: string;
+  name: string;
+};
+
+export type UpdateServiceSubsectionInput = {
+  projectId: string;
+  serviceSectionId: string;
+  subsectionId: string;
+  name: string;
+};
+
+export type AddServiceFieldInput = {
+  projectId: string;
+  serviceSectionId: string;
+  subsectionId: string;
+  name: string;
+  notes: string;
+  linkedSections: string[];
+};
+
+export type UpdateServiceFieldInput = {
+  projectId: string;
+  serviceSectionId: string;
+  subsectionId: string;
+  fieldId: string;
+  name: string;
+  notes: string;
+  linkedSections: string[];
+};
+
 export type AddAttachmentInput = {
   projectId: string;
   scopeType: AttachmentScopeType;
@@ -147,6 +193,14 @@ export type AddAttachmentInput = {
 
 function toSectionId(title: string) {
   return title
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function toSlug(input: string) {
+  return input
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -407,6 +461,138 @@ export const renoService = {
       payload.projectId,
       payload.unitId,
       payload.roomId,
+    );
+  },
+
+  async addServiceSection(payload: AddServiceSectionInput) {
+    const project = await projectRepository.getProjectById(payload.projectId);
+    if (!project) {
+      throw new Error(`Unknown projectId: ${payload.projectId}`);
+    }
+    const base = toSlug(payload.name) || "service-section";
+    let id = base;
+    let suffix = 2;
+    while (project.serviceSections.some((entry) => entry.id === id)) {
+      id = `${base}-${suffix}`;
+      suffix += 1;
+    }
+    const section: ServiceSection = {
+      id,
+      name: payload.name.trim(),
+      subsections: [],
+    };
+    return projectRepository.addServiceSection(payload.projectId, section);
+  },
+
+  async updateServiceSection(payload: UpdateServiceSectionInput) {
+    return projectRepository.updateServiceSection(
+      payload.projectId,
+      payload.serviceSectionId,
+      { name: payload.name.trim() },
+    );
+  },
+
+  async deleteServiceSection(payload: {
+    projectId: string;
+    serviceSectionId: string;
+  }) {
+    return projectRepository.deleteServiceSection(
+      payload.projectId,
+      payload.serviceSectionId,
+    );
+  },
+
+  async addServiceSubsection(payload: AddServiceSubsectionInput) {
+    const project = await projectRepository.getProjectById(payload.projectId);
+    if (!project) {
+      throw new Error(`Unknown projectId: ${payload.projectId}`);
+    }
+    const section = project.serviceSections.find(
+      (entry) => entry.id === payload.serviceSectionId,
+    );
+    if (!section) {
+      throw new Error(`Unknown serviceSectionId: ${payload.serviceSectionId}`);
+    }
+    const base = toSlug(payload.name) || "subsection";
+    let id = base;
+    let suffix = 2;
+    while (section.subsections.some((entry) => entry.id === id)) {
+      id = `${base}-${suffix}`;
+      suffix += 1;
+    }
+    const subsection: ServiceSubsection = {
+      id,
+      name: payload.name.trim(),
+      fields: [],
+    };
+    return projectRepository.addServiceSubsection(
+      payload.projectId,
+      payload.serviceSectionId,
+      subsection,
+    );
+  },
+
+  async updateServiceSubsection(payload: UpdateServiceSubsectionInput) {
+    return projectRepository.updateServiceSubsection(
+      payload.projectId,
+      payload.serviceSectionId,
+      payload.subsectionId,
+      { name: payload.name.trim() },
+    );
+  },
+
+  async deleteServiceSubsection(payload: {
+    projectId: string;
+    serviceSectionId: string;
+    subsectionId: string;
+  }) {
+    return projectRepository.deleteServiceSubsection(
+      payload.projectId,
+      payload.serviceSectionId,
+      payload.subsectionId,
+    );
+  },
+
+  async addServiceField(payload: AddServiceFieldInput) {
+    const field: ServiceField = {
+      id: crypto.randomUUID(),
+      name: payload.name.trim(),
+      notes: payload.notes.trim(),
+      linkedSections: payload.linkedSections,
+    };
+    return projectRepository.addServiceField(
+      payload.projectId,
+      payload.serviceSectionId,
+      payload.subsectionId,
+      field,
+    );
+  },
+
+  async updateServiceField(payload: UpdateServiceFieldInput) {
+    return projectRepository.updateServiceField(
+      payload.projectId,
+      payload.serviceSectionId,
+      payload.subsectionId,
+      payload.fieldId,
+      {
+        name: payload.name.trim(),
+        notes: payload.notes.trim(),
+        linkedSections: payload.linkedSections,
+      },
+    );
+  },
+
+  async deleteServiceField(payload: {
+    projectId: string;
+    serviceSectionId: string;
+    subsectionId: string;
+    fieldId: string;
+  }) {
+    return projectRepository.deleteServiceField(
+      payload.projectId,
+      payload.serviceSectionId,
+      payload.subsectionId,
+      payload.fieldId,
     );
   },
 

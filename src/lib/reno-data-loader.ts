@@ -11,6 +11,12 @@ export type {
   RenovationNote,
   RenovationProject,
   RenovationSection,
+  ServiceField,
+  ServiceSection,
+  ServiceSubsection,
+  UnitFloor,
+  UnitRoomType,
+  UnitStatus,
 } from "@/lib/reno-types";
 export { STATUS_LABELS } from "@/lib/reno-types";
 

@@ -13,8 +13,14 @@ import {
   type AddProjectNoteInput,
   type AddUnitInput,
   type AddUnitRoomInput,
+  type AddServiceFieldInput,
+  type AddServiceSectionInput,
+  type AddServiceSubsectionInput,
   type UpdateProjectMetaInput,
   type UpdateItemFieldsInput,
+  type UpdateServiceFieldInput,
+  type UpdateServiceSectionInput,
+  type UpdateServiceSubsectionInput,
   type UpdateUnitInput,
   type UpdateUnitRoomInput,
 } from "@/core/reno-service";
@@ -26,6 +32,7 @@ function refreshProjectPaths(projectId: string) {
   revalidatePath(`/app/${projectId}/purchases`);
   revalidatePath(`/app/${projectId}/notes`);
   revalidatePath(`/app/${projectId}/units`);
+  revalidatePath(`/app/${projectId}/services`);
 }
 
 export async function updateItemFieldsAction(payload: UpdateItemFieldsInput) {
@@ -238,5 +245,70 @@ export async function deleteUnitRoomAction(payload: {
   roomId: string;
 }) {
   await renoService.deleteUnitRoom(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function addServiceSectionAction(payload: AddServiceSectionInput) {
+  await renoService.addServiceSection(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function updateServiceSectionAction(
+  payload: UpdateServiceSectionInput,
+) {
+  await renoService.updateServiceSection(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function deleteServiceSectionAction(payload: {
+  projectId: string;
+  serviceSectionId: string;
+}) {
+  await renoService.deleteServiceSection(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function addServiceSubsectionAction(
+  payload: AddServiceSubsectionInput,
+) {
+  await renoService.addServiceSubsection(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function updateServiceSubsectionAction(
+  payload: UpdateServiceSubsectionInput,
+) {
+  await renoService.updateServiceSubsection(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function deleteServiceSubsectionAction(payload: {
+  projectId: string;
+  serviceSectionId: string;
+  subsectionId: string;
+}) {
+  await renoService.deleteServiceSubsection(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function addServiceFieldAction(payload: AddServiceFieldInput) {
+  await renoService.addServiceField(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function updateServiceFieldAction(
+  payload: UpdateServiceFieldInput,
+) {
+  await renoService.updateServiceField(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function deleteServiceFieldAction(payload: {
+  projectId: string;
+  serviceSectionId: string;
+  subsectionId: string;
+  fieldId: string;
+}) {
+  await renoService.deleteServiceField(payload);
   refreshProjectPaths(payload.projectId);
 }

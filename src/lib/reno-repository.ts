@@ -8,6 +8,9 @@ import type {
   RenovationMaterial,
   RenovationNote,
   RenovationProject,
+  ServiceField,
+  ServiceSection,
+  ServiceSubsection,
 } from "./reno-types.ts";
 import { validateProjectData } from "./reno-validation.ts";
 
@@ -52,6 +55,15 @@ type AddUnitRoomInput = RenovationProject["units"][number]["rooms"][number];
 type UpdateUnitRoomInput = Pick<
   RenovationProject["units"][number]["rooms"][number],
   "roomType" | "widthMm" | "lengthMm" | "heightMm" | "description"
+>;
+
+type UpdateServiceSectionInput = Pick<ServiceSection, "name">;
+
+type UpdateServiceSubsectionInput = Pick<ServiceSubsection, "name">;
+
+type UpdateServiceFieldInput = Pick<
+  ServiceField,
+  "name" | "notes" | "linkedSections"
 >;
 
 type SectionMoveDirection = "up" | "down";
@@ -148,6 +160,54 @@ export interface ProjectRepository {
     projectId: string,
     unitId: string,
     roomId: string,
+  ): Promise<RenovationProject>;
+  addServiceSection(
+    projectId: string,
+    serviceSection: ServiceSection,
+  ): Promise<RenovationProject>;
+  updateServiceSection(
+    projectId: string,
+    serviceSectionId: string,
+    payload: UpdateServiceSectionInput,
+  ): Promise<RenovationProject>;
+  deleteServiceSection(
+    projectId: string,
+    serviceSectionId: string,
+  ): Promise<RenovationProject>;
+  addServiceSubsection(
+    projectId: string,
+    serviceSectionId: string,
+    subsection: ServiceSubsection,
+  ): Promise<RenovationProject>;
+  updateServiceSubsection(
+    projectId: string,
+    serviceSectionId: string,
+    subsectionId: string,
+    payload: UpdateServiceSubsectionInput,
+  ): Promise<RenovationProject>;
+  deleteServiceSubsection(
+    projectId: string,
+    serviceSectionId: string,
+    subsectionId: string,
+  ): Promise<RenovationProject>;
+  addServiceField(
+    projectId: string,
+    serviceSectionId: string,
+    subsectionId: string,
+    field: ServiceField,
+  ): Promise<RenovationProject>;
+  updateServiceField(
+    projectId: string,
+    serviceSectionId: string,
+    subsectionId: string,
+    fieldId: string,
+    payload: UpdateServiceFieldInput,
+  ): Promise<RenovationProject>;
+  deleteServiceField(
+    projectId: string,
+    serviceSectionId: string,
+    subsectionId: string,
+    fieldId: string,
   ): Promise<RenovationProject>;
   addSectionItem(
     projectId: string,
@@ -249,6 +309,7 @@ export class JsonProjectRepository implements ProjectRepository {
       const projectLike = parsed as {
         sections: RenovationProject["sections"];
         units?: RenovationProject["units"];
+        serviceSections?: RenovationProject["serviceSections"];
         attachments?: RenovationProject["attachments"];
       };
       projectLike.sections = normalizeSectionOrder(projectLike.sections);
@@ -273,6 +334,9 @@ export class JsonProjectRepository implements ProjectRepository {
               }))
             : [],
         }));
+      }
+      if (!Array.isArray(projectLike.serviceSections)) {
+        projectLike.serviceSections = [];
       }
       if (!Array.isArray(projectLike.attachments)) {
         projectLike.attachments = [];
@@ -598,6 +662,186 @@ export class JsonProjectRepository implements ProjectRepository {
         throw new Error(`Unknown unitId: ${unitId}`);
       }
       unit.rooms = unit.rooms.filter((room) => room.id !== roomId);
+      return project;
+    });
+  }
+
+  async addServiceSection(
+    projectId: string,
+    serviceSection: ServiceSection,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      project.serviceSections = [serviceSection, ...project.serviceSections];
+      return project;
+    });
+  }
+
+  async updateServiceSection(
+    projectId: string,
+    serviceSectionId: string,
+    payload: UpdateServiceSectionInput,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const section = project.serviceSections.find(
+        (entry) => entry.id === serviceSectionId,
+      );
+      if (!section) {
+        throw new Error(`Unknown serviceSectionId: ${serviceSectionId}`);
+      }
+      section.name = payload.name;
+      return project;
+    });
+  }
+
+  async deleteServiceSection(
+    projectId: string,
+    serviceSectionId: string,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      project.serviceSections = project.serviceSections.filter(
+        (entry) => entry.id !== serviceSectionId,
+      );
+      return project;
+    });
+  }
+
+  async addServiceSubsection(
+    projectId: string,
+    serviceSectionId: string,
+    subsection: ServiceSubsection,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const section = project.serviceSections.find(
+        (entry) => entry.id === serviceSectionId,
+      );
+      if (!section) {
+        throw new Error(`Unknown serviceSectionId: ${serviceSectionId}`);
+      }
+      section.subsections = [subsection, ...section.subsections];
+      return project;
+    });
+  }
+
+  async updateServiceSubsection(
+    projectId: string,
+    serviceSectionId: string,
+    subsectionId: string,
+    payload: UpdateServiceSubsectionInput,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const section = project.serviceSections.find(
+        (entry) => entry.id === serviceSectionId,
+      );
+      if (!section) {
+        throw new Error(`Unknown serviceSectionId: ${serviceSectionId}`);
+      }
+      const subsection = section.subsections.find(
+        (entry) => entry.id === subsectionId,
+      );
+      if (!subsection) {
+        throw new Error(`Unknown subsectionId: ${subsectionId}`);
+      }
+      subsection.name = payload.name;
+      return project;
+    });
+  }
+
+  async deleteServiceSubsection(
+    projectId: string,
+    serviceSectionId: string,
+    subsectionId: string,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const section = project.serviceSections.find(
+        (entry) => entry.id === serviceSectionId,
+      );
+      if (!section) {
+        throw new Error(`Unknown serviceSectionId: ${serviceSectionId}`);
+      }
+      section.subsections = section.subsections.filter(
+        (entry) => entry.id !== subsectionId,
+      );
+      return project;
+    });
+  }
+
+  async addServiceField(
+    projectId: string,
+    serviceSectionId: string,
+    subsectionId: string,
+    field: ServiceField,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const section = project.serviceSections.find(
+        (entry) => entry.id === serviceSectionId,
+      );
+      if (!section) {
+        throw new Error(`Unknown serviceSectionId: ${serviceSectionId}`);
+      }
+      const subsection = section.subsections.find(
+        (entry) => entry.id === subsectionId,
+      );
+      if (!subsection) {
+        throw new Error(`Unknown subsectionId: ${subsectionId}`);
+      }
+      subsection.fields = [field, ...subsection.fields];
+      return project;
+    });
+  }
+
+  async updateServiceField(
+    projectId: string,
+    serviceSectionId: string,
+    subsectionId: string,
+    fieldId: string,
+    payload: UpdateServiceFieldInput,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const section = project.serviceSections.find(
+        (entry) => entry.id === serviceSectionId,
+      );
+      if (!section) {
+        throw new Error(`Unknown serviceSectionId: ${serviceSectionId}`);
+      }
+      const subsection = section.subsections.find(
+        (entry) => entry.id === subsectionId,
+      );
+      if (!subsection) {
+        throw new Error(`Unknown subsectionId: ${subsectionId}`);
+      }
+      const field = subsection.fields.find((entry) => entry.id === fieldId);
+      if (!field) {
+        throw new Error(`Unknown fieldId: ${fieldId}`);
+      }
+      field.name = payload.name;
+      field.notes = payload.notes;
+      field.linkedSections = payload.linkedSections;
+      return project;
+    });
+  }
+
+  async deleteServiceField(
+    projectId: string,
+    serviceSectionId: string,
+    subsectionId: string,
+    fieldId: string,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const section = project.serviceSections.find(
+        (entry) => entry.id === serviceSectionId,
+      );
+      if (!section) {
+        throw new Error(`Unknown serviceSectionId: ${serviceSectionId}`);
+      }
+      const subsection = section.subsections.find(
+        (entry) => entry.id === subsectionId,
+      );
+      if (!subsection) {
+        throw new Error(`Unknown subsectionId: ${subsectionId}`);
+      }
+      subsection.fields = subsection.fields.filter(
+        (entry) => entry.id !== fieldId,
+      );
       return project;
     });
   }

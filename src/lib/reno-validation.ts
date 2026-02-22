@@ -214,6 +214,10 @@ export function validateProjectData(value: unknown): RenovationProject {
   ensure(Array.isArray(project.sections), "Project.sections must be an array.");
   ensure(Array.isArray(project.items), "Project.items must be an array.");
   ensure(Array.isArray(project.units), "Project.units must be an array.");
+  ensure(
+    Array.isArray(project.serviceSections),
+    "Project.serviceSections must be an array.",
+  );
   ensure(Array.isArray(project.notes), "Project.notes must be an array.");
   ensure(
     Array.isArray(project.attachments),
@@ -404,6 +408,61 @@ export function validateProjectData(value: unknown): RenovationProject {
         typeof room.description === "string",
         "Room.description must be a string.",
       );
+    }
+  }
+
+  for (const serviceSection of project.serviceSections) {
+    ensure(isRecord(serviceSection), "Each service section must be an object.");
+    ensure(
+      typeof serviceSection.id === "string",
+      "ServiceSection.id must be a string.",
+    );
+    ensure(
+      typeof serviceSection.name === "string",
+      "ServiceSection.name must be a string.",
+    );
+    ensure(
+      Array.isArray(serviceSection.subsections),
+      "ServiceSection.subsections must be an array.",
+    );
+
+    for (const subsection of serviceSection.subsections) {
+      ensure(
+        isRecord(subsection),
+        "Each service subsection must be an object.",
+      );
+      ensure(
+        typeof subsection.id === "string",
+        "ServiceSubsection.id must be a string.",
+      );
+      ensure(
+        typeof subsection.name === "string",
+        "ServiceSubsection.name must be a string.",
+      );
+      ensure(
+        Array.isArray(subsection.fields),
+        "ServiceSubsection.fields must be an array.",
+      );
+
+      for (const field of subsection.fields) {
+        ensure(isRecord(field), "Each service field must be an object.");
+        ensure(
+          typeof field.id === "string",
+          "ServiceField.id must be a string.",
+        );
+        ensure(
+          typeof field.name === "string",
+          "ServiceField.name must be a string.",
+        );
+        ensure(
+          typeof field.notes === "string",
+          "ServiceField.notes must be a string.",
+        );
+        ensure(
+          isStringArray(field.linkedSections),
+          "ServiceField.linkedSections must be an array of strings.",
+        );
+      }
     }
   }
 
