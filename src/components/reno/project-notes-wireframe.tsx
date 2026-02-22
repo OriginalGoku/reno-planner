@@ -15,6 +15,11 @@ type ProjectNotesWireframeProps = {
   sections: RenovationSection[];
 };
 
+type Feedback = {
+  type: "success" | "error";
+  message: string;
+} | null;
+
 export function ProjectNotesWireframe({
   projectId,
   initialNotes,
@@ -27,6 +32,7 @@ export function ProjectNotesWireframe({
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [linkedSectionId, setLinkedSectionId] = useState("");
+  const [feedback, setFeedback] = useState<Feedback>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -49,23 +55,39 @@ export function ProjectNotesWireframe({
       linkedSectionId: linkedSectionId || null,
     };
 
+    setFeedback(null);
     setNotes((current) => [newNote, ...current]);
     setTitle("");
     setContent("");
     setLinkedSectionId("");
 
     startTransition(async () => {
-      await addProjectNoteAction({
-        projectId,
-        title: newNote.title,
-        content: newNote.content,
-        linkedSectionId: newNote.linkedSectionId,
-      });
-      router.refresh();
+      try {
+        await addProjectNoteAction({
+          projectId,
+          title: newNote.title,
+          content: newNote.content,
+          linkedSectionId: newNote.linkedSectionId,
+        });
+        setFeedback({ type: "success", message: "Note added." });
+        router.refresh();
+      } catch {
+        setFeedback({
+          type: "error",
+          message: "Could not add note. Please try again.",
+        });
+        router.refresh();
+      }
     });
   }
 
   function updateNoteLink(noteId: string, sectionId: string) {
+    const sectionTitle =
+      sectionId && sectionMap.get(sectionId)
+        ? sectionMap.get(sectionId)
+        : "Whole project";
+
+    setFeedback(null);
     setNotes((current) =>
       current.map((note) =>
         note.id === noteId
@@ -79,12 +101,24 @@ export function ProjectNotesWireframe({
     }
 
     startTransition(async () => {
-      await updateProjectNoteLinkAction({
-        projectId,
-        noteId,
-        linkedSectionId: sectionId || null,
-      });
-      router.refresh();
+      try {
+        await updateProjectNoteLinkAction({
+          projectId,
+          noteId,
+          linkedSectionId: sectionId || null,
+        });
+        setFeedback({
+          type: "success",
+          message: `Note linked to ${sectionTitle}.`,
+        });
+        router.refresh();
+      } catch {
+        setFeedback({
+          type: "error",
+          message: "Could not update note link. Please try again.",
+        });
+        router.refresh();
+      }
     });
   }
 
@@ -120,6 +154,7 @@ export function ProjectNotesWireframe({
           : note,
       ),
     );
+    setFeedback(null);
     setEditingNoteId(null);
     setEditingTitle("");
     setEditingContent("");
@@ -129,13 +164,22 @@ export function ProjectNotesWireframe({
     }
 
     startTransition(async () => {
-      await updateProjectNoteContentAction({
-        projectId,
-        noteId,
-        title: titleValue,
-        content: contentValue,
-      });
-      router.refresh();
+      try {
+        await updateProjectNoteContentAction({
+          projectId,
+          noteId,
+          title: titleValue,
+          content: contentValue,
+        });
+        setFeedback({ type: "success", message: "Note updated." });
+        router.refresh();
+      } catch {
+        setFeedback({
+          type: "error",
+          message: "Could not update note. Please try again.",
+        });
+        router.refresh();
+      }
     });
   }
 
@@ -193,11 +237,20 @@ export function ProjectNotesWireframe({
         <button
           type="button"
           onClick={addNote}
-          disabled={isPending}
+          disabled={isPending || !title.trim() || !content.trim()}
           className="rounded-md bg-foreground px-3 py-2 text-sm text-background disabled:opacity-60"
         >
-          Add Note
+          {isPending ? "Saving..." : "Add Note"}
         </button>
+        {feedback ? (
+          <p
+            className={`text-xs ${
+              feedback.type === "success" ? "text-emerald-700" : "text-red-700"
+            }`}
+          >
+            {feedback.message}
+          </p>
+        ) : null}
       </section>
 
       <section className="space-y-3 rounded-lg border p-4">
@@ -223,6 +276,7 @@ export function ProjectNotesWireframe({
                   <button
                     type="button"
                     onClick={saveEditingNote}
+                    disabled={isPending}
                     className="rounded-md bg-foreground px-2 py-1 text-xs text-background"
                   >
                     Save
@@ -230,6 +284,7 @@ export function ProjectNotesWireframe({
                   <button
                     type="button"
                     onClick={cancelEditingNote}
+                    disabled={isPending}
                     className="rounded-md border px-2 py-1 text-xs hover:bg-muted"
                   >
                     Cancel
@@ -246,6 +301,7 @@ export function ProjectNotesWireframe({
                       onChange={(event) =>
                         updateNoteLink(note.id, event.target.value)
                       }
+                      disabled={isPending}
                       className="rounded-md border bg-background px-2 py-1 text-xs"
                     >
                       <option value="">Whole project</option>
@@ -258,6 +314,7 @@ export function ProjectNotesWireframe({
                     <button
                       type="button"
                       onClick={() => startEditingNote(note)}
+                      disabled={isPending}
                       className="rounded-md border px-2 py-1 text-xs hover:bg-muted"
                     >
                       Edit

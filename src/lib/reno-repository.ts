@@ -22,6 +22,8 @@ type ProjectsIndex = {
 };
 
 type UpdateItemFieldsInput = {
+  title: string;
+  estimate: number;
   status: ItemStatus;
   estimatedCompletionDate?: string;
   actualCompletionDate?: string;
@@ -49,6 +51,16 @@ export interface ProjectRepository {
     itemId: string,
     expense: RenovationExpense,
   ): Promise<RenovationProject>;
+  updateItemExpense(
+    projectId: string,
+    itemId: string,
+    expense: RenovationExpense,
+  ): Promise<RenovationProject>;
+  removeItemExpense(
+    projectId: string,
+    itemId: string,
+    expenseId: string,
+  ): Promise<RenovationProject>;
   addItemMaterial(
     projectId: string,
     itemId: string,
@@ -67,6 +79,28 @@ export interface ProjectRepository {
   addProjectNote(
     projectId: string,
     note: RenovationNote,
+  ): Promise<RenovationProject>;
+  addSectionItem(
+    projectId: string,
+    sectionId: string,
+    item: RenovationProject["items"][number],
+  ): Promise<RenovationProject>;
+  deleteItem(projectId: string, itemId: string): Promise<RenovationProject>;
+  addSection(
+    projectId: string,
+    section: RenovationProject["sections"][number],
+  ): Promise<RenovationProject>;
+  updateSection(
+    projectId: string,
+    sectionId: string,
+    payload: Pick<
+      RenovationProject["sections"][number],
+      "title" | "description"
+    >,
+  ): Promise<RenovationProject>;
+  deleteSection(
+    projectId: string,
+    sectionId: string,
   ): Promise<RenovationProject>;
   updateProjectNoteLink(
     projectId: string,
@@ -172,6 +206,8 @@ export class JsonProjectRepository implements ProjectRepository {
         throw new Error(`Unknown itemId: ${itemId}`);
       }
 
+      item.title = payload.title;
+      item.estimate = payload.estimate;
       item.status = payload.status;
       item.estimatedCompletionDate =
         payload.estimatedCompletionDate || undefined;
@@ -212,6 +248,47 @@ export class JsonProjectRepository implements ProjectRepository {
       }
 
       item.expenses = [expense, ...item.expenses];
+      return project;
+    });
+  }
+
+  async updateItemExpense(
+    projectId: string,
+    itemId: string,
+    expense: RenovationExpense,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const item = project.items.find((entry) => entry.id === itemId);
+      if (!item) {
+        throw new Error(`Unknown itemId: ${itemId}`);
+      }
+
+      const expenseIndex = item.expenses.findIndex(
+        (entry) => entry.id === expense.id,
+      );
+      if (expenseIndex < 0) {
+        throw new Error(`Unknown expenseId: ${expense.id}`);
+      }
+
+      item.expenses[expenseIndex] = expense;
+      return project;
+    });
+  }
+
+  async removeItemExpense(
+    projectId: string,
+    itemId: string,
+    expenseId: string,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const item = project.items.find((entry) => entry.id === itemId);
+      if (!item) {
+        throw new Error(`Unknown itemId: ${itemId}`);
+      }
+
+      item.expenses = item.expenses.filter(
+        (expense) => expense.id !== expenseId,
+      );
       return project;
     });
   }
@@ -281,6 +358,84 @@ export class JsonProjectRepository implements ProjectRepository {
   ): Promise<RenovationProject> {
     return this.mutateProject(projectId, (project) => {
       project.notes = [note, ...project.notes];
+      return project;
+    });
+  }
+
+  async addSectionItem(
+    projectId: string,
+    sectionId: string,
+    item: RenovationProject["items"][number],
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const sectionExists = project.sections.some(
+        (section) => section.id === sectionId,
+      );
+      if (!sectionExists) {
+        throw new Error(`Unknown sectionId: ${sectionId}`);
+      }
+
+      project.items = [{ ...item, sectionId }, ...project.items];
+      return project;
+    });
+  }
+
+  async deleteItem(
+    projectId: string,
+    itemId: string,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      project.items = project.items.filter((item) => item.id !== itemId);
+      return project;
+    });
+  }
+
+  async addSection(
+    projectId: string,
+    section: RenovationProject["sections"][number],
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      project.sections = [section, ...project.sections];
+      return project;
+    });
+  }
+
+  async updateSection(
+    projectId: string,
+    sectionId: string,
+    payload: Pick<
+      RenovationProject["sections"][number],
+      "title" | "description"
+    >,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const section = project.sections.find((entry) => entry.id === sectionId);
+      if (!section) {
+        throw new Error(`Unknown sectionId: ${sectionId}`);
+      }
+
+      section.title = payload.title;
+      section.description = payload.description;
+      return project;
+    });
+  }
+
+  async deleteSection(
+    projectId: string,
+    sectionId: string,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      project.sections = project.sections.filter(
+        (section) => section.id !== sectionId,
+      );
+      project.items = project.items.filter(
+        (item) => item.sectionId !== sectionId,
+      );
+      project.notes = project.notes.map((note) =>
+        note.linkedSectionId === sectionId
+          ? { ...note, linkedSectionId: null }
+          : note,
+      );
       return project;
     });
   }

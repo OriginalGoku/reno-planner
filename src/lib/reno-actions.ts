@@ -7,6 +7,8 @@ import type { ExpenseType, ItemStatus } from "@/lib/reno-data-loader";
 type UpdateItemFieldsInput = {
   projectId: string;
   itemId: string;
+  title: string;
+  estimate: number;
   status: ItemStatus;
   estimatedCompletionDate?: string;
   actualCompletionDate?: string;
@@ -51,6 +53,8 @@ function refreshProjectPaths(projectId: string) {
 
 export async function updateItemFieldsAction(payload: UpdateItemFieldsInput) {
   await projectRepository.updateItemFields(payload.projectId, payload.itemId, {
+    title: payload.title,
+    estimate: payload.estimate,
     status: payload.status,
     estimatedCompletionDate: payload.estimatedCompletionDate,
     actualCompletionDate: payload.actualCompletionDate,
@@ -85,6 +89,42 @@ export async function addItemExpenseAction(payload: AddExpenseInput) {
     vendor: payload.vendor,
     note: payload.note,
   });
+
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function updateItemExpenseAction(payload: {
+  projectId: string;
+  itemId: string;
+  expenseId: string;
+  date: string;
+  amount: number;
+  type: ExpenseType;
+  vendor?: string;
+  note?: string;
+}) {
+  await projectRepository.updateItemExpense(payload.projectId, payload.itemId, {
+    id: payload.expenseId,
+    date: payload.date,
+    amount: payload.amount,
+    type: payload.type,
+    vendor: payload.vendor,
+    note: payload.note,
+  });
+
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function removeItemExpenseAction(payload: {
+  projectId: string;
+  itemId: string;
+  expenseId: string;
+}) {
+  await projectRepository.removeItemExpense(
+    payload.projectId,
+    payload.itemId,
+    payload.expenseId,
+  );
 
   refreshProjectPaths(payload.projectId);
 }
@@ -179,5 +219,90 @@ export async function updateProjectNoteContentAction(payload: {
     },
   );
 
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function addSectionItemAction(payload: {
+  projectId: string;
+  sectionId: string;
+  title: string;
+  estimate?: number;
+}) {
+  await projectRepository.addSectionItem(payload.projectId, payload.sectionId, {
+    id: crypto.randomUUID(),
+    sectionId: payload.sectionId,
+    title: payload.title,
+    status: "todo",
+    estimate: payload.estimate ?? 0,
+    description: "",
+    note: "",
+    materials: [],
+    expenses: [],
+    performers: [],
+  });
+
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function deleteItemAction(payload: {
+  projectId: string;
+  itemId: string;
+}) {
+  await projectRepository.deleteItem(payload.projectId, payload.itemId);
+  refreshProjectPaths(payload.projectId);
+}
+
+function toSectionId(title: string) {
+  return title
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export async function addSectionAction(payload: {
+  projectId: string;
+  title: string;
+  description: string;
+}) {
+  const project = await projectRepository.getProjectById(payload.projectId);
+  if (!project) {
+    throw new Error(`Unknown projectId: ${payload.projectId}`);
+  }
+
+  const baseId = toSectionId(payload.title) || "section";
+  let normalizedId = baseId;
+  let suffix = 2;
+  while (project.sections.some((section) => section.id === normalizedId)) {
+    normalizedId = `${baseId}-${suffix}`;
+    suffix += 1;
+  }
+
+  await projectRepository.addSection(payload.projectId, {
+    id: normalizedId,
+    title: payload.title.trim(),
+    description: payload.description.trim(),
+  });
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function updateSectionAction(payload: {
+  projectId: string;
+  sectionId: string;
+  title: string;
+  description: string;
+}) {
+  await projectRepository.updateSection(payload.projectId, payload.sectionId, {
+    title: payload.title.trim(),
+    description: payload.description.trim(),
+  });
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function deleteSectionAction(payload: {
+  projectId: string;
+  sectionId: string;
+}) {
+  await projectRepository.deleteSection(payload.projectId, payload.sectionId);
   refreshProjectPaths(payload.projectId);
 }

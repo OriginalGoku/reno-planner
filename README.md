@@ -15,18 +15,25 @@ Included:
 - Dynamic project routing: `/app/[projectId]`
 - Sidebar navigation generated from project JSON
 - Section and item drill-down workflows
+- Section management on project page:
+  - add
+  - edit
+  - delete (with confirmation)
 - Item-level editing for:
+  - title
   - status
+  - estimate
   - estimated/actual completion dates
   - assigned contractors/vendors
   - overview + notes
   - materials (add/edit/remove)
-  - expenses (add)
+  - expenses (add/edit/remove)
 - Project lessons learned:
   - add notes
   - edit title/content
   - link notes to a section or whole project
 - All Items / Purchases / Expenses grouped views
+- Inline success/error feedback in edit panels (no toast dependency)
 - JSON validation and import pipeline
 
 Not included yet:
@@ -225,10 +232,12 @@ Behavior:
 
 ## 7. Editing and Persistence Behavior
 Current persistence status:
+- Sections add/edit/delete: persisted
+- Section items add/delete + quick status updates: persisted
 - Item overview/schedule/notes: persisted
-- Item status quick-updates in section/all-items pages: persisted
+- Item title/estimate/status/schedule/performers/notes: persisted
 - Materials add/edit/remove: persisted
-- Expenses add: persisted
+- Expenses add/edit/remove: persisted
 - Lessons learned add/edit/link: persisted
 
 All writes are currently implemented through server actions in:
@@ -278,7 +287,7 @@ Target stack for production:
 ## 11. Suggested Next Steps
 - Add auth baseline (password hash + signed httpOnly cookie + login throttling)
 - Add test coverage for repository and server actions
-- Add optimistic UI + toast feedback for all mutations
+- Add integration tests for key mutation flows (sections/items/materials/expenses/notes)
 - Add export snapshot command (JSON backup by project)
 - Introduce Prisma repository and environment switch
 

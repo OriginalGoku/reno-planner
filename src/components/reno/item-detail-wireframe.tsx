@@ -14,6 +14,8 @@ import {
   addItemExpenseAction,
   addItemMaterialAction,
   removeItemMaterialAction,
+  removeItemExpenseAction,
+  updateItemExpenseAction,
   updateItemMaterialAction,
   updateItemFieldsAction,
 } from "@/lib/reno-actions";
@@ -25,6 +27,11 @@ type ItemDetailWireframeProps = {
   item: RenovationItem;
   sectionTitle: string;
 };
+
+type Feedback = {
+  type: "success" | "error";
+  message: string;
+} | null;
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: "overview", label: "Overview & Schedule" },
@@ -53,6 +60,8 @@ export function ItemDetailWireframe({
   sectionTitle,
 }: ItemDetailWireframeProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
+  const [itemTitle, setItemTitle] = useState(item.title);
+  const [itemEstimate, setItemEstimate] = useState(item.estimate);
   const [itemStatus, setItemStatus] = useState<ItemStatus>(item.status);
   const [estimatedCompletionDate, setEstimatedCompletionDate] = useState(
     item.estimatedCompletionDate ?? "",
@@ -83,6 +92,12 @@ export function ItemDetailWireframe({
   const [expenseType, setExpenseType] = useState<ExpenseType>("material");
   const [expenseVendor, setExpenseVendor] = useState("");
   const [expenseNote, setExpenseNote] = useState("");
+  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
+  const [editingExpenseDraft, setEditingExpenseDraft] =
+    useState<RenovationExpense | null>(null);
+  const [overviewFeedback, setOverviewFeedback] = useState<Feedback>(null);
+  const [materialsFeedback, setMaterialsFeedback] = useState<Feedback>(null);
+  const [expensesFeedback, setExpensesFeedback] = useState<Feedback>(null);
 
   const [isSavingOverview, startSavingOverview] = useTransition();
   const [isSavingMaterial, startSavingMaterial] = useTransition();
@@ -93,21 +108,35 @@ export function ItemDetailWireframe({
     () => getTotalActualForItem({ ...item, expenses }),
     [expenses, item],
   );
-  const delta = item.estimate - actualTotal;
+  const delta = itemEstimate - actualTotal;
 
   function saveOverviewAndNotes() {
+    setOverviewFeedback(null);
     startSavingOverview(async () => {
-      await updateItemFieldsAction({
-        projectId,
-        itemId: item.id,
-        status: itemStatus,
-        estimatedCompletionDate: estimatedCompletionDate || undefined,
-        actualCompletionDate: actualCompletionDate || undefined,
-        performers,
-        description,
-        note: notes,
-      });
-      router.refresh();
+      try {
+        await updateItemFieldsAction({
+          projectId,
+          itemId: item.id,
+          title: itemTitle.trim() || item.title,
+          estimate: itemEstimate,
+          status: itemStatus,
+          estimatedCompletionDate: estimatedCompletionDate || undefined,
+          actualCompletionDate: actualCompletionDate || undefined,
+          performers,
+          description,
+          note: notes,
+        });
+        setOverviewFeedback({
+          type: "success",
+          message: "Overview and notes saved.",
+        });
+        router.refresh();
+      } catch {
+        setOverviewFeedback({
+          type: "error",
+          message: "Could not save changes. Please try again.",
+        });
+      }
     });
   }
 
@@ -127,6 +156,7 @@ export function ItemDetailWireframe({
     };
 
     setExpenses((current) => [newExpense, ...current]);
+    setExpensesFeedback(null);
     setExpenseDate("");
     setExpenseAmount("");
     setExpenseType("material");
@@ -134,16 +164,120 @@ export function ItemDetailWireframe({
     setExpenseNote("");
 
     startSavingExpense(async () => {
-      await addItemExpenseAction({
-        projectId,
-        itemId: item.id,
-        date: newExpense.date,
-        amount: newExpense.amount,
-        type: newExpense.type,
-        vendor: newExpense.vendor,
-        note: newExpense.note,
-      });
-      router.refresh();
+      try {
+        await addItemExpenseAction({
+          projectId,
+          itemId: item.id,
+          date: newExpense.date,
+          amount: newExpense.amount,
+          type: newExpense.type,
+          vendor: newExpense.vendor,
+          note: newExpense.note,
+        });
+        setExpensesFeedback({ type: "success", message: "Expense added." });
+        router.refresh();
+      } catch {
+        setExpensesFeedback({
+          type: "error",
+          message: "Could not add expense. Please try again.",
+        });
+        router.refresh();
+      }
+    });
+  }
+
+  function startEditingExpense(expense: RenovationExpense) {
+    setEditingExpenseId(expense.id);
+    setEditingExpenseDraft({ ...expense });
+  }
+
+  function cancelEditingExpense() {
+    setEditingExpenseId(null);
+    setEditingExpenseDraft(null);
+  }
+
+  function saveEditingExpense() {
+    if (!editingExpenseId || !editingExpenseDraft) {
+      return;
+    }
+    if (!editingExpenseDraft.date || editingExpenseDraft.amount <= 0) {
+      return;
+    }
+
+    const expenseId = editingExpenseId;
+    const expenseDraft = editingExpenseDraft;
+    setExpenses((current) =>
+      current.map((expense) =>
+        expense.id === expenseId ? expenseDraft : expense,
+      ),
+    );
+    setExpensesFeedback(null);
+    setEditingExpenseId(null);
+    setEditingExpenseDraft(null);
+
+    if (expenseId.startsWith("local-")) {
+      return;
+    }
+
+    startSavingExpense(async () => {
+      try {
+        await updateItemExpenseAction({
+          projectId,
+          itemId: item.id,
+          expenseId,
+          date: expenseDraft.date,
+          amount: expenseDraft.amount,
+          type: expenseDraft.type,
+          vendor: expenseDraft.vendor,
+          note: expenseDraft.note,
+        });
+        setExpensesFeedback({ type: "success", message: "Expense updated." });
+        router.refresh();
+      } catch {
+        setExpensesFeedback({
+          type: "error",
+          message: "Could not update expense. Please try again.",
+        });
+        router.refresh();
+      }
+    });
+  }
+
+  function removeExpense(expenseId: string) {
+    const target = expenses.find((expense) => expense.id === expenseId);
+    const amountLabel = target
+      ? `$${target.amount.toLocaleString()}`
+      : "expense";
+    const confirmed = window.confirm(`Remove ${amountLabel}?`);
+    if (!confirmed) {
+      return;
+    }
+
+    setExpenses((current) =>
+      current.filter((expense) => expense.id !== expenseId),
+    );
+    setExpensesFeedback(null);
+
+    if (expenseId.startsWith("local-")) {
+      return;
+    }
+
+    startSavingExpense(async () => {
+      try {
+        await removeItemExpenseAction({
+          projectId,
+          itemId: item.id,
+          expenseId,
+        });
+        setExpensesFeedback({ type: "success", message: "Expense removed." });
+        router.refresh();
+      } catch {
+        setExpensesFeedback({
+          type: "error",
+          message: "Could not remove expense. Please try again.",
+        });
+        router.refresh();
+      }
     });
   }
 
@@ -190,40 +324,69 @@ export function ItemDetailWireframe({
     };
 
     setMaterials((current) => [newMaterial, ...current]);
+    setMaterialsFeedback(null);
     setMaterialName("");
     setMaterialQuantity("");
     setMaterialEstimatedPrice("");
     setMaterialNote("");
 
     startSavingMaterial(async () => {
-      await addItemMaterialAction({
-        projectId,
-        itemId: item.id,
-        name: newMaterial.name,
-        quantity: newMaterial.quantity,
-        estimatedPrice: newMaterial.estimatedPrice,
-        note: newMaterial.note,
-      });
-      router.refresh();
+      try {
+        await addItemMaterialAction({
+          projectId,
+          itemId: item.id,
+          name: newMaterial.name,
+          quantity: newMaterial.quantity,
+          estimatedPrice: newMaterial.estimatedPrice,
+          note: newMaterial.note,
+        });
+        setMaterialsFeedback({ type: "success", message: "Material added." });
+        router.refresh();
+      } catch {
+        setMaterialsFeedback({
+          type: "error",
+          message: "Could not add material. Please try again.",
+        });
+        router.refresh();
+      }
     });
   }
 
   function removeMaterial(materialId: string) {
+    const target = materials.find((material) => material.id === materialId);
+    const materialLabel = target?.name ?? "this material";
+    const confirmed = window.confirm(
+      `Remove "${materialLabel}" from materials?`,
+    );
+    if (!confirmed) {
+      return;
+    }
+
     setMaterials((current) =>
       current.filter((material) => material.id !== materialId),
     );
+    setMaterialsFeedback(null);
 
     if (materialId.startsWith("local-material-")) {
       return;
     }
 
     startSavingMaterial(async () => {
-      await removeItemMaterialAction({
-        projectId,
-        itemId: item.id,
-        materialId,
-      });
-      router.refresh();
+      try {
+        await removeItemMaterialAction({
+          projectId,
+          itemId: item.id,
+          materialId,
+        });
+        setMaterialsFeedback({ type: "success", message: "Material removed." });
+        router.refresh();
+      } catch {
+        setMaterialsFeedback({
+          type: "error",
+          message: "Could not remove material. Please try again.",
+        });
+        router.refresh();
+      }
     });
   }
 
@@ -257,6 +420,7 @@ export function ItemDetailWireframe({
         material.id === materialId ? materialDraft : material,
       ),
     );
+    setMaterialsFeedback(null);
     setEditingMaterialId(null);
     setEditingMaterialDraft(null);
 
@@ -265,16 +429,28 @@ export function ItemDetailWireframe({
     }
 
     startSavingMaterial(async () => {
-      await updateItemMaterialAction({
-        projectId,
-        itemId: item.id,
-        materialId,
-        name: materialDraft.name.trim(),
-        quantity: materialDraft.quantity,
-        estimatedPrice: materialDraft.estimatedPrice,
-        note: materialDraft.note,
-      });
-      router.refresh();
+      try {
+        await updateItemMaterialAction({
+          projectId,
+          itemId: item.id,
+          materialId,
+          name: materialDraft.name.trim(),
+          quantity: materialDraft.quantity,
+          estimatedPrice: materialDraft.estimatedPrice,
+          note: materialDraft.note,
+        });
+        setMaterialsFeedback({
+          type: "success",
+          message: "Material updated.",
+        });
+        router.refresh();
+      } catch {
+        setMaterialsFeedback({
+          type: "error",
+          message: "Could not update material. Please try again.",
+        });
+        router.refresh();
+      }
     });
   }
 
@@ -284,10 +460,10 @@ export function ItemDetailWireframe({
         <p className="text-xs uppercase tracking-wide text-muted-foreground">
           Item
         </p>
-        <h1 className="mt-1 text-2xl font-semibold">{item.title}</h1>
+        <h1 className="mt-1 text-2xl font-semibold">{itemTitle}</h1>
         <p className="text-sm text-muted-foreground">
-          Section: {sectionTitle} • Estimate: ${item.estimate.toLocaleString()}{" "}
-          • Actual: ${actualTotal.toLocaleString()}
+          Section: {sectionTitle} • Estimate: ${itemEstimate.toLocaleString()} •
+          Actual: ${actualTotal.toLocaleString()}
         </p>
         <p className="text-sm text-muted-foreground">
           Budget delta: {delta >= 0 ? "+" : "-"}$
@@ -316,6 +492,33 @@ export function ItemDetailWireframe({
         {activeTab === "overview" ? (
           <div className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-3">
+              <div className="space-y-1 sm:col-span-3">
+                <label className="text-xs text-muted-foreground">
+                  Item Title
+                </label>
+                <input
+                  value={itemTitle}
+                  onChange={(event) => setItemTitle(event.target.value)}
+                  className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                />
+              </div>
+              <div className="space-y-1 sm:col-span-3">
+                <label className="text-xs text-muted-foreground">
+                  Estimate
+                </label>
+                <input
+                  value={itemEstimate}
+                  onChange={(event) =>
+                    setItemEstimate(
+                      Math.max(0, Number(event.target.value) || 0),
+                    )
+                  }
+                  className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground">Status</label>
                 <select
@@ -397,6 +600,7 @@ export function ItemDetailWireframe({
                 <button
                   type="button"
                   onClick={addPerformer}
+                  disabled={isSavingOverview || !newPerformer.trim()}
                   className="rounded-md bg-foreground px-3 py-1.5 text-sm text-background"
                 >
                   Add
@@ -418,8 +622,19 @@ export function ItemDetailWireframe({
               onClick={saveOverviewAndNotes}
               className="rounded-md bg-foreground px-3 py-2 text-sm text-background disabled:opacity-60"
             >
-              Save Overview
+              {isSavingOverview ? "Saving..." : "Save Overview"}
             </button>
+            {overviewFeedback ? (
+              <p
+                className={`text-xs ${
+                  overviewFeedback.type === "success"
+                    ? "text-emerald-700"
+                    : "text-red-700"
+                }`}
+              >
+                {overviewFeedback.message}
+              </p>
+            ) : null}
           </div>
         ) : null}
 
@@ -439,8 +654,19 @@ export function ItemDetailWireframe({
               onClick={saveOverviewAndNotes}
               className="rounded-md bg-foreground px-3 py-2 text-sm text-background disabled:opacity-60"
             >
-              Save Notes
+              {isSavingOverview ? "Saving..." : "Save Notes"}
             </button>
+            {overviewFeedback ? (
+              <p
+                className={`text-xs ${
+                  overviewFeedback.type === "success"
+                    ? "text-emerald-700"
+                    : "text-red-700"
+                }`}
+              >
+                {overviewFeedback.message}
+              </p>
+            ) : null}
           </div>
         ) : null}
 
@@ -503,11 +729,22 @@ export function ItemDetailWireframe({
             <button
               type="button"
               onClick={addMaterial}
-              disabled={isSavingMaterial}
+              disabled={isSavingMaterial || !materialName.trim()}
               className="rounded-md bg-foreground px-3 py-2 text-sm text-background disabled:opacity-60"
             >
-              Add Material
+              {isSavingMaterial ? "Saving..." : "Add Material"}
             </button>
+            {materialsFeedback ? (
+              <p
+                className={`text-xs ${
+                  materialsFeedback.type === "success"
+                    ? "text-emerald-700"
+                    : "text-red-700"
+                }`}
+              >
+                {materialsFeedback.message}
+              </p>
+            ) : null}
 
             <div className="space-y-2">
               <h2 className="text-sm font-semibold">Materials List</h2>
@@ -592,6 +829,7 @@ export function ItemDetailWireframe({
                             <button
                               type="button"
                               onClick={saveMaterialEdits}
+                              disabled={isSavingMaterial}
                               className="rounded-md bg-foreground px-2 py-1 text-xs text-background"
                             >
                               Save
@@ -599,6 +837,7 @@ export function ItemDetailWireframe({
                             <button
                               type="button"
                               onClick={cancelEditingMaterial}
+                              disabled={isSavingMaterial}
                               className="rounded-md border px-2 py-1 text-xs hover:bg-muted"
                             >
                               Cancel
@@ -627,6 +866,7 @@ export function ItemDetailWireframe({
                             <button
                               type="button"
                               onClick={() => startEditingMaterial(material)}
+                              disabled={isSavingMaterial}
                               className="rounded-md border px-2 py-1 text-xs hover:bg-muted"
                             >
                               Edit
@@ -634,6 +874,7 @@ export function ItemDetailWireframe({
                             <button
                               type="button"
                               onClick={() => removeMaterial(material.id)}
+                              disabled={isSavingMaterial}
                               className="rounded-md border px-2 py-1 text-xs hover:bg-muted"
                             >
                               Remove
@@ -717,11 +958,22 @@ export function ItemDetailWireframe({
             <button
               type="button"
               onClick={addExpense}
-              disabled={isSavingExpense}
+              disabled={isSavingExpense || !expenseDate || !expenseAmount}
               className="rounded-md bg-foreground px-3 py-2 text-sm text-background disabled:opacity-60"
             >
-              Add Expense
+              {isSavingExpense ? "Saving..." : "Add Expense"}
             </button>
+            {expensesFeedback ? (
+              <p
+                className={`text-xs ${
+                  expensesFeedback.type === "success"
+                    ? "text-emerald-700"
+                    : "text-red-700"
+                }`}
+              >
+                {expensesFeedback.message}
+              </p>
+            ) : null}
 
             <div className="space-y-2">
               <h2 className="text-sm font-semibold">Expense Entries</h2>
@@ -732,14 +984,144 @@ export function ItemDetailWireframe({
                       key={expense.id}
                       className="rounded-md border p-3 text-sm text-muted-foreground"
                     >
-                      <p className="font-medium text-foreground">
-                        ${expense.amount.toLocaleString()} • {expense.type}
-                      </p>
-                      <p>
-                        {expense.date}
-                        {expense.vendor ? ` • ${expense.vendor}` : ""}
-                      </p>
-                      {expense.note ? <p>{expense.note}</p> : null}
+                      {editingExpenseId === expense.id &&
+                      editingExpenseDraft ? (
+                        <div className="space-y-2">
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            <input
+                              type="date"
+                              value={editingExpenseDraft.date}
+                              onChange={(event) =>
+                                setEditingExpenseDraft((current) =>
+                                  current
+                                    ? { ...current, date: event.target.value }
+                                    : current,
+                                )
+                              }
+                              className="rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
+                            />
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={editingExpenseDraft.amount}
+                              onChange={(event) =>
+                                setEditingExpenseDraft((current) =>
+                                  current
+                                    ? {
+                                        ...current,
+                                        amount: Number(event.target.value) || 0,
+                                      }
+                                    : current,
+                                )
+                              }
+                              className="rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
+                            />
+                            <select
+                              value={editingExpenseDraft.type}
+                              onChange={(event) =>
+                                setEditingExpenseDraft((current) =>
+                                  current
+                                    ? {
+                                        ...current,
+                                        type: event.target.value as ExpenseType,
+                                      }
+                                    : current,
+                                )
+                              }
+                              className="rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
+                            >
+                              {expenseTypes.map((type) => (
+                                <option key={type} value={type}>
+                                  {type}
+                                </option>
+                              ))}
+                            </select>
+                            <input
+                              value={editingExpenseDraft.vendor ?? ""}
+                              onChange={(event) =>
+                                setEditingExpenseDraft((current) =>
+                                  current
+                                    ? {
+                                        ...current,
+                                        vendor: event.target.value || undefined,
+                                      }
+                                    : current,
+                                )
+                              }
+                              className="rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
+                              placeholder="Vendor"
+                            />
+                            <input
+                              value={editingExpenseDraft.note ?? ""}
+                              onChange={(event) =>
+                                setEditingExpenseDraft((current) =>
+                                  current
+                                    ? {
+                                        ...current,
+                                        note: event.target.value || undefined,
+                                      }
+                                    : current,
+                                )
+                              }
+                              className="rounded-md border bg-background px-2 py-1.5 text-sm text-foreground sm:col-span-2"
+                              placeholder="Note"
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={saveEditingExpense}
+                              disabled={isSavingExpense}
+                              className="rounded-md bg-foreground px-2 py-1 text-xs text-background"
+                            >
+                              Save
+                            </button>
+                            <button
+                              type="button"
+                              onClick={cancelEditingExpense}
+                              disabled={isSavingExpense}
+                              className="rounded-md border px-2 py-1 text-xs hover:bg-muted"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <div>
+                              <p className="font-medium text-foreground">
+                                ${expense.amount.toLocaleString()} •{" "}
+                                {expense.type}
+                              </p>
+                              <p>
+                                {expense.date}
+                                {expense.vendor ? ` • ${expense.vendor}` : ""}
+                              </p>
+                              {expense.note ? <p>{expense.note}</p> : null}
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => startEditingExpense(expense)}
+                                disabled={isSavingExpense}
+                                className="rounded-md border px-2 py-1 text-xs hover:bg-muted"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeExpense(expense.id)}
+                                disabled={isSavingExpense}
+                                className="rounded-md border px-2 py-1 text-xs hover:bg-muted"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

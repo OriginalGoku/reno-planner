@@ -84,7 +84,7 @@
       "id": "perm-1",
       "sectionId": "permits-design",
       "title": "Prepare permit drawings + scope package for multiplex conversion",
-      "status": "todo",
+      "status": "blocked",
       "description": "Assemble the permit set, including unit layouts, life-safety approach, mechanical/plumbing/electrical notes, and required details for a Toronto multiplex conversion.",
       "note": "Include fire separations/alarms/egress strategy early so downstream assemblies are not reworked.",
       "materials": [],

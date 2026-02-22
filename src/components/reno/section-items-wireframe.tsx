@@ -10,7 +10,11 @@ import {
   type RenovationItem,
   type RenovationSection,
 } from "@/lib/reno-data-loader";
-import { updateItemStatusAction } from "@/lib/reno-actions";
+import {
+  addSectionItemAction,
+  deleteItemAction,
+  updateItemStatusAction,
+} from "@/lib/reno-actions";
 
 type SectionItemsWireframeProps = {
   projectId: string;
@@ -18,12 +22,20 @@ type SectionItemsWireframeProps = {
   items: RenovationItem[];
 };
 
+type Feedback = {
+  type: "success" | "error";
+  message: string;
+} | null;
+
 export function SectionItemsWireframe({
   projectId,
   section,
   items,
 }: SectionItemsWireframeProps) {
   const [localItems, setLocalItems] = useState(items);
+  const [newItemTitle, setNewItemTitle] = useState("");
+  const [newItemEstimate, setNewItemEstimate] = useState("");
+  const [feedback, setFeedback] = useState<Feedback>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -32,7 +44,8 @@ export function SectionItemsWireframe({
     [localItems],
   );
   const actualTotal = useMemo(
-    () => localItems.reduce((sum, item) => sum + getTotalActualForItem(item), 0),
+    () =>
+      localItems.reduce((sum, item) => sum + getTotalActualForItem(item), 0),
     [localItems],
   );
   const variance = estimateTotal - actualTotal;
@@ -41,10 +54,108 @@ export function SectionItemsWireframe({
     setLocalItems((current) =>
       current.map((item) => (item.id === itemId ? { ...item, status } : item)),
     );
+    setFeedback(null);
+
+    if (itemId.startsWith("local-item-")) {
+      return;
+    }
 
     startTransition(async () => {
-      await updateItemStatusAction({ projectId, itemId, status });
-      router.refresh();
+      try {
+        await updateItemStatusAction({ projectId, itemId, status });
+        setFeedback({ type: "success", message: "Item status updated." });
+        router.refresh();
+      } catch {
+        setFeedback({
+          type: "error",
+          message: "Could not update item status. Please try again.",
+        });
+        router.refresh();
+      }
+    });
+  }
+
+  function addItem() {
+    const title = newItemTitle.trim();
+    if (!title) {
+      return;
+    }
+    const estimateValue = Number(newItemEstimate);
+    const estimate =
+      Number.isFinite(estimateValue) && estimateValue >= 0 ? estimateValue : 0;
+
+    setLocalItems((current) => [
+      {
+        id: `local-item-${Date.now()}`,
+        sectionId: section.id,
+        title,
+        status: "todo",
+        estimate,
+        description: "",
+        note: "",
+        materials: [],
+        expenses: [],
+        performers: [],
+      },
+      ...current,
+    ]);
+    setFeedback(null);
+    setNewItemTitle("");
+    setNewItemEstimate("");
+
+    startTransition(async () => {
+      try {
+        await addSectionItemAction({
+          projectId,
+          sectionId: section.id,
+          title,
+          estimate,
+        });
+        setFeedback({
+          type: "success",
+          message: `Item "${title}" added.`,
+        });
+        router.refresh();
+      } catch {
+        setFeedback({
+          type: "error",
+          message: "Could not add item. Please try again.",
+        });
+        router.refresh();
+      }
+    });
+  }
+
+  function deleteItem(itemId: string) {
+    const target = localItems.find((item) => item.id === itemId);
+    const itemTitle = target?.title ?? "this item";
+    const confirmed = window.confirm(`Delete "${itemTitle}"?`);
+    if (!confirmed) {
+      return;
+    }
+
+    setLocalItems((current) => current.filter((item) => item.id !== itemId));
+    setFeedback(null);
+
+    if (itemId.startsWith("local-item-")) {
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        await deleteItemAction({ projectId, itemId });
+        setFeedback({
+          type: "success",
+          message: `Item "${itemTitle}" deleted.`,
+        });
+        router.refresh();
+      } catch {
+        setFeedback({
+          type: "error",
+          message: "Could not delete item. Please try again.",
+        });
+        router.refresh();
+      }
     });
   }
 
@@ -61,11 +172,15 @@ export function SectionItemsWireframe({
       <section className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-lg border p-4">
           <p className="text-xs text-muted-foreground">Estimate Total</p>
-          <p className="text-2xl font-semibold">${estimateTotal.toLocaleString()}</p>
+          <p className="text-2xl font-semibold">
+            ${estimateTotal.toLocaleString()}
+          </p>
         </div>
         <div className="rounded-lg border p-4">
           <p className="text-xs text-muted-foreground">Actual Total</p>
-          <p className="text-2xl font-semibold">${actualTotal.toLocaleString()}</p>
+          <p className="text-2xl font-semibold">
+            ${actualTotal.toLocaleString()}
+          </p>
         </div>
         <div className="rounded-lg border p-4">
           <p className="text-xs text-muted-foreground">Variance</p>
@@ -76,6 +191,45 @@ export function SectionItemsWireframe({
       </section>
 
       <section className="space-y-3">
+        <div className="rounded-lg border p-4">
+          <h2 className="text-base font-semibold">Add Item</h2>
+          <div className="mt-3 grid gap-3 md:grid-cols-3">
+            <input
+              value={newItemTitle}
+              onChange={(event) => setNewItemTitle(event.target.value)}
+              className="rounded-md border bg-background px-3 py-2 text-sm md:col-span-2"
+              placeholder="New item title..."
+            />
+            <input
+              value={newItemEstimate}
+              onChange={(event) => setNewItemEstimate(event.target.value)}
+              className="rounded-md border bg-background px-3 py-2 text-sm"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="Estimate (optional)"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={addItem}
+            disabled={isPending || !newItemTitle.trim()}
+            className="mt-3 rounded-md bg-foreground px-3 py-2 text-sm text-background disabled:opacity-60"
+          >
+            {isPending ? "Saving..." : "Add Item"}
+          </button>
+          {feedback ? (
+            <p
+              className={`mt-2 text-xs ${
+                feedback.type === "success"
+                  ? "text-emerald-700"
+                  : "text-red-700"
+              }`}
+            >
+              {feedback.message}
+            </p>
+          ) : null}
+        </div>
         <h2 className="text-base font-semibold">Items</h2>
         {localItems.map((item) => {
           const actual = getTotalActualForItem(item);
@@ -91,10 +245,20 @@ export function SectionItemsWireframe({
                     {item.title}
                   </Link>
                   <p className="text-sm text-muted-foreground">{item.note}</p>
+                  <button
+                    type="button"
+                    onClick={() => deleteItem(item.id)}
+                    disabled={isPending}
+                    className="rounded-md border px-2 py-1 text-xs hover:bg-muted"
+                  >
+                    Delete Item
+                  </button>
                 </div>
 
                 <div className="w-44 space-y-1">
-                  <label className="text-xs text-muted-foreground">Status</label>
+                  <label className="text-xs text-muted-foreground">
+                    Status
+                  </label>
                   <select
                     value={item.status}
                     onChange={(event) =>

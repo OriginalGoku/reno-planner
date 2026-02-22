@@ -7,6 +7,7 @@ import {
   type ItemStatus,
 } from "@/lib/reno-data-loader";
 import { loadRenoProject } from "@/lib/reno-project-service";
+import { SectionManager } from "@/components/reno/section-manager";
 
 const statusStyles: Record<ItemStatus, string> = {
   todo: "bg-slate-100 text-slate-700",
@@ -134,8 +135,9 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Estimate: ${sectionFinancials.estimateTotal.toLocaleString()} •
-                    Actual: ${sectionFinancials.actualTotal.toLocaleString()} •
+                    Estimate: $
+                    {sectionFinancials.estimateTotal.toLocaleString()} • Actual:
+                    ${sectionFinancials.actualTotal.toLocaleString()} •
                     Variance: {sectionFinancials.variance >= 0 ? "+" : "-"}$
                     {Math.abs(sectionFinancials.variance).toLocaleString()}
                   </p>
@@ -169,7 +171,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           </div>
 
           <div className="rounded-lg border p-4">
-            <h2 className="text-base font-semibold">General Notes</h2>
+            <h2 className="text-base font-semibold">Lessons Learned</h2>
             <ul className="mt-3 list-inside list-disc space-y-2 text-sm text-muted-foreground">
               {project.notes
                 .filter((note) => !note.linkedSectionId)
@@ -181,6 +183,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           </div>
         </div>
       </section>
+
+      <SectionManager
+        projectId={project.id}
+        initialSections={project.sections}
+      />
     </div>
   );
 }
