@@ -114,57 +114,57 @@
       "position": 9
     },
     {
-      "id": "inspections",
-      "title": "Inspections",
-      "description": "Request Inspection Online or by phone at 416-338-0700",
-      "position": 10
-    },
-    {
       "id": "envelope-insulation",
       "title": "Insulation",
       "description": "Continuous insulation + cavity insulation on ground floor; basement floor insulation assembly.",
-      "position": 11
+      "position": 10
     },
     {
       "id": "drywall",
       "title": "Drywall",
       "description": "All drywall installation across ground floor and basement units, including ceilings and partition walls.",
-      "position": 12
+      "position": 11
     },
     {
       "id": "bathrooms",
       "title": "Bathrooms",
       "description": "5 Separate Bathrooms",
-      "position": 13
+      "position": 12
     },
     {
       "id": "kitchens",
       "title": "Kitchens",
       "description": "7 Kitchens",
-      "position": 14
+      "position": 13
     },
     {
       "id": "finishes",
       "title": "Interior Finishes",
       "description": "Tile, flooring, underlayment, waterproofing, trims, transitions.",
-      "position": 15
+      "position": 14
     },
     {
       "id": "electrical-lowvoltage",
       "title": "Tenant Services",
       "description": "Intercom/doorbell for 7 endpoints + structured wiring to avoid future wall cuts; basic electrical coordination.",
-      "position": 16
+      "position": 15
     },
     {
       "id": "garage-conversion",
       "title": "Garage Conversion",
       "description": "Remove garage door, infill wall with window, insulation, drywall/finishes, exterior tie-in.",
-      "position": 17
+      "position": 16
     },
     {
       "id": "ceiling-roof",
       "title": "Roof",
       "description": "Ceiling work not covered elsewhere; roof replacement + added ventilation.",
+      "position": 17
+    },
+    {
+      "id": "inspections",
+      "title": "Inspections",
+      "description": "Request Inspection Online or by phone at 416-338-0700",
       "position": 18
     }
   ],
@@ -317,28 +317,36 @@
           "name": "Rigid insulation boards (spec per design)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Continuous insulation"
+          "note": "Continuous insulation",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-env-2",
           "name": "Compatible tape/sealant",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "For seams and transitions"
+          "note": "For seams and transitions",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-env-3",
           "name": "Fasteners / strapping (if required)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Per assembly design"
+          "note": "Per assembly design",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-env-4",
           "name": "Air/vapour control layers (membrane/primer/tapes)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Only as required by design"
+          "note": "Only as required by design",
+          "url": "",
+          "unitType": "other"
         }
       ],
       "expenses": [],
@@ -358,21 +366,27 @@
           "name": "2x4 cavity insulation (batts or spray foam)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Per design + fire requirements"
+          "note": "Per design + fire requirements",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-env-6",
           "name": "Vapour barrier poly",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "If applicable"
+          "note": "If applicable",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-env-7",
           "name": "Acoustic sealant",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "If applicable"
+          "note": "If applicable",
+          "url": "",
+          "unitType": "other"
         }
       ],
       "expenses": [],
@@ -391,21 +405,27 @@
           "name": "Rigid foam / subfloor panels / sleepers (per design)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Floor insulation system"
+          "note": "Floor insulation system",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-env-9",
           "name": "Vapour barrier / underlayment materials",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "As designed"
+          "note": "As designed",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-env-10",
           "name": "Concrete-compatible adhesives, fasteners, tapes",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "As required"
+          "note": "As required",
+          "url": "",
+          "unitType": "other"
         }
       ],
       "expenses": [],
@@ -424,49 +444,63 @@
           "name": "DWV piping (ABS/PVC) + fittings + cleanouts",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Drain/waste/vent"
+          "note": "Drain/waste/vent",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-pl-2",
           "name": "Water distribution piping (PEX/copper) + fittings",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Hot/cold distribution"
+          "note": "Hot/cold distribution",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-pl-3",
           "name": "Manifolds + valves + shut-offs per unit",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Serviceability"
+          "note": "Serviceability",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-pl-4",
           "name": "Backflow prevention components (as required)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Per design/inspection requirements"
+          "note": "Per design/inspection requirements",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-pl-5",
           "name": "Fixture rough-in kits (kitchens/bathrooms/laundry as designed)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Scope depends on final layout"
+          "note": "Scope depends on final layout",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-pl-6",
           "name": "Sump/ejector components (only if design requires)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Conditional"
+          "note": "Conditional",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-pl-7",
           "name": "Firestopping materials for rated penetrations",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "All rated assemblies"
+          "note": "All rated assemblies",
+          "url": "",
+          "unitType": "other"
         }
       ],
       "expenses": [],
@@ -485,42 +519,54 @@
           "name": "Outdoor heat pump units (per design)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Primary HVAC"
+          "note": "Primary HVAC",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-hv-2",
           "name": "Indoor heads/air handlers (per design)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Multi-zone strategy"
+          "note": "Multi-zone strategy",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-hv-3",
           "name": "Refrigerant line sets + covers",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Routing + protection"
+          "note": "Routing + protection",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-hv-4",
           "name": "Mounting brackets/pads + fasteners",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Outdoor unit mounting"
+          "note": "Outdoor unit mounting",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-hv-5",
           "name": "Condensate drains/pumps and piping",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Leak/odour/mould prevention"
+          "note": "Leak/odour/mould prevention",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-hv-6",
           "name": "Electrical disconnects and whips (coordinate with electrical)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Per equipment requirements"
+          "note": "Per equipment requirements",
+          "url": "",
+          "unitType": "other"
         }
       ],
       "expenses": [],
@@ -539,14 +585,18 @@
           "name": "Gas furnace/coil integration components (conditional)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Only after final design"
+          "note": "Only after final design",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-hv-8",
           "name": "Gas piping/valves/venting components (conditional)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Only after final design"
+          "note": "Only after final design",
+          "url": "",
+          "unitType": "other"
         }
       ],
       "expenses": [],
@@ -565,35 +615,45 @@
           "name": "Bathroom exhaust fans (quantity per layout)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-vent-2",
           "name": "Insulated ducting",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-vent-3",
           "name": "Exterior hoods / roof-wall caps",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-vent-4",
           "name": "Backdraft dampers",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-vent-5",
           "name": "Clamps/tape + sealants",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         }
       ],
       "expenses": [],
@@ -612,21 +672,27 @@
           "name": "Kitchen hood ducting sized per hood specs",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Smooth metal preferred where required"
+          "note": "Smooth metal preferred where required",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-vent-7",
           "name": "Exterior termination (wall/roof cap) + dampers",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-vent-8",
           "name": "Make-up air provisions (if required)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Conditional on hood capacity/code"
+          "note": "Conditional on hood capacity/code",
+          "url": "",
+          "unitType": "other"
         }
       ],
       "expenses": [],
@@ -645,14 +711,18 @@
           "name": "Fire-rated sealants (where needed)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-vent-10",
           "name": "Standard sealants/foams (elsewhere)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         }
       ],
       "expenses": [],
@@ -671,56 +741,72 @@
           "name": "Resilient channels",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Sound isolation"
+          "note": "Sound isolation",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-fs-2",
           "name": "Green Glue (damping compound)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Between drywall layers"
+          "note": "Between drywall layers",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-fs-3",
           "name": "5/8\" fire-rated drywall (Type X)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Double layer"
+          "note": "Double layer",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-fs-4",
           "name": "Drywall screws (correct length for layers + channels)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-fs-5",
           "name": "Joint compound, tape, corner bead",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-fs-6",
           "name": "Putty pads for electrical boxes (if used)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Where required"
+          "note": "Where required",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-fs-7",
           "name": "Fire-rated caulk + mineral wool",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Penetrations"
+          "note": "Penetrations",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-fs-8",
           "name": "Acoustic sealant",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Perimeter + key junctions"
+          "note": "Perimeter + key junctions",
+          "url": "",
+          "unitType": "other"
         }
       ],
       "expenses": [],
@@ -739,42 +825,54 @@
           "name": "Tile (as designed)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-fin-2",
           "name": "Thinset/mortar",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-fin-3",
           "name": "Grout",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-fin-4",
           "name": "Spacers + leveling system",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-fin-5",
           "name": "Waterproofing membrane + primers",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Wet areas"
+          "note": "Wet areas",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-fin-6",
           "name": "Backer boards",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Where required"
+          "note": "Where required",
+          "url": "",
+          "unitType": "other"
         }
       ],
       "expenses": [],
@@ -793,28 +891,36 @@
           "name": "Flooring material (as designed)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-fin-8",
           "name": "Underlayment / moisture barriers (as required)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-fin-9",
           "name": "Transitions, trims/baseboards",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-fin-10",
           "name": "Adhesives/fasteners",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         }
       ],
       "expenses": [],
@@ -833,56 +939,72 @@
           "name": "Framing lumber",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-gar-2",
           "name": "Sheathing",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-gar-3",
           "name": "Building wrap / air barrier materials",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-gar-4",
           "name": "Insulation (continuous + cavity as required)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-gar-5",
           "name": "Interior drywall/finishes",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-gar-6",
           "name": "Window unit(s)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-gar-7",
           "name": "Flashing, shims, sealants, trim",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-gar-8",
           "name": "Exterior cladding tie-in materials",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Match/blend with existing"
+          "note": "Match/blend with existing",
+          "url": "",
+          "unitType": "other"
         }
       ],
       "expenses": [],
@@ -901,28 +1023,36 @@
           "name": "Exterior doors + frames",
           "quantity": 2,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-door-2",
           "name": "Hardware sets + deadbolts/locks",
           "quantity": 2,
           "estimatedPrice": 0,
-          "note": "Smart locks optional"
+          "note": "Smart locks optional",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-door-3",
           "name": "Weatherstripping + thresholds",
           "quantity": 2,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-door-4",
           "name": "Flashing/sealants + trim",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         }
       ],
       "expenses": [],
@@ -941,35 +1071,45 @@
           "name": "Entrance panel (video/audio)",
           "quantity": 1,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-elv-2",
           "name": "Tenant indoor stations or app-based endpoints",
           "quantity": 7,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-elv-3",
           "name": "Power supply",
           "quantity": 1,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-elv-4",
           "name": "Low-voltage wiring + conduit + backboxes",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-elv-5",
           "name": "Network connectivity allowances (if IP-based)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         }
       ],
       "expenses": [],
@@ -988,35 +1128,45 @@
           "name": "Conduit (Smurf tube/ENT) + pull strings",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Telecom entry → comms closet → suites"
+          "note": "Telecom entry → comms closet → suites",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-elv-7",
           "name": "Junction boxes / access panels",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-elv-8",
           "name": "Patch panels, keystone jacks, wall plates",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-elv-9",
           "name": "Cat6/Cat6A cable",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "In-suite drops per plan"
+          "note": "In-suite drops per plan",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-elv-10",
           "name": "Comms closet enclosure + power/UPS allowance (optional)",
           "quantity": 1,
           "estimatedPrice": 0,
-          "note": "Optional but useful"
+          "note": "Optional but useful",
+          "url": "",
+          "unitType": "other"
         }
       ],
       "expenses": [],
@@ -1046,14 +1196,18 @@
           "name": "Framing/strapping as needed",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-roof-2",
           "name": "Drywall materials + insulation (if required)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         }
       ],
       "expenses": [],
@@ -1072,21 +1226,27 @@
           "name": "Roofing materials (shingles/underlayment/ice & water shield/flashing)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": ""
+          "note": "",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-roof-4",
           "name": "Ventilation components (ridge vent / soffit vents / baffles)",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Per design"
+          "note": "Per design",
+          "url": "",
+          "unitType": "other"
         },
         {
           "id": "mat-roof-5",
           "name": "Any required intake/exhaust balancing components",
           "quantity": 0,
           "estimatedPrice": 0,
-          "note": "Per design"
+          "note": "Per design",
+          "url": "",
+          "unitType": "other"
         }
       ],
       "expenses": [],

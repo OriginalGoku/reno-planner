@@ -1,6 +1,7 @@
 import type {
   ExpenseType,
   ItemStatus,
+  MaterialUnitType,
   RenovationProject,
 } from "./reno-types.ts";
 
@@ -10,6 +11,23 @@ const VALID_EXPENSE_TYPES: ExpenseType[] = [
   "labor",
   "permit",
   "tool",
+  "other",
+];
+const VALID_MATERIAL_UNITS: MaterialUnitType[] = [
+  "linear_ft",
+  "sqft",
+  "sqm",
+  "piece",
+  "bundle",
+  "box",
+  "roll",
+  "sheet",
+  "bag",
+  "gallon",
+  "liter",
+  "kg",
+  "lb",
+  "meter",
   "other",
 ];
 
@@ -252,8 +270,19 @@ export function validateProjectData(value: unknown): RenovationProject {
           "Material.quantity must be a number.",
         );
         ensure(
+          typeof material.unitType === "string" &&
+            VALID_MATERIAL_UNITS.includes(
+              material.unitType as MaterialUnitType,
+            ),
+          `Material.unitType must be one of: ${VALID_MATERIAL_UNITS.join(", ")}.`,
+        );
+        ensure(
           typeof material.estimatedPrice === "number",
           "Material.estimatedPrice must be a number.",
+        );
+        ensure(
+          typeof material.url === "string",
+          "Material.url must be a string.",
         );
         ensure(
           isOptionalString(material.note),

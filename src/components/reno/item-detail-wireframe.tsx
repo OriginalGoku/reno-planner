@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type {
   ExpenseType,
   ItemStatus,
+  MaterialUnitType,
   RenovationExpense,
   RenovationMaterial,
   RenovationItem,
@@ -47,6 +48,30 @@ const expenseTypes: ExpenseType[] = [
   "tool",
   "other",
 ];
+const materialUnitOptions: { value: MaterialUnitType; label: string }[] = [
+  { value: "linear_ft", label: "Linear ft" },
+  { value: "sqft", label: "Sq ft" },
+  { value: "sqm", label: "Sq m" },
+  { value: "piece", label: "Piece" },
+  { value: "bundle", label: "Bundle" },
+  { value: "box", label: "Box" },
+  { value: "roll", label: "Roll" },
+  { value: "sheet", label: "Sheet" },
+  { value: "bag", label: "Bag" },
+  { value: "gallon", label: "Gallon" },
+  { value: "liter", label: "Liter" },
+  { value: "kg", label: "Kg" },
+  { value: "lb", label: "Lb" },
+  { value: "meter", label: "Meter" },
+  { value: "other", label: "Other" },
+];
+
+function materialUnitLabel(unitType: MaterialUnitType) {
+  return (
+    materialUnitOptions.find((option) => option.value === unitType)?.label ??
+    unitType
+  );
+}
 const statusOptions: { value: ItemStatus; label: string }[] = [
   { value: "todo", label: "To Do" },
   { value: "in_progress", label: "In Progress" },
@@ -79,7 +104,10 @@ export function ItemDetailWireframe({
   const [expenses, setExpenses] = useState<RenovationExpense[]>(item.expenses);
   const [materialName, setMaterialName] = useState("");
   const [materialQuantity, setMaterialQuantity] = useState("");
+  const [materialUnitType, setMaterialUnitType] =
+    useState<MaterialUnitType>("piece");
   const [materialEstimatedPrice, setMaterialEstimatedPrice] = useState("");
+  const [materialUrl, setMaterialUrl] = useState("");
   const [materialNote, setMaterialNote] = useState("");
   const [editingMaterialId, setEditingMaterialId] = useState<string | null>(
     null,
@@ -377,7 +405,9 @@ export function ItemDetailWireframe({
       id: `local-material-${Date.now()}`,
       name,
       quantity,
+      unitType: materialUnitType,
       estimatedPrice,
+      url: materialUrl.trim(),
       note: materialNote.trim() || undefined,
     };
 
@@ -385,7 +415,9 @@ export function ItemDetailWireframe({
     setMaterialsFeedback(null);
     setMaterialName("");
     setMaterialQuantity("");
+    setMaterialUnitType("piece");
     setMaterialEstimatedPrice("");
+    setMaterialUrl("");
     setMaterialNote("");
 
     startSavingMaterial(async () => {
@@ -395,7 +427,9 @@ export function ItemDetailWireframe({
           itemId: item.id,
           name: newMaterial.name,
           quantity: newMaterial.quantity,
+          unitType: newMaterial.unitType,
           estimatedPrice: newMaterial.estimatedPrice,
+          url: newMaterial.url,
           note: newMaterial.note,
         });
         setMaterialsFeedback({ type: "success", message: "Material added." });
@@ -494,7 +528,9 @@ export function ItemDetailWireframe({
           materialId,
           name: materialDraft.name.trim(),
           quantity: materialDraft.quantity,
+          unitType: materialDraft.unitType,
           estimatedPrice: materialDraft.estimatedPrice,
+          url: materialDraft.url,
           note: materialDraft.note,
         });
         setMaterialsFeedback({
@@ -730,7 +766,7 @@ export function ItemDetailWireframe({
 
         {activeTab === "materials" ? (
           <div className="space-y-6">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground">
                   Material Name
@@ -759,6 +795,24 @@ export function ItemDetailWireframe({
               </div>
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground">
+                  Unit Type
+                </label>
+                <select
+                  value={materialUnitType}
+                  onChange={(event) =>
+                    setMaterialUnitType(event.target.value as MaterialUnitType)
+                  }
+                  className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                >
+                  {materialUnitOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">
                   Estimated Price (unit)
                 </label>
                 <input
@@ -770,6 +824,18 @@ export function ItemDetailWireframe({
                   step="0.01"
                   min="0"
                   placeholder="0.00"
+                  className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">
+                  Product URL
+                </label>
+                <input
+                  value={materialUrl}
+                  onChange={(event) => setMaterialUrl(event.target.value)}
+                  type="text"
+                  placeholder="https://..."
                   className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
                 />
               </div>
@@ -817,71 +883,140 @@ export function ItemDetailWireframe({
                       editingMaterialDraft ? (
                         <div className="space-y-3">
                           <div className="grid gap-2 sm:grid-cols-2">
-                            <input
-                              value={editingMaterialDraft.name}
-                              onChange={(event) =>
-                                setEditingMaterialDraft((current) =>
-                                  current
-                                    ? { ...current, name: event.target.value }
-                                    : current,
-                                )
-                              }
-                              className="rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
-                              placeholder="Material name"
-                            />
-                            <input
-                              value={editingMaterialDraft.note ?? ""}
-                              onChange={(event) =>
-                                setEditingMaterialDraft((current) =>
-                                  current
-                                    ? {
-                                        ...current,
-                                        note: event.target.value || undefined,
-                                      }
-                                    : current,
-                                )
-                              }
-                              className="rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
-                              placeholder="Note"
-                            />
-                            <input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              value={editingMaterialDraft.quantity}
-                              onChange={(event) =>
-                                setEditingMaterialDraft((current) =>
-                                  current
-                                    ? {
-                                        ...current,
-                                        quantity:
-                                          Number(event.target.value) || 0,
-                                      }
-                                    : current,
-                                )
-                              }
-                              className="rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
-                              placeholder="Quantity"
-                            />
-                            <input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              value={editingMaterialDraft.estimatedPrice}
-                              onChange={(event) =>
-                                setEditingMaterialDraft((current) =>
-                                  current
-                                    ? {
-                                        ...current,
-                                        estimatedPrice:
-                                          Number(event.target.value) || 0,
-                                      }
-                                    : current,
-                                )
-                              }
-                              className="rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
-                              placeholder="Estimated price"
-                            />
+                            <div className="space-y-1">
+                              <label className="text-xs text-muted-foreground">
+                                Material Name
+                              </label>
+                              <input
+                                value={editingMaterialDraft.name}
+                                onChange={(event) =>
+                                  setEditingMaterialDraft((current) =>
+                                    current
+                                      ? { ...current, name: event.target.value }
+                                      : current,
+                                  )
+                                }
+                                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
+                                placeholder="Material name"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-xs text-muted-foreground">
+                                Notes
+                              </label>
+                              <input
+                                value={editingMaterialDraft.note ?? ""}
+                                onChange={(event) =>
+                                  setEditingMaterialDraft((current) =>
+                                    current
+                                      ? {
+                                          ...current,
+                                          note: event.target.value || undefined,
+                                        }
+                                      : current,
+                                  )
+                                }
+                                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
+                                placeholder="Note"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-xs text-muted-foreground">
+                                Product URL
+                              </label>
+                              <input
+                                value={editingMaterialDraft.url}
+                                onChange={(event) =>
+                                  setEditingMaterialDraft((current) =>
+                                    current
+                                      ? {
+                                          ...current,
+                                          url: event.target.value,
+                                        }
+                                      : current,
+                                  )
+                                }
+                                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
+                                placeholder="https://..."
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-xs text-muted-foreground">
+                                Quantity
+                              </label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={editingMaterialDraft.quantity}
+                                onChange={(event) =>
+                                  setEditingMaterialDraft((current) =>
+                                    current
+                                      ? {
+                                          ...current,
+                                          quantity:
+                                            Number(event.target.value) || 0,
+                                        }
+                                      : current,
+                                  )
+                                }
+                                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
+                                placeholder="Quantity"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-xs text-muted-foreground">
+                                Unit Type
+                              </label>
+                              <select
+                                value={editingMaterialDraft.unitType}
+                                onChange={(event) =>
+                                  setEditingMaterialDraft((current) =>
+                                    current
+                                      ? {
+                                          ...current,
+                                          unitType: event.target
+                                            .value as MaterialUnitType,
+                                        }
+                                      : current,
+                                  )
+                                }
+                                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
+                              >
+                                {materialUnitOptions.map((option) => (
+                                  <option
+                                    key={option.value}
+                                    value={option.value}
+                                  >
+                                    {option.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-xs text-muted-foreground">
+                                Estimated Price (Unit)
+                              </label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={editingMaterialDraft.estimatedPrice}
+                                onChange={(event) =>
+                                  setEditingMaterialDraft((current) =>
+                                    current
+                                      ? {
+                                          ...current,
+                                          estimatedPrice:
+                                            Number(event.target.value) || 0,
+                                        }
+                                      : current,
+                                  )
+                                }
+                                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
+                                placeholder="Estimated price"
+                              />
+                            </div>
                           </div>
                           <div className="flex gap-2">
                             <button
@@ -909,8 +1044,9 @@ export function ItemDetailWireframe({
                               {material.name}
                             </p>
                             <p>
-                              Qty: {material.quantity} • Unit est: $
-                              {material.estimatedPrice.toLocaleString()}
+                              Qty: {material.quantity}{" "}
+                              {materialUnitLabel(material.unitType)} • Unit est:
+                              ${material.estimatedPrice.toLocaleString()}
                             </p>
                             <p>
                               Line est: $
@@ -919,6 +1055,18 @@ export function ItemDetailWireframe({
                               ).toLocaleString()}
                             </p>
                             {material.note ? <p>{material.note}</p> : null}
+                            {material.url ? (
+                              <p>
+                                <a
+                                  href={material.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="underline underline-offset-2"
+                                >
+                                  Open product link
+                                </a>
+                              </p>
+                            ) : null}
                           </div>
                           <div className="flex gap-2">
                             <button

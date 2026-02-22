@@ -2,6 +2,7 @@ import { projectRepository } from "../lib/reno-repository.ts";
 import type {
   ExpenseType,
   ItemStatus,
+  MaterialUnitType,
   ProjectOverview,
   RenovationProject,
 } from "../lib/reno-types.ts";
@@ -45,7 +46,9 @@ export type AddMaterialInput = {
   itemId: string;
   name: string;
   quantity: number;
+  unitType: MaterialUnitType;
   estimatedPrice: number;
+  url: string;
   note?: string;
 };
 
@@ -55,7 +58,9 @@ export type UpdateMaterialInput = {
   materialId: string;
   name: string;
   quantity: number;
+  unitType: MaterialUnitType;
   estimatedPrice: number;
+  url: string;
   note?: string;
 };
 
@@ -177,7 +182,9 @@ export const renoService = {
         id: crypto.randomUUID(),
         name: payload.name,
         quantity: payload.quantity,
+        unitType: payload.unitType,
         estimatedPrice: payload.estimatedPrice,
+        url: payload.url,
         note: payload.note,
       },
     );
@@ -203,7 +210,9 @@ export const renoService = {
         id: payload.materialId,
         name: payload.name,
         quantity: payload.quantity,
+        unitType: payload.unitType,
         estimatedPrice: payload.estimatedPrice,
+        url: payload.url,
         note: payload.note,
       },
     );

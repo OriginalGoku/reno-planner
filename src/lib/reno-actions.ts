@@ -1,7 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { ExpenseType, ItemStatus } from "@/lib/reno-data-loader";
+import type {
+  ExpenseType,
+  ItemStatus,
+  MaterialUnitType,
+} from "@/lib/reno-data-loader";
 import {
   renoService,
   type AddExpenseInput,
@@ -94,7 +98,9 @@ export async function updateItemMaterialAction(payload: {
   materialId: string;
   name: string;
   quantity: number;
+  unitType: MaterialUnitType;
   estimatedPrice: number;
+  url: string;
   note?: string;
 }) {
   await renoService.updateItemMaterial(payload);

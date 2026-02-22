@@ -2,6 +2,23 @@ export type ItemStatus = "todo" | "in_progress" | "blocked" | "done";
 
 export type ExpenseType = "material" | "labor" | "permit" | "tool" | "other";
 
+export type MaterialUnitType =
+  | "linear_ft"
+  | "sqft"
+  | "sqm"
+  | "piece"
+  | "bundle"
+  | "box"
+  | "roll"
+  | "sheet"
+  | "bag"
+  | "gallon"
+  | "liter"
+  | "kg"
+  | "lb"
+  | "meter"
+  | "other";
+
 export type RenovationExpense = {
   id: string;
   date: string;
@@ -15,7 +32,9 @@ export type RenovationMaterial = {
   id: string;
   name: string;
   quantity: number;
+  unitType: MaterialUnitType;
   estimatedPrice: number;
+  url: string;
   note?: string;
 };
 
