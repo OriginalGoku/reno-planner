@@ -32,6 +32,8 @@ export type UpdateItemFieldsInput = {
   performers: string[];
   description: string;
   note: string;
+  materials?: RenovationProject["items"][number]["materials"];
+  expenses?: RenovationProject["items"][number]["expenses"];
 };
 
 export type AddExpenseInput = {
@@ -231,6 +233,8 @@ export const renoService = {
         performers: payload.performers,
         description: payload.description,
         note: payload.note,
+        materials: payload.materials,
+        expenses: payload.expenses,
       },
     );
   },
@@ -658,6 +662,14 @@ export const renoService = {
     title: string;
     estimate?: number;
     unitId?: string | null;
+    status?: ItemStatus;
+    estimatedCompletionDate?: string;
+    actualCompletionDate?: string;
+    performers?: string[];
+    description?: string;
+    note?: string;
+    materials?: RenovationProject["items"][number]["materials"];
+    expenses?: RenovationProject["items"][number]["expenses"];
   }) {
     return projectRepository.addSectionItem(
       payload.projectId,
@@ -667,13 +679,15 @@ export const renoService = {
         sectionId: payload.sectionId,
         unitId: payload.unitId ?? null,
         title: payload.title,
-        status: "todo",
+        status: payload.status ?? "todo",
         estimate: payload.estimate ?? 0,
-        description: "",
-        note: "",
-        materials: [],
-        expenses: [],
-        performers: [],
+        estimatedCompletionDate: payload.estimatedCompletionDate,
+        actualCompletionDate: payload.actualCompletionDate,
+        description: payload.description ?? "",
+        note: payload.note ?? "",
+        materials: payload.materials ?? [],
+        expenses: payload.expenses ?? [],
+        performers: payload.performers ?? [],
       },
     );
   },

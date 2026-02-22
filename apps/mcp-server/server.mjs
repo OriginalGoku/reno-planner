@@ -3,6 +3,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { randomUUID } from "node:crypto";
 import {
   McpServer,
   ResourceTemplate,
@@ -1373,7 +1374,7 @@ server.registerTool(
   "reno_update_item_fields",
   {
     description:
-      "Update core item fields (title, estimate, status, dates, performers, overview, note)",
+      "Update full item fields (core fields and optional full materials/expenses replacement)",
     inputSchema: {
       projectId: z.string().optional(),
       itemId: z.string(),
@@ -1386,6 +1387,47 @@ server.registerTool(
       performers: z.array(z.string()),
       description: z.string(),
       note: z.string(),
+      materials: z
+        .array(
+          z.object({
+            id: z.string().optional(),
+            name: z.string(),
+            quantity: z.number(),
+            unitType: z.enum([
+              "linear_ft",
+              "sqft",
+              "sqm",
+              "piece",
+              "bundle",
+              "box",
+              "roll",
+              "sheet",
+              "bag",
+              "gallon",
+              "liter",
+              "kg",
+              "lb",
+              "meter",
+              "other",
+            ]),
+            estimatedPrice: z.number(),
+            url: z.string(),
+            note: z.string().optional(),
+          }),
+        )
+        .optional(),
+      expenses: z
+        .array(
+          z.object({
+            id: z.string().optional(),
+            date: z.string(),
+            amount: z.number(),
+            type: z.enum(["material", "labor", "permit", "tool", "other"]),
+            vendor: z.string().optional(),
+            note: z.string().optional(),
+          }),
+        )
+        .optional(),
     },
   },
   async (input) => {
@@ -1394,6 +1436,23 @@ server.registerTool(
       await renoService.updateItemFields({
         ...input,
         projectId: resolvedProjectId,
+        materials: input.materials?.map((material) => ({
+          id: material.id ?? randomUUID(),
+          name: material.name,
+          quantity: material.quantity,
+          unitType: material.unitType,
+          estimatedPrice: material.estimatedPrice,
+          url: material.url,
+          note: material.note,
+        })),
+        expenses: input.expenses?.map((expense) => ({
+          id: expense.id ?? randomUUID(),
+          date: expense.date,
+          amount: expense.amount,
+          type: expense.type,
+          vendor: expense.vendor,
+          note: expense.note,
+        })),
       });
       return asToolResult({
         ok: true,
@@ -1536,13 +1595,61 @@ server.registerTool(
 server.registerTool(
   "reno_add_item",
   {
-    description: "Add a new item under a section",
+    description:
+      "Add a new item under a section, optionally linked to a unit, with optional full details/materials/expenses",
     inputSchema: {
       projectId: z.string().optional(),
       sectionId: z.string(),
       unitId: z.string().nullable().optional(),
       title: z.string(),
       estimate: z.number().optional(),
+      status: z.enum(["todo", "in_progress", "blocked", "done"]).optional(),
+      estimatedCompletionDate: z.string().optional(),
+      actualCompletionDate: z.string().optional(),
+      performers: z.array(z.string()).optional(),
+      description: z.string().optional(),
+      note: z.string().optional(),
+      materials: z
+        .array(
+          z.object({
+            id: z.string().optional(),
+            name: z.string(),
+            quantity: z.number(),
+            unitType: z.enum([
+              "linear_ft",
+              "sqft",
+              "sqm",
+              "piece",
+              "bundle",
+              "box",
+              "roll",
+              "sheet",
+              "bag",
+              "gallon",
+              "liter",
+              "kg",
+              "lb",
+              "meter",
+              "other",
+            ]),
+            estimatedPrice: z.number(),
+            url: z.string(),
+            note: z.string().optional(),
+          }),
+        )
+        .optional(),
+      expenses: z
+        .array(
+          z.object({
+            id: z.string().optional(),
+            date: z.string(),
+            amount: z.number(),
+            type: z.enum(["material", "labor", "permit", "tool", "other"]),
+            vendor: z.string().optional(),
+            note: z.string().optional(),
+          }),
+        )
+        .optional(),
     },
   },
   async (input) => {
@@ -1551,6 +1658,23 @@ server.registerTool(
       await renoService.addSectionItem({
         ...input,
         projectId: resolvedProjectId,
+        materials: input.materials?.map((material) => ({
+          id: material.id ?? randomUUID(),
+          name: material.name,
+          quantity: material.quantity,
+          unitType: material.unitType,
+          estimatedPrice: material.estimatedPrice,
+          url: material.url,
+          note: material.note,
+        })),
+        expenses: input.expenses?.map((expense) => ({
+          id: expense.id ?? randomUUID(),
+          date: expense.date,
+          amount: expense.amount,
+          type: expense.type,
+          vendor: expense.vendor,
+          note: expense.note,
+        })),
       });
       return asToolResult({
         ok: true,

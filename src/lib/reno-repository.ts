@@ -34,6 +34,8 @@ type UpdateItemFieldsInput = {
   performers: string[];
   description: string;
   note: string;
+  materials?: RenovationMaterial[];
+  expenses?: RenovationExpense[];
 };
 
 type UpdateProjectMetaInput = {
@@ -421,6 +423,12 @@ export class JsonProjectRepository implements ProjectRepository {
       item.performers = payload.performers;
       item.description = payload.description;
       item.note = payload.note;
+      if (payload.materials !== undefined) {
+        item.materials = payload.materials;
+      }
+      if (payload.expenses !== undefined) {
+        item.expenses = payload.expenses;
+      }
 
       return project;
     });
