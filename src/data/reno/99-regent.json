@@ -5,86 +5,206 @@
   "phase": "Planning",
   "targetCompletion": "2026-08-15",
   "overview": {
-    "projectType": "Convert existing single detached home into a 7-plex",
+    "projectDescription": "Convert existing single detached home into a 7-unit residential multiplex",
     "area": {
       "groundFloorSqFtApprox": 1000,
       "basementSqFtApprox": 1000
     },
-    "basementExteriorWalls": "Already in place and recently renovated",
     "occupancyPlan": {
       "groundFloorUnits": 4,
       "basementUnits": 3,
       "totalUnits": 7
-    }
+    },
+    "currentState": {
+      "permitObtained": true,
+      "occupancy": "Fully vacant",
+      "framing": "Interior walls stripped to framing on ground floor and basement. Framing mostly complete with some additional work remaining.",
+      "groundFloorExteriorWalls": "Framed, require continuous insulation",
+      "basementExteriorWalls": "In place and recently renovated",
+      "hazmat": "No asbestos/hazmat risk"
+    },
+    "unitMixAndSystems": {
+      "totalUnits": 7,
+      "bathrooms": 5,
+      "kitchens": 7,
+      "laundry": "Individual laundry in each unit",
+      "hotWater": "Shared tankless on-demand water heater",
+      "basementCeilingHeight": "Compliant for legal living space"
+    },
+    "tradesAndFinancing": {
+      "generalContractor": "Owner-managed",
+      "confirmedTrades": [
+        "Architect/Designer",
+        "Plumber",
+        "Electrician",
+        "HVAC"
+      ],
+      "pendingBeforeStart": [
+        "Trade scheduling/coordination meeting",
+        "Material procurement"
+      ],
+      "financing": "Fully funded"
+    },
+    "scopeExclusions": [
+      "No exterior work beyond roof replacement and garage conversion",
+      "No egress additions required",
+      "No underpinning or structural wall removals",
+      "No asbestos/hazmat remediation"
+    ]
   },
   "sections": [
     {
-      "id": "inspections",
-      "title": "Inspections",
-      "description": "Request Inspection Online or by phone at 416-338-0700"
-    },
-    {
       "id": "permits-design",
       "title": "Permits, Design",
-      "description": "Permit set and code coordination for a Toronto multiplex conversion."
+      "description": "Permit set and code coordination for a Toronto multiplex conversion.",
+      "position": 0
+    },
+    {
+      "id": "fireproofing",
+      "title": "Fireproofing",
+      "description": "Fire separtion",
+      "position": 1
     },
     {
       "id": "envelope-insulation",
-      "title": "Building Envelope and Insulation",
-      "description": "Continuous insulation + cavity insulation on ground floor; basement floor insulation assembly."
+      "title": "Insulation",
+      "description": "Continuous insulation + cavity insulation on ground floor; basement floor insulation assembly.",
+      "position": 2
     },
     {
       "id": "plumbing",
       "title": "Plumbing",
-      "description": "Full plumbing rework: DWV, water distribution, shutoffs, fixture rough-ins, firestopping."
+      "description": "Full plumbing rework: DWV, water distribution, shutoffs, fixture rough-ins, firestopping.",
+      "position": 3
     },
     {
       "id": "hvac",
-      "title": "Heating and Cooling (HVAC)",
-      "description": "Heat pumps (primary), condensate strategy, electrical coordination; optional gas backup (if pursued)."
+      "title": "HVAC",
+      "description": "Heat pumps (primary), condensate strategy, electrical coordination; optional gas backup (if pursued).",
+      "position": 4
     },
     {
       "id": "ventilation",
-      "title": "Ventilation (Kitchen + Bathroom + General)",
-      "description": "Bathroom exhaust and kitchen hood venting, terminations, make-up air (if required), sealing."
+      "title": "Ventilation",
+      "description": "Bathroom exhaust and kitchen hood venting, terminations, sealing.",
+      "position": 5
     },
     {
       "id": "fire-sound",
-      "title": "Fire and Sound Assemblies",
-      "description": "Basement ceiling fire rating + soundproofing (resilient channel, damping, double Type X, sealing)."
+      "title": "Soundproofing",
+      "description": "Soundproofing (resilient channel, damping, double Type X, sealing).",
+      "position": 6
     },
     {
       "id": "finishes",
-      "title": "Interior Finishes (Basement + Ground Floor)",
-      "description": "Tile, flooring, underlayment, waterproofing, trims, transitions."
+      "title": "Interior Finishes",
+      "description": "Tile, flooring, underlayment, waterproofing, trims, transitions.",
+      "position": 7
     },
     {
       "id": "structural-carpentry",
-      "title": "Structural / Carpentry / Access",
-      "description": "New basement stair, 3-step transition stair at garage conversion, framing/hardware."
+      "title": "Framing",
+      "description": "Framing various parts",
+      "position": 8
     },
     {
       "id": "garage-conversion",
-      "title": "Garage Conversion (to Legal Living Room)",
-      "description": "Remove garage door, infill wall with window, insulation, drywall/finishes, exterior tie-in."
+      "title": "Garage Conversion",
+      "description": "Remove garage door, infill wall with window, insulation, drywall/finishes, exterior tie-in.",
+      "position": 9
     },
     {
       "id": "doors-entrances",
-      "title": "Doors and Entrances",
-      "description": "Two exterior entrances for different units with weather sealing and hardware."
+      "title": "Entrances",
+      "description": "Exterior entrance from back yard and basement entrance with weather sealing and hardware.",
+      "position": 10
     },
     {
       "id": "electrical-lowvoltage",
-      "title": "Electrical / Low-Voltage and Tenant Services",
-      "description": "Intercom/doorbell for 7 endpoints + structured wiring to avoid future wall cuts; basic electrical coordination."
+      "title": "Tenant Services",
+      "description": "Intercom/doorbell for 7 endpoints + structured wiring to avoid future wall cuts; basic electrical coordination.",
+      "position": 11
     },
     {
       "id": "ceiling-roof",
-      "title": "Ceiling Work and Roof (Summer Scope)",
-      "description": "Ceiling work not covered elsewhere; roof replacement + added ventilation."
+      "title": "Roof",
+      "description": "Ceiling work not covered elsewhere; roof replacement + added ventilation.",
+      "position": 12
+    },
+    {
+      "id": "electrical",
+      "title": "Electrical",
+      "description": "Electrical wiring",
+      "position": 13
+    },
+    {
+      "id": "inspections",
+      "title": "Inspections",
+      "description": "Request Inspection Online or by phone at 416-338-0700",
+      "position": 14
+    },
+    {
+      "id": "bathrooms",
+      "title": "Bathrooms",
+      "description": "5 Separate Bathrooms",
+      "position": 15
+    },
+    {
+      "id": "kitchens",
+      "title": "Kitchens",
+      "description": "7 Kitchens",
+      "position": 16
     }
   ],
   "items": [
+    {
+      "id": "4d60e519-d300-42ad-8b72-56e3a273b854",
+      "sectionId": "structural-carpentry",
+      "title": "Basement - Right Unit (Moving wall)",
+      "status": "todo",
+      "estimate": 0,
+      "description": "",
+      "note": "",
+      "materials": [],
+      "expenses": [],
+      "performers": []
+    },
+    {
+      "id": "67282928-0b26-46b0-98c7-98910768beb5",
+      "sectionId": "structural-carpentry",
+      "title": "Basement - Front Unit",
+      "status": "todo",
+      "estimate": 0,
+      "description": "",
+      "note": "",
+      "materials": [],
+      "expenses": [],
+      "performers": []
+    },
+    {
+      "id": "d4e7ab50-dfc2-43e8-89a1-e2478e5849bb",
+      "sectionId": "structural-carpentry",
+      "title": "Ground Floor - Back Unit",
+      "status": "todo",
+      "estimate": 0,
+      "description": "",
+      "note": "",
+      "materials": [],
+      "expenses": [],
+      "performers": []
+    },
+    {
+      "id": "e3ac6b22-6e55-4f63-b8f6-1dcbd49c8786",
+      "sectionId": "structural-carpentry",
+      "title": "Ground Floor - Front Unit",
+      "status": "todo",
+      "estimate": 0,
+      "description": "",
+      "note": "",
+      "materials": [],
+      "expenses": [],
+      "performers": []
+    },
     {
       "id": "f4bafad7-fc92-48fc-be38-854743896d75",
       "sectionId": "inspections",
@@ -683,65 +803,6 @@
           "quantity": 0,
           "estimatedPrice": 0,
           "note": ""
-        }
-      ],
-      "expenses": [],
-      "estimate": 0
-    },
-    {
-      "id": "str-1",
-      "sectionId": "structural-carpentry",
-      "title": "New basement stair (full stair down)",
-      "status": "todo",
-      "description": "Build/install basement stair including framing and safety elements.",
-      "note": "Confirm opening size, headroom, and guard/handrail requirements in drawings.",
-      "materials": [
-        {
-          "id": "mat-str-1",
-          "name": "Stringers/treads/risers (or prefab stair)",
-          "quantity": 0,
-          "estimatedPrice": 0,
-          "note": ""
-        },
-        {
-          "id": "mat-str-2",
-          "name": "Handrails/guards",
-          "quantity": 0,
-          "estimatedPrice": 0,
-          "note": ""
-        },
-        {
-          "id": "mat-str-3",
-          "name": "Framing lumber, hangers, fasteners",
-          "quantity": 0,
-          "estimatedPrice": 0,
-          "note": ""
-        }
-      ],
-      "expenses": [],
-      "estimate": 0
-    },
-    {
-      "id": "str-2",
-      "sectionId": "structural-carpentry",
-      "title": "3-step stair between converted garage and main living room",
-      "status": "todo",
-      "description": "Build the short transition stair and finish to match interior flooring/trim.",
-      "note": "Confirm whether railing/guard is triggered based on height and configuration.",
-      "materials": [
-        {
-          "id": "mat-str-4",
-          "name": "Framing and finish materials",
-          "quantity": 0,
-          "estimatedPrice": 0,
-          "note": ""
-        },
-        {
-          "id": "mat-str-5",
-          "name": "Railing/guard (if required)",
-          "quantity": 0,
-          "estimatedPrice": 0,
-          "note": "Conditional"
         }
       ],
       "expenses": [],

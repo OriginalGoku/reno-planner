@@ -22,7 +22,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import Link from "next/link";
-import { useState, useTransition, type ComponentType } from "react";
+import { useTransition, type ComponentType } from "react";
 import {
   ChevronRight,
   ClipboardList,
@@ -42,7 +42,6 @@ import { useRouter } from "next/navigation";
 type NavChild = {
   id: string;
   title: string;
-  description: string;
   href: string;
 };
 
@@ -55,12 +54,11 @@ type NavItem = {
 
 export function AppSidebar() {
   const project = useRenoData();
-  const [sections, setSections] = useState(project.sections);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
   function editSection(sectionId: string) {
-    const section = sections.find((entry) => entry.id === sectionId);
+    const section = project.sections.find((entry) => entry.id === sectionId);
     if (!section) {
       return;
     }
@@ -84,12 +82,6 @@ export function AppSidebar() {
       return;
     }
 
-    setSections((current) =>
-      current.map((entry) =>
-        entry.id === sectionId ? { ...entry, title, description } : entry,
-      ),
-    );
-
     startTransition(async () => {
       try {
         await updateSectionAction({
@@ -106,7 +98,7 @@ export function AppSidebar() {
   }
 
   function removeSection(sectionId: string) {
-    const section = sections.find((entry) => entry.id === sectionId);
+    const section = project.sections.find((entry) => entry.id === sectionId);
     const sectionTitle = section?.title ?? "this section";
     const confirmed = window.confirm(
       `Delete "${sectionTitle}"? This will also remove all items in this section and unlink related notes.`,
@@ -114,8 +106,6 @@ export function AppSidebar() {
     if (!confirmed) {
       return;
     }
-
-    setSections((current) => current.filter((entry) => entry.id !== sectionId));
 
     startTransition(async () => {
       try {
@@ -140,10 +130,9 @@ export function AppSidebar() {
       title: project.name,
       href: `/app/${project.id}`,
       icon: FolderKanban,
-      children: sections.map((section) => ({
+      children: project.sections.map((section) => ({
         id: section.id,
         title: section.title,
-        description: section.description,
         href: `/app/${project.id}/sections/${section.id}`,
       })),
     },

@@ -2,6 +2,7 @@ import { projectRepository } from "../lib/reno-repository.ts";
 import type {
   ExpenseType,
   ItemStatus,
+  ProjectOverview,
   RenovationProject,
 } from "../lib/reno-types.ts";
 
@@ -65,6 +66,15 @@ export type AddProjectNoteInput = {
   linkedSectionId?: string | null;
 };
 
+export type UpdateProjectMetaInput = {
+  projectId: string;
+  name: string;
+  address: string;
+  phase: string;
+  targetCompletion: string;
+  overview: ProjectOverview;
+};
+
 function toSectionId(title: string) {
   return title
     .trim()
@@ -97,6 +107,16 @@ export const renoService = {
         note: payload.note,
       },
     );
+  },
+
+  async updateProjectMeta(payload: UpdateProjectMetaInput) {
+    return projectRepository.updateProjectMeta(payload.projectId, {
+      name: payload.name.trim(),
+      address: payload.address.trim(),
+      phase: payload.phase.trim(),
+      targetCompletion: payload.targetCompletion.trim(),
+      overview: payload.overview,
+    });
   },
 
   async updateItemStatus(payload: {
@@ -283,6 +303,7 @@ export const renoService = {
       id: normalizedId,
       title: payload.title.trim(),
       description: payload.description.trim(),
+      position: project.sections.length,
     });
   },
 
@@ -306,6 +327,18 @@ export const renoService = {
     return projectRepository.deleteSection(
       payload.projectId,
       payload.sectionId,
+    );
+  },
+
+  async moveSection(payload: {
+    projectId: string;
+    sectionId: string;
+    direction: "up" | "down";
+  }) {
+    return projectRepository.moveSection(
+      payload.projectId,
+      payload.sectionId,
+      payload.direction,
     );
   },
 

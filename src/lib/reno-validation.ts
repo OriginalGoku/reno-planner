@@ -48,6 +48,123 @@ export function validateProjectData(value: unknown): RenovationProject {
     typeof project.targetCompletion === "string",
     "Project.targetCompletion must be a string.",
   );
+  ensure(isRecord(project.overview), "Project.overview must be an object.");
+
+  const overview = project.overview;
+  ensure(
+    typeof overview.projectDescription === "string",
+    "Overview.projectDescription must be a string.",
+  );
+  ensure(isRecord(overview.area), "Overview.area must be an object.");
+  ensure(
+    typeof overview.area.groundFloorSqFtApprox === "number",
+    "Overview.area.groundFloorSqFtApprox must be a number.",
+  );
+  ensure(
+    typeof overview.area.basementSqFtApprox === "number",
+    "Overview.area.basementSqFtApprox must be a number.",
+  );
+
+  ensure(
+    isRecord(overview.occupancyPlan),
+    "Overview.occupancyPlan must be an object.",
+  );
+  ensure(
+    typeof overview.occupancyPlan.groundFloorUnits === "number",
+    "Overview.occupancyPlan.groundFloorUnits must be a number.",
+  );
+  ensure(
+    typeof overview.occupancyPlan.basementUnits === "number",
+    "Overview.occupancyPlan.basementUnits must be a number.",
+  );
+  ensure(
+    typeof overview.occupancyPlan.totalUnits === "number",
+    "Overview.occupancyPlan.totalUnits must be a number.",
+  );
+
+  ensure(
+    isRecord(overview.currentState),
+    "Overview.currentState must be an object.",
+  );
+  ensure(
+    typeof overview.currentState.permitObtained === "boolean",
+    "Overview.currentState.permitObtained must be a boolean.",
+  );
+  ensure(
+    typeof overview.currentState.occupancy === "string",
+    "Overview.currentState.occupancy must be a string.",
+  );
+  ensure(
+    typeof overview.currentState.framing === "string",
+    "Overview.currentState.framing must be a string.",
+  );
+  ensure(
+    typeof overview.currentState.groundFloorExteriorWalls === "string",
+    "Overview.currentState.groundFloorExteriorWalls must be a string.",
+  );
+  ensure(
+    typeof overview.currentState.basementExteriorWalls === "string",
+    "Overview.currentState.basementExteriorWalls must be a string.",
+  );
+  ensure(
+    typeof overview.currentState.hazmat === "string",
+    "Overview.currentState.hazmat must be a string.",
+  );
+
+  ensure(
+    isRecord(overview.unitMixAndSystems),
+    "Overview.unitMixAndSystems must be an object.",
+  );
+  ensure(
+    typeof overview.unitMixAndSystems.totalUnits === "number",
+    "Overview.unitMixAndSystems.totalUnits must be a number.",
+  );
+  ensure(
+    typeof overview.unitMixAndSystems.bathrooms === "number",
+    "Overview.unitMixAndSystems.bathrooms must be a number.",
+  );
+  ensure(
+    typeof overview.unitMixAndSystems.kitchens === "number",
+    "Overview.unitMixAndSystems.kitchens must be a number.",
+  );
+  ensure(
+    typeof overview.unitMixAndSystems.laundry === "string",
+    "Overview.unitMixAndSystems.laundry must be a string.",
+  );
+  ensure(
+    typeof overview.unitMixAndSystems.hotWater === "string",
+    "Overview.unitMixAndSystems.hotWater must be a string.",
+  );
+  ensure(
+    typeof overview.unitMixAndSystems.basementCeilingHeight === "string",
+    "Overview.unitMixAndSystems.basementCeilingHeight must be a string.",
+  );
+
+  ensure(
+    isRecord(overview.tradesAndFinancing),
+    "Overview.tradesAndFinancing must be an object.",
+  );
+  ensure(
+    typeof overview.tradesAndFinancing.generalContractor === "string",
+    "Overview.tradesAndFinancing.generalContractor must be a string.",
+  );
+  ensure(
+    isStringArray(overview.tradesAndFinancing.confirmedTrades),
+    "Overview.tradesAndFinancing.confirmedTrades must be an array of strings.",
+  );
+  ensure(
+    isStringArray(overview.tradesAndFinancing.pendingBeforeStart),
+    "Overview.tradesAndFinancing.pendingBeforeStart must be an array of strings.",
+  );
+  ensure(
+    typeof overview.tradesAndFinancing.financing === "string",
+    "Overview.tradesAndFinancing.financing must be a string.",
+  );
+
+  ensure(
+    isStringArray(overview.scopeExclusions),
+    "Overview.scopeExclusions must be an array of strings.",
+  );
 
   ensure(Array.isArray(project.sections), "Project.sections must be an array.");
   ensure(Array.isArray(project.items), "Project.items must be an array.");
@@ -64,7 +181,21 @@ export function validateProjectData(value: unknown): RenovationProject {
       typeof section.description === "string",
       "Section.description must be a string.",
     );
+    ensure(
+      typeof section.position === "number" &&
+        Number.isInteger(section.position) &&
+        section.position >= 0,
+      "Section.position must be a non-negative integer.",
+    );
   }
+
+  const uniqueSectionPositions = new Set(
+    project.sections.map((section) => section.position as number),
+  );
+  ensure(
+    uniqueSectionPositions.size === project.sections.length,
+    "Section.position values must be unique.",
+  );
 
   for (const item of project.items) {
     ensure(isRecord(item), "Each item must be an object.");

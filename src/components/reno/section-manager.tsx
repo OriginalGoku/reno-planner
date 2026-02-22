@@ -6,6 +6,7 @@ import type { RenovationSection } from "@/lib/reno-data-loader";
 import {
   addSectionAction,
   deleteSectionAction,
+  moveSectionAction,
   updateSectionAction,
 } from "@/lib/reno-actions";
 
@@ -48,9 +49,10 @@ export function SectionManager({
       id: `local-section-${Date.now()}`,
       title,
       description,
+      position: sections.length,
     };
     setFeedback(null);
-    setSections((current) => [localSection, ...current]);
+    setSections((current) => [...current, localSection]);
     setNewSectionTitle("");
     setNewSectionDescription("");
 
@@ -177,6 +179,56 @@ export function SectionManager({
     });
   }
 
+  function moveSection(sectionId: string, direction: "up" | "down") {
+    const currentIndex = sections.findIndex(
+      (section) => section.id === sectionId,
+    );
+    if (currentIndex < 0) {
+      return;
+    }
+
+    const targetIndex =
+      direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= sections.length) {
+      return;
+    }
+
+    const reordered = [...sections];
+    const [movedSection] = reordered.splice(currentIndex, 1);
+    reordered.splice(targetIndex, 0, movedSection);
+    const normalized = reordered.map((section, index) => ({
+      ...section,
+      position: index,
+    }));
+    setSections(normalized);
+    setFeedback(null);
+
+    if (sectionId.startsWith("local-section-")) {
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        await moveSectionAction({
+          projectId,
+          sectionId,
+          direction,
+        });
+        setFeedback({
+          type: "success",
+          message: "Section order updated.",
+        });
+        router.refresh();
+      } catch {
+        setFeedback({
+          type: "error",
+          message: "Could not reorder section. Please try again.",
+        });
+        router.refresh();
+      }
+    });
+  }
+
   return (
     <section className="rounded-lg border p-4">
       <h2 className="text-base font-semibold">Sections</h2>
@@ -280,6 +332,25 @@ export function SectionManager({
                   {section.description}
                 </p>
                 <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => moveSection(section.id, "up")}
+                    disabled={isPending || sections[0]?.id === section.id}
+                    className="rounded-md border px-2 py-1 text-xs hover:bg-muted disabled:opacity-60"
+                  >
+                    Move Up
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveSection(section.id, "down")}
+                    disabled={
+                      isPending ||
+                      sections[sections.length - 1]?.id === section.id
+                    }
+                    className="rounded-md border px-2 py-1 text-xs hover:bg-muted disabled:opacity-60"
+                  >
+                    Move Down
+                  </button>
                   <button
                     type="button"
                     onClick={() => startEditingSection(section)}

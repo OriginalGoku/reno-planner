@@ -7,6 +7,7 @@ import {
   type AddExpenseInput,
   type AddMaterialInput,
   type AddProjectNoteInput,
+  type UpdateProjectMetaInput,
   type UpdateItemFieldsInput,
 } from "@/core/reno-service";
 
@@ -20,6 +21,12 @@ function refreshProjectPaths(projectId: string) {
 
 export async function updateItemFieldsAction(payload: UpdateItemFieldsInput) {
   await renoService.updateItemFields(payload);
+
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function updateProjectMetaAction(payload: UpdateProjectMetaInput) {
+  await renoService.updateProjectMeta(payload);
 
   refreshProjectPaths(payload.projectId);
 }
@@ -174,5 +181,14 @@ export async function deleteSectionAction(payload: {
   sectionId: string;
 }) {
   await renoService.deleteSection(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function moveSectionAction(payload: {
+  projectId: string;
+  sectionId: string;
+  direction: "up" | "down";
+}) {
+  await renoService.moveSection(payload);
   refreshProjectPaths(payload.projectId);
 }

@@ -38,6 +38,7 @@ export type RenovationSection = {
   id: string;
   title: string;
   description: string;
+  position: number;
 };
 
 export type RenovationNote = {
@@ -47,12 +48,49 @@ export type RenovationNote = {
   linkedSectionId?: string | null;
 };
 
+export type ProjectOverview = {
+  projectDescription: string;
+  area: {
+    groundFloorSqFtApprox: number;
+    basementSqFtApprox: number;
+  };
+  occupancyPlan: {
+    groundFloorUnits: number;
+    basementUnits: number;
+    totalUnits: number;
+  };
+  currentState: {
+    permitObtained: boolean;
+    occupancy: string;
+    framing: string;
+    groundFloorExteriorWalls: string;
+    basementExteriorWalls: string;
+    hazmat: string;
+  };
+  unitMixAndSystems: {
+    totalUnits: number;
+    bathrooms: number;
+    kitchens: number;
+    laundry: string;
+    hotWater: string;
+    basementCeilingHeight: string;
+  };
+  tradesAndFinancing: {
+    generalContractor: string;
+    confirmedTrades: string[];
+    pendingBeforeStart: string[];
+    financing: string;
+  };
+  scopeExclusions: string[];
+};
+
 export type RenovationProject = {
   id: string;
   name: string;
   address: string;
   phase: string;
   targetCompletion: string;
+  overview: ProjectOverview;
   sections: RenovationSection[];
   items: RenovationItem[];
   notes: RenovationNote[];

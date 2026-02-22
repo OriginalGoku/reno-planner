@@ -2,6 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type {
   ItemStatus,
+  ProjectOverview,
   RenovationExpense,
   RenovationMaterial,
   RenovationNote,
@@ -30,6 +31,34 @@ type UpdateItemFieldsInput = {
   note: string;
 };
 
+type UpdateProjectMetaInput = {
+  name: string;
+  address: string;
+  phase: string;
+  targetCompletion: string;
+  overview: ProjectOverview;
+};
+
+type SectionMoveDirection = "up" | "down";
+
+function normalizeSectionOrder(
+  sections: RenovationProject["sections"],
+): RenovationProject["sections"] {
+  const withFallback = sections.map((section, index) => ({
+    ...section,
+    position:
+      typeof section.position === "number" &&
+      Number.isInteger(section.position) &&
+      section.position >= 0
+        ? section.position
+        : index,
+  }));
+
+  return withFallback
+    .sort((a, b) => a.position - b.position)
+    .map((section, index) => ({ ...section, position: index }));
+}
+
 export interface ProjectRepository {
   getDefaultProjectId(): Promise<string>;
   getProjectById(projectId: string): Promise<RenovationProject | null>;
@@ -38,6 +67,10 @@ export interface ProjectRepository {
     projectId: string,
     itemId: string,
     payload: UpdateItemFieldsInput,
+  ): Promise<RenovationProject>;
+  updateProjectMeta(
+    projectId: string,
+    payload: UpdateProjectMetaInput,
   ): Promise<RenovationProject>;
   updateItemStatus(
     projectId: string,
@@ -100,6 +133,11 @@ export interface ProjectRepository {
     projectId: string,
     sectionId: string,
   ): Promise<RenovationProject>;
+  moveSection(
+    projectId: string,
+    sectionId: string,
+    direction: SectionMoveDirection,
+  ): Promise<RenovationProject>;
   updateProjectNoteLink(
     projectId: string,
     noteId: string,
@@ -152,6 +190,16 @@ export class JsonProjectRepository implements ProjectRepository {
 
     const raw = await readFile(projectPath, "utf8");
     const parsed = JSON.parse(raw);
+    if (
+      typeof parsed === "object" &&
+      parsed !== null &&
+      Array.isArray((parsed as { sections?: unknown[] }).sections)
+    ) {
+      const projectLike = parsed as {
+        sections: RenovationProject["sections"];
+      };
+      projectLike.sections = normalizeSectionOrder(projectLike.sections);
+    }
     return validateProjectData(parsed);
   }
 
@@ -161,6 +209,7 @@ export class JsonProjectRepository implements ProjectRepository {
       throw new Error(`Project not found: ${project.id}`);
     }
 
+    project.sections = normalizeSectionOrder(project.sections);
     validateProjectData(project);
     await writeFile(
       projectPath,
@@ -179,6 +228,7 @@ export class JsonProjectRepository implements ProjectRepository {
     }
 
     const updated = mutate(project);
+    updated.sections = normalizeSectionOrder(updated.sections);
     await this.writeProject(updated);
     return updated;
   }
@@ -218,6 +268,20 @@ export class JsonProjectRepository implements ProjectRepository {
       item.description = payload.description;
       item.note = payload.note;
 
+      return project;
+    });
+  }
+
+  async updateProjectMeta(
+    projectId: string,
+    payload: UpdateProjectMetaInput,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      project.name = payload.name;
+      project.address = payload.address;
+      project.phase = payload.phase;
+      project.targetCompletion = payload.targetCompletion;
+      project.overview = payload.overview;
       return project;
     });
   }
@@ -397,7 +461,7 @@ export class JsonProjectRepository implements ProjectRepository {
     section: RenovationProject["sections"][number],
   ): Promise<RenovationProject> {
     return this.mutateProject(projectId, (project) => {
-      project.sections = [section, ...project.sections];
+      project.sections = [...project.sections, section];
       return project;
     });
   }
@@ -438,6 +502,34 @@ export class JsonProjectRepository implements ProjectRepository {
           ? { ...note, linkedSectionId: null }
           : note,
       );
+      return project;
+    });
+  }
+
+  async moveSection(
+    projectId: string,
+    sectionId: string,
+    direction: SectionMoveDirection,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const ordered = normalizeSectionOrder(project.sections);
+      const index = ordered.findIndex((section) => section.id === sectionId);
+      if (index < 0) {
+        throw new Error(`Unknown sectionId: ${sectionId}`);
+      }
+
+      const targetIndex = direction === "up" ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= ordered.length) {
+        project.sections = ordered;
+        return project;
+      }
+
+      const [moved] = ordered.splice(index, 1);
+      ordered.splice(targetIndex, 0, moved);
+      project.sections = ordered.map((section, orderIndex) => ({
+        ...section,
+        position: orderIndex,
+      }));
       return project;
     });
   }

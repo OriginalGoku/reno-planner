@@ -216,6 +216,102 @@ server.registerTool(
 );
 
 server.registerTool(
+  "reno_update_project_meta",
+  {
+    description:
+      "Update project-level metadata and overview (name, address, phase, target completion, overview details)",
+    inputSchema: {
+      projectId: z.string().optional(),
+      name: z.string(),
+      address: z.string(),
+      phase: z.string(),
+      targetCompletion: z.string(),
+      overview: z.object({
+        projectDescription: z.string(),
+        area: z.object({
+          groundFloorSqFtApprox: z.number(),
+          basementSqFtApprox: z.number(),
+        }),
+        occupancyPlan: z.object({
+          groundFloorUnits: z.number(),
+          basementUnits: z.number(),
+          totalUnits: z.number(),
+        }),
+        currentState: z.object({
+          permitObtained: z.boolean(),
+          occupancy: z.string(),
+          framing: z.string(),
+          groundFloorExteriorWalls: z.string(),
+          basementExteriorWalls: z.string(),
+          hazmat: z.string(),
+        }),
+        unitMixAndSystems: z.object({
+          totalUnits: z.number(),
+          bathrooms: z.number(),
+          kitchens: z.number(),
+          laundry: z.string(),
+          hotWater: z.string(),
+          basementCeilingHeight: z.string(),
+        }),
+        tradesAndFinancing: z.object({
+          generalContractor: z.string(),
+          confirmedTrades: z.array(z.string()),
+          pendingBeforeStart: z.array(z.string()),
+          financing: z.string(),
+        }),
+        scopeExclusions: z.array(z.string()),
+      }),
+    },
+  },
+  async (input) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(input.projectId);
+      await renoService.updateProjectMeta({
+        projectId: resolvedProjectId,
+        name: input.name,
+        address: input.address,
+        phase: input.phase,
+        targetCompletion: input.targetCompletion,
+        overview: input.overview,
+      });
+      return asToolResult({ ok: true, projectId: resolvedProjectId });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_get_project_meta",
+  {
+    description:
+      "Get project-level metadata and overview (name, address, phase, target completion, overview)",
+    inputSchema: {
+      projectId: z.string().optional(),
+    },
+  },
+  async ({ projectId }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      const project = await renoService.getProjectById(resolvedProjectId);
+      if (!project) {
+        throw new Error(`Unknown projectId: ${resolvedProjectId}`);
+      }
+      return asToolResult({
+        projectId: project.id,
+        name: project.name,
+        address: project.address,
+        phase: project.phase,
+        targetCompletion: project.targetCompletion,
+        overview: project.overview,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
   "reno_list_sections",
   {
     description: "List sections in a project",
@@ -660,6 +756,36 @@ server.registerTool(
         ok: true,
         projectId: resolvedProjectId,
         sectionId: input.sectionId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_move_section",
+  {
+    description: "Move a section up or down in display order",
+    inputSchema: {
+      projectId: z.string().optional(),
+      sectionId: z.string(),
+      direction: z.enum(["up", "down"]),
+    },
+  },
+  async (input) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(input.projectId);
+      await renoService.moveSection({
+        projectId: resolvedProjectId,
+        sectionId: input.sectionId,
+        direction: input.direction,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        sectionId: input.sectionId,
+        direction: input.direction,
       });
     } catch (error) {
       return asToolError(error);
