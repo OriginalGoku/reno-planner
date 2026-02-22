@@ -170,13 +170,91 @@
   ],
   "items": [
     {
-      "id": "0afb338d-fb41-4164-8449-3e3cf62afead",
-      "sectionId": "structural-carpentry",
+      "id": "276b9a01-673e-433f-b855-cf13370090c4",
+      "sectionId": "doors-entrances",
       "unitId": "4853af39-0e6b-40b8-8888-d4163d15f4c3",
-      "title": "Test Unit 1 item",
+      "title": "Unit 1 front entrance stairs",
       "status": "todo",
-      "estimate": 1000,
-      "description": "",
+      "estimate": 0,
+      "description": "Existing wooden stairs need replacement with proper stairs. Design and approach not yet planned.",
+      "note": "Not yet planned — needs design decision.",
+      "materials": [],
+      "expenses": [],
+      "performers": []
+    },
+    {
+      "id": "9d2cb871-cbeb-490d-94f6-702037b56c1e",
+      "sectionId": "kitchens",
+      "unitId": "4853af39-0e6b-40b8-8888-d4163d15f4c3",
+      "title": "Unit 1 kitchen",
+      "status": "todo",
+      "estimate": 0,
+      "description": "L-shaped kitchen (10' × 6'), open concept in living area. Gas burner. All appliances provided except dishwasher. Plumbing needs to be planned.",
+      "note": "",
+      "materials": [],
+      "expenses": [],
+      "performers": []
+    },
+    {
+      "id": "52f620dd-b5fb-4eb5-a5d3-08ecdf0a3002",
+      "sectionId": "bathrooms",
+      "unitId": "4853af39-0e6b-40b8-8888-d4163d15f4c3",
+      "title": "Unit 1 bathroom build",
+      "status": "todo",
+      "estimate": 0,
+      "description": "New build 3-piece bathroom (2m × 1.6m). Standing shower, simple vanity, toilet. Full rough-in required.",
+      "note": "",
+      "materials": [],
+      "expenses": [],
+      "performers": []
+    },
+    {
+      "id": "e3585727-e700-4195-9672-75a28e7c5383",
+      "sectionId": "fire-sound",
+      "unitId": "4853af39-0e6b-40b8-8888-d4163d15f4c3",
+      "title": "Living room shared wall soundproofing – Unit 1/Unit 2",
+      "status": "todo",
+      "estimate": 0,
+      "description": "Right side living room wall shared with Unit 2 (garage). Standard sound insulation sufficient.",
+      "note": "",
+      "materials": [],
+      "expenses": [],
+      "performers": []
+    },
+    {
+      "id": "08796462-640b-4fbc-8e8a-1751bf49dec8",
+      "sectionId": "fire-sound",
+      "unitId": "4853af39-0e6b-40b8-8888-d4163d15f4c3",
+      "title": "Bedroom shared wall soundproofing – Unit 1/Unit 3",
+      "status": "todo",
+      "estimate": 0,
+      "description": "Bedroom shares a 12' × 8' wall with Unit 3's bedroom (back-to-back). Requires heavy-duty sound insulation assembly.",
+      "note": "Critical — both bedrooms are back-to-back.",
+      "materials": [],
+      "expenses": [],
+      "performers": []
+    },
+    {
+      "id": "724eaee5-7fdb-4fe9-8b33-2d8a4cbd1fbf",
+      "sectionId": "envelope-insulation",
+      "unitId": "4853af39-0e6b-40b8-8888-d4163d15f4c3",
+      "title": "Left exterior wall insulation – living room short wall",
+      "status": "todo",
+      "estimate": 0,
+      "description": "10' × 8' exterior wall on the left side of the living room. Insulation method: 2\" continuous rigid foam + 2×4 framing with batt insulation.",
+      "note": "",
+      "materials": [],
+      "expenses": [],
+      "performers": []
+    },
+    {
+      "id": "a718084a-d08c-493a-b4b8-0a5f5c0fb614",
+      "sectionId": "envelope-insulation",
+      "unitId": "4853af39-0e6b-40b8-8888-d4163d15f4c3",
+      "title": "Left exterior wall insulation – living room long wall",
+      "status": "todo",
+      "estimate": 0,
+      "description": "16'6\" × 8' exterior wall on the left side of the living room. Insulation method: 2\" continuous rigid foam + 2×4 framing with batt insulation.",
       "note": "",
       "materials": [],
       "expenses": [],
@@ -1484,31 +1562,39 @@
       "bedrooms": 1,
       "totalAreaSqm": 40,
       "status": "planned",
-      "description": "Entrance from the front of the property. Currently there is a wooden stair to access the unit but we must provide proper stairs for this unit. \nThe entrance leads to the living room/kitchen area. \nThe unit has a bedroom and one bathrom",
+      "description": "Entrance from the front of the property via existing wooden stairs (replacement stairs not yet planned). The entrance leads to an open-concept living room/kitchen area. The unit has one bedroom and one new-build bathroom.\n\nInsulation & shared walls:\n- Left side exterior walls in the living room require insulation (2\" rigid foam + 2×4 framing with batt insulation): one wall 16'6\" × 8' and one wall 10' × 8'.\n- Right side living room wall is shared with Unit 2 (garage) — standard sound insulation sufficient.\n- Bedroom shares a 12' wall with Unit 3's bedroom (back-to-back) — requires heavy-duty sound insulation.",
       "rooms": [
+        {
+          "id": "4a969da7-1798-4cf2-bfba-ece637823ccb",
+          "roomType": "living_area",
+          "widthMm": 5105,
+          "lengthMm": 5029,
+          "heightMm": 2438,
+          "description": "Open concept with kitchen. Left side exterior walls require insulation (2\" rigid foam + 2×4 with batt): 16'6\" wall and 10' wall. Right side wall shared with Unit 2 (garage), standard sound insulation."
+        },
         {
           "id": "9ea8026e-c578-446d-a406-4ab35dd02f73",
           "roomType": "bedroom",
           "widthMm": 3600,
           "lengthMm": 3000,
-          "heightMm": 2500,
-          "description": ""
+          "heightMm": 2438,
+          "description": "Private bedroom. Shares one wall (12') with Unit 3's bedroom — requires heavy-duty sound insulation."
         },
         {
           "id": "c98c92c9-55c1-4af7-ab77-b69995b18f49",
           "roomType": "kitchen",
-          "widthMm": 0,
-          "lengthMm": 0,
-          "heightMm": 0,
-          "description": ""
+          "widthMm": 3048,
+          "lengthMm": 1829,
+          "heightMm": 2438,
+          "description": "Open concept within the living area. L-shaped layout (10' × 6'). Gas burner. All appliances provided except dishwasher. Plumbing needs to be planned."
         },
         {
           "id": "2f477ba4-683f-4877-a030-28721137eb9a",
           "roomType": "bathroom",
-          "widthMm": 0,
-          "lengthMm": 0,
-          "heightMm": 0,
-          "description": ""
+          "widthMm": 2000,
+          "lengthMm": 1600,
+          "heightMm": 2438,
+          "description": "New build. 3-piece bathroom with standing shower and simple vanity."
         }
       ]
     }
