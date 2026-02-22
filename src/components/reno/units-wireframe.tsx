@@ -713,16 +713,14 @@ export function UnitsWireframe({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-lg border p-4">
-        <h1 className="text-lg font-semibold">
-          {focusUnitId ? (visibleUnits[0]?.name ?? "Unit") : "Units"}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {focusUnitId
-            ? "Manage this unit with dynamic tabs."
-            : "Manage unit-level planning with one level of room sub-items."}
-        </p>
-      </section>
+      {!focusUnitId ? (
+        <section className="rounded-lg border p-4">
+          <h1 className="text-lg font-semibold">Units</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage unit-level planning with one level of room sub-items.
+          </p>
+        </section>
+      ) : null}
 
       {feedback ? (
         <div
@@ -873,26 +871,32 @@ export function UnitsWireframe({
               key={unit.id}
               id={`unit-${unit.id}`}
               defaultOpen={focusUnitId ? true : undefined}
-              className="rounded-lg border"
+              className={focusUnitId ? "" : "rounded-lg border"}
             >
-              <CollapsibleTrigger className="group flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-muted/40">
-                <div>
-                  <h3 className="text-base font-semibold">{unit.name}</h3>
-                  <p className="text-xs text-muted-foreground">
-                    {unit.floor === "main" ? "Main" : "Basement"} •{" "}
-                    {unit.bedrooms} bedroom{unit.bedrooms === 1 ? "" : "s"} •{" "}
-                    {unit.totalAreaSqm} sqm •{" "}
-                    {
-                      unitStatusOptions.find(
-                        (option) => option.value === unit.status,
-                      )?.label
-                    }
-                  </p>
-                </div>
-                <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
-              </CollapsibleTrigger>
+              {!focusUnitId ? (
+                <CollapsibleTrigger className="group flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-muted/40">
+                  <div>
+                    <h3 className="text-base font-semibold">{unit.name}</h3>
+                    <p className="text-xs text-muted-foreground">
+                      {unit.floor === "main" ? "Main" : "Basement"} •{" "}
+                      {unit.bedrooms} bedroom{unit.bedrooms === 1 ? "" : "s"} •{" "}
+                      {unit.totalAreaSqm} sqm •{" "}
+                      {
+                        unitStatusOptions.find(
+                          (option) => option.value === unit.status,
+                        )?.label
+                      }
+                    </p>
+                  </div>
+                  <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
+                </CollapsibleTrigger>
+              ) : null}
               <CollapsibleContent>
-                <article className="border-t p-4">
+                <article
+                  className={
+                    focusUnitId ? "rounded-lg border p-4" : "border-t p-4"
+                  }
+                >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <h3 className="text-base font-semibold">{unit.name}</h3>

@@ -246,7 +246,7 @@ export function AppSidebar() {
                 <Collapsible
                   key={`${item.title}-${item.href}`}
                   asChild
-                  defaultOpen={item.title === project.name}
+                  defaultOpen={false}
                 >
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild tooltip={item.title}>
