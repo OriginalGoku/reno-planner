@@ -9,7 +9,10 @@
     "lint": "eslint",
     "validate:data": "node scripts/validate-reno-data.mjs",
     "import:data": "node scripts/import-project.mjs",
-    "import:data:dry-run": "node scripts/import-project.mjs --dry-run"
+    "import:data:dry-run": "node scripts/import-project.mjs --dry-run",
+    "mcp:server": "node --experimental-strip-types apps/mcp-server/server.mjs",
+    "mcp:server:quiet": "RENO_MCP_QUIET=1 NODE_NO_WARNINGS=1 node --no-warnings --experimental-strip-types apps/mcp-server/server.mjs",
+    "mcp:doctor": "node --experimental-strip-types apps/mcp-server/doctor.mjs"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

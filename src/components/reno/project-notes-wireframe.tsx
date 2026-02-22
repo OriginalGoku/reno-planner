@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { RenovationNote, RenovationSection } from "@/lib/reno-data-loader";
 import {
   addProjectNoteAction,
+  deleteProjectNoteAction,
   updateProjectNoteContentAction,
   updateProjectNoteLinkAction,
 } from "@/lib/reno-actions";
@@ -183,6 +184,41 @@ export function ProjectNotesWireframe({
     });
   }
 
+  function deleteNote(noteId: string, noteTitle: string) {
+    const confirmed = window.confirm(`Delete note "${noteTitle}"?`);
+    if (!confirmed) {
+      return;
+    }
+
+    setFeedback(null);
+    setNotes((current) => current.filter((note) => note.id !== noteId));
+    if (editingNoteId === noteId) {
+      cancelEditingNote();
+    }
+
+    if (noteId.startsWith("local-")) {
+      setFeedback({ type: "success", message: "Note deleted." });
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        await deleteProjectNoteAction({
+          projectId,
+          noteId,
+        });
+        setFeedback({ type: "success", message: "Note deleted." });
+        router.refresh();
+      } catch {
+        setFeedback({
+          type: "error",
+          message: "Could not delete note. Please try again.",
+        });
+        router.refresh();
+      }
+    });
+  }
+
   return (
     <div className="space-y-6">
       <section className="rounded-lg border p-4">
@@ -318,6 +354,14 @@ export function ProjectNotesWireframe({
                       className="rounded-md border px-2 py-1 text-xs hover:bg-muted"
                     >
                       Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteNote(note.id, note.title)}
+                      disabled={isPending}
+                      className="rounded-md border border-red-200 px-2 py-1 text-xs text-red-700 hover:bg-red-50 disabled:opacity-60"
+                    >
+                      Delete
                     </button>
                   </div>
                 </div>

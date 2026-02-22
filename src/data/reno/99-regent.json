@@ -19,9 +19,14 @@
   },
   "sections": [
     {
+      "id": "inspections",
+      "title": "Inspections",
+      "description": "Request Inspection Online or by phone at 416-338-0700"
+    },
+    {
       "id": "permits-design",
-      "title": "Permits, Design, and Inspections",
-      "description": "Permit set, code coordination, and inspection planning for a Toronto multiplex conversion."
+      "title": "Permits, Design",
+      "description": "Permit set and code coordination for a Toronto multiplex conversion."
     },
     {
       "id": "envelope-insulation",
@@ -81,26 +86,91 @@
   ],
   "items": [
     {
+      "id": "f4bafad7-fc92-48fc-be38-854743896d75",
+      "sectionId": "inspections",
+      "title": "HVAC Occupancy — mechanical systems ready for testing",
+      "status": "todo",
+      "estimate": 0,
+      "description": "",
+      "note": "",
+      "materials": [],
+      "expenses": [],
+      "performers": []
+    },
+    {
+      "id": "2f1655db-574f-4dee-8794-db856fc0ffee",
+      "sectionId": "inspections",
+      "title": "Rough-in HVAC — at completion of rough-in, before insulation is installed",
+      "status": "todo",
+      "estimate": 0,
+      "description": "",
+      "note": "",
+      "materials": [],
+      "expenses": [],
+      "performers": []
+    },
+    {
+      "id": "efc6463c-b585-4d88-8717-772fd13a92f2",
+      "sectionId": "inspections",
+      "title": "Plumbing Final inspection — at completion of all fixtures",
+      "status": "todo",
+      "estimate": 0,
+      "description": "",
+      "note": "",
+      "materials": [],
+      "expenses": [],
+      "performers": []
+    },
+    {
+      "id": "044e719f-1bfe-4235-8fdd-53a729be84df",
+      "sectionId": "inspections",
+      "title": "Plumbing Rough-in — (water supply, drains, waste & vents) at completion and ready for testing",
+      "status": "todo",
+      "estimate": 0,
+      "description": "",
+      "note": "",
+      "materials": [],
+      "expenses": [],
+      "performers": []
+    },
+    {
+      "id": "f74d9673-a5dc-4b33-8678-42b3d798298d",
+      "sectionId": "inspections",
+      "title": "Final interior inspection — at completion of interior construction",
+      "status": "todo",
+      "estimate": 0,
+      "description": "",
+      "note": "",
+      "materials": [],
+      "expenses": [],
+      "performers": []
+    },
+    {
+      "id": "43df6e24-35d4-4918-b0e9-926115754eaa",
+      "sectionId": "inspections",
+      "title": "Structural framing — at completion including rough-in of plumbing and HVAC",
+      "status": "todo",
+      "estimate": 0,
+      "description": "",
+      "note": "",
+      "materials": [],
+      "expenses": [],
+      "performers": []
+    },
+    {
       "id": "perm-1",
       "sectionId": "permits-design",
       "title": "Prepare permit drawings + scope package for multiplex conversion",
-      "status": "blocked",
+      "status": "done",
       "description": "Assemble the permit set, including unit layouts, life-safety approach, mechanical/plumbing/electrical notes, and required details for a Toronto multiplex conversion.",
       "note": "Include fire separations/alarms/egress strategy early so downstream assemblies are not reworked.",
       "materials": [],
       "expenses": [],
-      "estimate": 0
-    },
-    {
-      "id": "perm-2",
-      "sectionId": "permits-design",
-      "title": "Inspection plan (rough-in → close-up → final)",
-      "status": "todo",
-      "description": "Define inspection checkpoints and prerequisites (photos, checklists, access).",
-      "note": "Create a single list of inspection-ready evidence (photos of rough-in before closure, inventory for missing items).",
-      "materials": [],
-      "expenses": [],
-      "estimate": 0
+      "estimate": 0,
+      "actualCompletionDate": "2026-02-18",
+      "performers": [
+        "Sasha"
+      ]
     },
     {
       "id": "env-1",
@@ -951,18 +1021,6 @@
     }
   ],
   "notes": [
-    {
-      "id": "n-photos",
-      "title": "Documentation habit",
-      "content": "Photograph all rough-in work (plumbing, electrical, HVAC) before wall/ceiling closure. Store by section + date.",
-      "linkedSectionId": null
-    },
-    {
-      "id": "n-blocked",
-      "title": "Blocked item review",
-      "content": "Review blocked items weekly with an owner and target unblock date; avoid hidden dependencies.",
-      "linkedSectionId": null
-    },
     {
       "id": "n-procure",
       "title": "Procurement batching",

@@ -1,5 +1,3 @@
-import "server-only";
-
 import { projectRepository } from "@/lib/reno-repository";
 import type { RenovationProject } from "@/lib/reno-types";
 

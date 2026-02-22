@@ -96,6 +96,24 @@ npm run validate:data
 npm run build
 ```
 
+MCP server (stdio):
+
+```bash
+npm run mcp:server
+```
+
+Quiet MCP server (minimal logs/warnings):
+
+```bash
+npm run mcp:server:quiet
+```
+
+MCP health check:
+
+```bash
+npm run mcp:doctor
+```
+
 ## 5. JSON Data Model
 The app currently reads and writes project state from JSON files.
 
@@ -250,12 +268,59 @@ and committed through:
 - primary pages are under `/app/[projectId]/*`
 - unknown catch-all app routes return 404
 
-## 9. Known MVP Constraints
+## 9. MCP Server (LLM Integration)
+This repository includes an MCP server that exposes renovation actions over stdio so LLM tools can operate your app without manual UI interaction.
+
+Server entrypoint:
+- `apps/mcp-server/server.mjs`
+
+Shared backend used by both Next actions and MCP:
+- `src/core/reno-service.ts`
+
+Current MCP resources:
+- `resource://project/{projectId}`
+- `resource://item/{projectId}/{itemId}`
+
+Both resource templates are listable via MCP `resources/list` so clients can discover concrete project/item URIs automatically.
+
+Current MCP tools:
+- `reno_list_projects`
+- `reno_get_project`
+- `reno_list_sections`
+- `reno_add_section`
+- `reno_update_section`
+- `reno_delete_section`
+- `reno_list_items`
+- `reno_get_item`
+- `reno_add_item`
+- `reno_delete_item`
+- `reno_update_item_fields`
+- `reno_add_material`
+- `reno_update_material`
+- `reno_delete_material`
+- `reno_add_expense`
+- `reno_update_expense`
+- `reno_delete_expense`
+- `reno_add_note`
+- `reno_update_note`
+- `reno_link_note`
+
+Example MCP client command:
+- `node --experimental-strip-types /absolute/path/to/reno-manager/apps/mcp-server/server.mjs`
+
+Notes:
+- The MCP server uses the same JSON-backed repository as the app right now.
+- When moving to Postgres/Prisma, only the repository binding changes; MCP tools can remain stable.
+- Safe mode for destructive MCP tools can be enabled with:
+  - `RENO_MCP_SAFE_MODE=1`
+  - When enabled, delete tools require `confirm: true` in tool input.
+
+## 10. Known MVP Constraints
 - JSON file persistence is ideal for local development and rapid iteration.
 - For hosted production environments (for example Vercel serverless), filesystem writes are not a long-term persistence strategy.
 - Auth baseline is still pending.
 
-## 10. Planned Expansion to DB (Recommended Path)
+## 11. Planned Expansion to DB (Recommended Path)
 Target stack for production:
 - Vercel Postgres
 - Prisma ORM + migrations
@@ -284,7 +349,7 @@ Target stack for production:
 - `expenses` (id, item_id, date, amount, type, vendor, note)
 - `notes` (id, project_id, title, content, linked_section_id nullable)
 
-## 11. Suggested Next Steps
+## 12. Suggested Next Steps
 - Add auth baseline (password hash + signed httpOnly cookie + login throttling)
 - Add test coverage for repository and server actions
 - Add integration tests for key mutation flows (sections/items/materials/expenses/notes)

@@ -2,7 +2,7 @@ import type {
   ExpenseType,
   ItemStatus,
   RenovationProject,
-} from "@/lib/reno-types";
+} from "./reno-types.ts";
 
 const VALID_STATUS: ItemStatus[] = ["todo", "in_progress", "blocked", "done"];
 const VALID_EXPENSE_TYPES: ExpenseType[] = [

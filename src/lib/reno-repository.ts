@@ -1,5 +1,3 @@
-import "server-only";
-
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type {
@@ -8,8 +6,8 @@ import type {
   RenovationMaterial,
   RenovationNote,
   RenovationProject,
-} from "@/lib/reno-types";
-import { validateProjectData } from "@/lib/reno-validation";
+} from "./reno-types.ts";
+import { validateProjectData } from "./reno-validation.ts";
 
 type ProjectIndexEntry = {
   id: string;
@@ -111,6 +109,10 @@ export interface ProjectRepository {
     projectId: string,
     noteId: string,
     payload: Pick<RenovationNote, "title" | "content">,
+  ): Promise<RenovationProject>;
+  deleteProjectNote(
+    projectId: string,
+    noteId: string,
   ): Promise<RenovationProject>;
 }
 
@@ -469,6 +471,16 @@ export class JsonProjectRepository implements ProjectRepository {
 
       note.title = payload.title;
       note.content = payload.content;
+      return project;
+    });
+  }
+
+  async deleteProjectNote(
+    projectId: string,
+    noteId: string,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      project.notes = project.notes.filter((note) => note.id !== noteId);
       return project;
     });
   }

@@ -22,7 +22,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import Link from "next/link";
-import type { ComponentType } from "react";
+import { useState, useTransition, type ComponentType } from "react";
 import {
   ChevronRight,
   ClipboardList,
@@ -30,13 +30,19 @@ import {
   FolderKanban,
   LayoutDashboard,
   PackageSearch,
+  Pencil,
   Receipt,
   Settings,
+  Trash2,
 } from "lucide-react";
 import { useRenoData } from "@/components/reno/reno-data-provider";
+import { deleteSectionAction, updateSectionAction } from "@/lib/reno-actions";
+import { useRouter } from "next/navigation";
 
 type NavChild = {
+  id: string;
   title: string;
+  description: string;
   href: string;
 };
 
@@ -49,6 +55,80 @@ type NavItem = {
 
 export function AppSidebar() {
   const project = useRenoData();
+  const [sections, setSections] = useState(project.sections);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  function editSection(sectionId: string) {
+    const section = sections.find((entry) => entry.id === sectionId);
+    if (!section) {
+      return;
+    }
+
+    const nextTitle = window.prompt("Section title", section.title);
+    if (!nextTitle) {
+      return;
+    }
+
+    const nextDescription = window.prompt(
+      "Section description",
+      section.description ?? "",
+    );
+    if (nextDescription === null) {
+      return;
+    }
+
+    const title = nextTitle.trim();
+    const description = nextDescription.trim();
+    if (!title || !description) {
+      return;
+    }
+
+    setSections((current) =>
+      current.map((entry) =>
+        entry.id === sectionId ? { ...entry, title, description } : entry,
+      ),
+    );
+
+    startTransition(async () => {
+      try {
+        await updateSectionAction({
+          projectId: project.id,
+          sectionId,
+          title,
+          description,
+        });
+        router.refresh();
+      } catch {
+        router.refresh();
+      }
+    });
+  }
+
+  function removeSection(sectionId: string) {
+    const section = sections.find((entry) => entry.id === sectionId);
+    const sectionTitle = section?.title ?? "this section";
+    const confirmed = window.confirm(
+      `Delete "${sectionTitle}"? This will also remove all items in this section and unlink related notes.`,
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    setSections((current) => current.filter((entry) => entry.id !== sectionId));
+
+    startTransition(async () => {
+      try {
+        await deleteSectionAction({
+          projectId: project.id,
+          sectionId,
+        });
+        router.refresh();
+      } catch {
+        router.refresh();
+      }
+    });
+  }
 
   const mainNav: NavItem[] = [
     {
@@ -60,8 +140,10 @@ export function AppSidebar() {
       title: project.name,
       href: `/app/${project.id}`,
       icon: FolderKanban,
-      children: project.sections.map((section) => ({
+      children: sections.map((section) => ({
+        id: section.id,
         title: section.title,
+        description: section.description,
         href: `/app/${project.id}/sections/${section.id}`,
       })),
     },
@@ -132,12 +214,40 @@ export function AppSidebar() {
                         <CollapsibleContent>
                           <SidebarMenuSub>
                             {item.children.map((child) => (
-                              <SidebarMenuSubItem key={child.title}>
+                              <SidebarMenuSubItem key={child.id}>
                                 <SidebarMenuSubButton asChild>
                                   <Link href={child.href}>
                                     <span>{child.title}</span>
                                   </Link>
                                 </SidebarMenuSubButton>
+                                <div className="absolute top-1 right-1 flex gap-1 opacity-0 transition-opacity group-hover/menu-sub-item:opacity-100">
+                                  <button
+                                    type="button"
+                                    aria-label={`Edit ${child.title}`}
+                                    onClick={(event) => {
+                                      event.preventDefault();
+                                      event.stopPropagation();
+                                      editSection(child.id);
+                                    }}
+                                    disabled={isPending}
+                                    className="inline-flex size-5 items-center justify-center rounded border bg-background text-muted-foreground hover:bg-muted"
+                                  >
+                                    <Pencil className="size-3" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    aria-label={`Delete ${child.title}`}
+                                    onClick={(event) => {
+                                      event.preventDefault();
+                                      event.stopPropagation();
+                                      removeSection(child.id);
+                                    }}
+                                    disabled={isPending}
+                                    className="inline-flex size-5 items-center justify-center rounded border border-red-200 bg-background text-red-700 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="size-3" />
+                                  </button>
+                                </div>
                               </SidebarMenuSubItem>
                             ))}
                           </SidebarMenuSub>
