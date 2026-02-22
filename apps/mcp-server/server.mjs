@@ -794,6 +794,37 @@ server.registerTool(
 );
 
 server.registerTool(
+  "reno_set_section_position",
+  {
+    description:
+      "Set a section's exact display position (0-based). Other sections are reindexed automatically.",
+    inputSchema: {
+      projectId: z.string().optional(),
+      sectionId: z.string(),
+      position: z.number().int().min(0),
+    },
+  },
+  async (input) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(input.projectId);
+      await renoService.setSectionPosition({
+        projectId: resolvedProjectId,
+        sectionId: input.sectionId,
+        position: input.position,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        sectionId: input.sectionId,
+        position: input.position,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
   "reno_add_note",
   {
     description: "Add a project lesson-learned note",

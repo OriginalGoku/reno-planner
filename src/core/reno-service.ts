@@ -342,6 +342,18 @@ export const renoService = {
     );
   },
 
+  async setSectionPosition(payload: {
+    projectId: string;
+    sectionId: string;
+    position: number;
+  }) {
+    return projectRepository.setSectionPosition(
+      payload.projectId,
+      payload.sectionId,
+      payload.position,
+    );
+  },
+
   async getProjectById(projectId: string): Promise<RenovationProject | null> {
     return projectRepository.getProjectById(projectId);
   },

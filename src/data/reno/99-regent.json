@@ -60,15 +60,15 @@
       "position": 0
     },
     {
-      "id": "fireproofing",
-      "title": "Fireproofing",
-      "description": "Fire separtion",
+      "id": "trade-scheduling-coordination",
+      "title": "Trade Scheduling & Coordination",
+      "description": "Schedule and coordinate all trades before construction starts. Includes kickoff meeting and material procurement.",
       "position": 1
     },
     {
-      "id": "envelope-insulation",
-      "title": "Insulation",
-      "description": "Continuous insulation + cavity insulation on ground floor; basement floor insulation assembly.",
+      "id": "structural-carpentry",
+      "title": "Framing",
+      "description": "Framing various parts",
       "position": 2
     },
     {
@@ -78,82 +78,94 @@
       "position": 3
     },
     {
-      "id": "hvac",
-      "title": "HVAC",
-      "description": "Heat pumps (primary), condensate strategy, electrical coordination; optional gas backup (if pursued).",
+      "id": "electrical",
+      "title": "Electrical",
+      "description": "Electrical wiring",
       "position": 4
     },
     {
-      "id": "ventilation",
-      "title": "Ventilation",
-      "description": "Bathroom exhaust and kitchen hood venting, terminations, sealing.",
+      "id": "hvac",
+      "title": "HVAC",
+      "description": "Heat pumps (primary), condensate strategy, electrical coordination; optional gas backup (if pursued).",
       "position": 5
-    },
-    {
-      "id": "fire-sound",
-      "title": "Soundproofing",
-      "description": "Soundproofing (resilient channel, damping, double Type X, sealing).",
-      "position": 6
-    },
-    {
-      "id": "finishes",
-      "title": "Interior Finishes",
-      "description": "Tile, flooring, underlayment, waterproofing, trims, transitions.",
-      "position": 7
-    },
-    {
-      "id": "structural-carpentry",
-      "title": "Framing",
-      "description": "Framing various parts",
-      "position": 8
-    },
-    {
-      "id": "garage-conversion",
-      "title": "Garage Conversion",
-      "description": "Remove garage door, infill wall with window, insulation, drywall/finishes, exterior tie-in.",
-      "position": 9
     },
     {
       "id": "doors-entrances",
       "title": "Entrances",
       "description": "Exterior entrance from back yard and basement entrance with weather sealing and hardware.",
-      "position": 10
+      "position": 6
     },
     {
-      "id": "electrical-lowvoltage",
-      "title": "Tenant Services",
-      "description": "Intercom/doorbell for 7 endpoints + structured wiring to avoid future wall cuts; basic electrical coordination.",
-      "position": 11
+      "id": "ventilation",
+      "title": "Ventilation",
+      "description": "Bathroom exhaust and kitchen hood venting, terminations, sealing.",
+      "position": 7
     },
     {
-      "id": "ceiling-roof",
-      "title": "Roof",
-      "description": "Ceiling work not covered elsewhere; roof replacement + added ventilation.",
-      "position": 12
+      "id": "fireproofing",
+      "title": "Fireproofing",
+      "description": "Fire separtion",
+      "position": 8
     },
     {
-      "id": "electrical",
-      "title": "Electrical",
-      "description": "Electrical wiring",
-      "position": 13
+      "id": "fire-sound",
+      "title": "Soundproofing",
+      "description": "Soundproofing (resilient channel, damping, double Type X, sealing).",
+      "position": 9
     },
     {
       "id": "inspections",
       "title": "Inspections",
       "description": "Request Inspection Online or by phone at 416-338-0700",
-      "position": 14
+      "position": 10
+    },
+    {
+      "id": "envelope-insulation",
+      "title": "Insulation",
+      "description": "Continuous insulation + cavity insulation on ground floor; basement floor insulation assembly.",
+      "position": 11
+    },
+    {
+      "id": "drywall",
+      "title": "Drywall",
+      "description": "All drywall installation across ground floor and basement units, including ceilings and partition walls.",
+      "position": 12
     },
     {
       "id": "bathrooms",
       "title": "Bathrooms",
       "description": "5 Separate Bathrooms",
-      "position": 15
+      "position": 13
     },
     {
       "id": "kitchens",
       "title": "Kitchens",
       "description": "7 Kitchens",
+      "position": 14
+    },
+    {
+      "id": "finishes",
+      "title": "Interior Finishes",
+      "description": "Tile, flooring, underlayment, waterproofing, trims, transitions.",
+      "position": 15
+    },
+    {
+      "id": "electrical-lowvoltage",
+      "title": "Tenant Services",
+      "description": "Intercom/doorbell for 7 endpoints + structured wiring to avoid future wall cuts; basic electrical coordination.",
       "position": 16
+    },
+    {
+      "id": "garage-conversion",
+      "title": "Garage Conversion",
+      "description": "Remove garage door, infill wall with window, insulation, drywall/finishes, exterior tie-in.",
+      "position": 17
+    },
+    {
+      "id": "ceiling-roof",
+      "title": "Roof",
+      "description": "Ceiling work not covered elsewhere; roof replacement + added ventilation.",
+      "position": 18
     }
   ],
   "items": [

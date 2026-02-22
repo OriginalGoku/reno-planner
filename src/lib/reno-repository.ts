@@ -138,6 +138,11 @@ export interface ProjectRepository {
     sectionId: string,
     direction: SectionMoveDirection,
   ): Promise<RenovationProject>;
+  setSectionPosition(
+    projectId: string,
+    sectionId: string,
+    position: number,
+  ): Promise<RenovationProject>;
   updateProjectNoteLink(
     projectId: string,
     noteId: string,
@@ -526,6 +531,31 @@ export class JsonProjectRepository implements ProjectRepository {
 
       const [moved] = ordered.splice(index, 1);
       ordered.splice(targetIndex, 0, moved);
+      project.sections = ordered.map((section, orderIndex) => ({
+        ...section,
+        position: orderIndex,
+      }));
+      return project;
+    });
+  }
+
+  async setSectionPosition(
+    projectId: string,
+    sectionId: string,
+    position: number,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const ordered = normalizeSectionOrder(project.sections);
+      const index = ordered.findIndex((section) => section.id === sectionId);
+      if (index < 0) {
+        throw new Error(`Unknown sectionId: ${sectionId}`);
+      }
+
+      const maxIndex = ordered.length - 1;
+      const nextIndex = Math.max(0, Math.min(position, maxIndex));
+
+      const [moved] = ordered.splice(index, 1);
+      ordered.splice(nextIndex, 0, moved);
       project.sections = ordered.map((section, orderIndex) => ({
         ...section,
         position: orderIndex,
