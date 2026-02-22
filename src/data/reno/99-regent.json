@@ -106,8 +106,8 @@
       "id": "env-1",
       "sectionId": "envelope-insulation",
       "title": "Ground floor walls: continuous insulation layer",
-      "status": "todo",
-      "description": "Install continuous insulation (interior/exterior as designed) and integrate air/vapour control layers.",
+      "status": "in_progress",
+      "description": "Install continuous insulation (interior/exterior as designed) and integrate air/vapour control layers.\n\nThis is the description",
       "note": "Confirm thickness/spec and fastening strategy; ensure continuity at transitions and openings.",
       "materials": [
         {
@@ -140,7 +140,8 @@
         }
       ],
       "expenses": [],
-      "estimate": 0
+      "estimate": 0,
+      "performers": []
     },
     {
       "id": "env-2",

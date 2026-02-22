@@ -293,14 +293,72 @@ export function ItemDetailWireframe({
     ) {
       return;
     }
-    setPerformers((current) => [...current, trimmed]);
+    const updatedPerformers = [...performers, trimmed];
+    setPerformers(updatedPerformers);
+    setOverviewFeedback(null);
     setNewPerformer("");
+
+    startSavingOverview(async () => {
+      try {
+        await updateItemFieldsAction({
+          projectId,
+          itemId: item.id,
+          title: itemTitle.trim() || item.title,
+          estimate: itemEstimate,
+          status: itemStatus,
+          estimatedCompletionDate: estimatedCompletionDate || undefined,
+          actualCompletionDate: actualCompletionDate || undefined,
+          performers: updatedPerformers,
+          description,
+          note: notes,
+        });
+        setOverviewFeedback({
+          type: "success",
+          message: `Assignee "${trimmed}" added.`,
+        });
+        router.refresh();
+      } catch {
+        setOverviewFeedback({
+          type: "error",
+          message: "Could not save assignee. Please try again.",
+        });
+      }
+    });
   }
 
   function removePerformer(name: string) {
-    setPerformers((current) =>
-      current.filter((performer) => performer !== name),
+    const updatedPerformers = performers.filter(
+      (performer) => performer !== name,
     );
+    setPerformers(updatedPerformers);
+    setOverviewFeedback(null);
+
+    startSavingOverview(async () => {
+      try {
+        await updateItemFieldsAction({
+          projectId,
+          itemId: item.id,
+          title: itemTitle.trim() || item.title,
+          estimate: itemEstimate,
+          status: itemStatus,
+          estimatedCompletionDate: estimatedCompletionDate || undefined,
+          actualCompletionDate: actualCompletionDate || undefined,
+          performers: updatedPerformers,
+          description,
+          note: notes,
+        });
+        setOverviewFeedback({
+          type: "success",
+          message: `Assignee "${name}" removed.`,
+        });
+        router.refresh();
+      } catch {
+        setOverviewFeedback({
+          type: "error",
+          message: "Could not remove assignee. Please try again.",
+        });
+      }
+    });
   }
 
   function addMaterial() {
