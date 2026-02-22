@@ -201,11 +201,11 @@ cp src/data/reno/project-sample.mock.json src/data/reno/99-regent.json
 
 ```json
 {
-  "defaultProjectId": "99-regent",
+  "defaultProjectId": "sample-project",
   "projects": [
     {
-      "id": "99-regent",
-      "file": "99-regent.json"
+      "id": "sample-project",
+      "file": "project-sample.mock.json"
     }
   ]
 }
@@ -216,11 +216,11 @@ Each project file in `src/data/reno/*.json` must include:
 
 ```json
 {
-  "id": "99-regent",
-  "name": "99 Regent",
-  "address": "99 Regent St, Toronto, ON",
+  "id": "sample-project",
+  "name": "Sample Reno Project",
+  "address": "100 Example Ave, Toronto, ON",
   "phase": "Planning",
-  "targetCompletion": "2026-08-15",
+  "targetCompletion": "2026-12-31",
   "overview": {
     "projectDescription": "...",
     "area": {
@@ -332,7 +332,7 @@ Each project file in `src/data/reno/*.json` must include:
   "attachments": [
     {
       "id": "att-1",
-      "projectId": "99-regent",
+      "projectId": "sample-project",
       "scopeType": "project",
       "scopeId": null,
       "category": "permit",
@@ -340,7 +340,7 @@ Each project file in `src/data/reno/*.json` must include:
       "originalName": "Building Permit Drawings.PDF",
       "mimeType": "application/pdf",
       "sizeBytes": 6439208,
-      "storageKey": "projects/99-regent/project/att-1-Building-Permit-Drawings.PDF",
+      "storageKey": "projects/sample-project/project/att-1-Building-Permit-Drawings.PDF",
       "uploadedAt": "2026-02-22T17:53:58.125Z",
       "note": "Site plan + floor plans"
     }
