@@ -1,123 +1,175 @@
 # Reno Manager (MVP)
-A lightweight, single-tenant renovation tracker built with Next.js App Router and Shadcn UI.
+Reno Manager is a single-tenant renovation tracker for planning, execution tracking, notes, purchases, expenses, unit planning, and file attachments.
 
-This project is optimized for practical day-to-day renovation management with minimal overhead:
-- organize work by **Project -> Sections -> Items**
-- track status, schedules, notes, materials, and expenses
-- capture project-level and section-linked lessons learned
-- keep everything JSON-backed for fast iteration
+It is intentionally practical and low-overhead:
+- all data is JSON-backed today
+- UI edits persist immediately through server actions
+- the same backend logic is exposed over MCP for LLM automation
 
-## 1. Current MVP Scope
-This MVP is intentionally simple and focused on execution.
+## What This MVP Supports
 
-Included:
-- Single-tenant app structure
-- Dynamic project routing: `/app/[projectId]`
-- Sidebar navigation generated from project JSON
-- Section and item drill-down workflows
-- Section management on project page:
-  - add
-  - edit
-  - delete (with confirmation)
-- Item-level editing for:
+### Project structure
+- Project-level metadata and overview
+- Sections (ordered)
+- Items under sections
+- Units with one-level room sub-items
+- Lessons learned notes
+- Attachments/files at multiple scopes
+
+### Section management
+- Add section
+- Edit section title/description
+- Delete section (removes its items and unlinks related notes)
+- Reorder sections (up/down and exact position)
+
+### Item management
+- Add item to a section
+- Delete item
+- Update item fields:
   - title
-  - status
+  - status (`todo`, `in_progress`, `blocked`, `done`)
   - estimate
   - estimated/actual completion dates
-  - assigned contractors/vendors
-  - overview + notes
-  - materials (add/edit/remove)
-  - expenses (add/edit/remove)
-- Project lessons learned:
-  - add notes
-  - edit title/content
-  - link notes to a section or whole project
-- All Items / Purchases / Expenses grouped views
-- Inline success/error feedback in edit panels (no toast dependency)
-- JSON validation and import pipeline
+  - assigned people/vendors
+  - overview & schedule text
+  - notes
 
-Not included yet:
-- authentication/session/rate limiting
-- database persistence
-- multi-user support
-- accounting-grade reporting
+### Materials management (per item)
+- Add material
+- Edit material
+- Delete material
+- Material fields:
+  - name
+  - quantity
+  - unit type
+  - estimated unit price
+  - URL
+  - note
 
-## 2. Tech Stack
+### Expense management (per item)
+- Add expense
+- Edit expense
+- Delete expense
+- Expense fields:
+  - date
+  - amount
+  - type
+  - vendor
+  - note
+
+### Unit management
+- Add unit
+- Edit unit
+- Delete unit
+- Unit fields:
+  - name
+  - floor (`main`, `basement`)
+  - no. bedrooms (integer, `0` allowed for bachelor units)
+  - total area (sqm)
+  - status (`planned`, `in_progress`, `done`)
+  - description
+- Default rooms for new units:
+  - Kitchen
+  - Living Area
+  - Bathroom
+- Optional additional rooms users can add:
+  - Bedroom
+  - Storage
+  - Other
+
+### Room management (one level deep under a unit)
+- Add room
+- Edit room
+- Delete room
+- Room fields:
+  - room type
+  - width (mm)
+  - length (mm)
+  - height (mm)
+  - description/notes
+
+### Lessons learned
+- Add note
+- Edit note
+- Delete note
+- Link note to a section, or keep it as project-wide
+
+### Files / attachments
+- Upload file
+- Delete file
+- Download file
+- Supported by local filesystem storage
+- Attachment can be linked to:
+  - project
+  - section
+  - item
+  - expense
+- Attachment fields:
+  - category (`drawing`, `invoice`, `permit`, `photo`, `other`)
+  - optional `fileTitle`
+  - note
+
+## Tech Stack
 - Next.js 16 (App Router)
 - React 19
 - TypeScript
-- Shadcn UI components
-- JSON file persistence (current)
+- Shadcn UI
+- JSON persistence (current)
+- MCP server over stdio
 
-## 3. Project Structure
-Key paths:
+## Repository Layout
 
-- `src/app/app/[projectId]/...`
-  - Project dashboard and feature pages
+- `src/app/app/[projectId]/*`
+  - Project pages (`dashboard`, `sections`, `items`, `units`, `purchases`, `expenses`, `notes`, `settings`)
 - `src/components/reno/*`
-  - Feature UI and wireframe components
+  - Feature wireframes and forms
 - `src/components/ui/*`
-  - Shadcn-based UI primitives
-- `src/lib/reno-repository.ts`
-  - JSON-backed repository (read/write)
-- `src/lib/reno-actions.ts`
-  - Server actions used by the UI for writes
-- `src/lib/reno-project-service.ts`
-  - Server-side project loaders
-- `src/lib/reno-data-loader.ts`
-  - Shared project helper functions/types exports
+  - UI primitives + sidebar
+- `src/lib/reno-types.ts`
+  - Canonical domain types
 - `src/lib/reno-validation.ts`
-  - Runtime project schema validation
+  - Runtime schema validation
+- `src/lib/reno-repository.ts`
+  - JSON read/write repository
+- `src/core/reno-service.ts`
+  - Shared business logic for both UI actions and MCP
+- `src/lib/reno-actions.ts`
+  - Server actions used by UI
+- `src/lib/local-file-store.ts`
+  - Local file storage adapter
 - `src/data/reno/projects-index.json`
-  - project registry + default project
+  - Project registry/default project
 - `src/data/reno/*.json`
-  - project datasets
-- `scripts/validate-reno-data.mjs`
-  - validation script
-- `scripts/import-project.mjs`
-  - import/backup/update-index script
+  - Project data files
+- `src/data/reno/backups/*.json`
+  - Import/backups
+- `storage/`
+  - Local attachment file storage (ignored by git)
+- `apps/mcp-server/server.mjs`
+  - MCP server entrypoint
+- `apps/mcp-server/doctor.mjs`
+  - MCP diagnostics
 
-## 4. Running the App
-Install and run:
+## Run Locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open:
-- `http://localhost:3000`
+Open: `http://localhost:3000`
 
-Quality checks:
+Useful checks (no build required):
 
 ```bash
 npm run lint
 npm run validate:data
-npm run build
-```
-
-MCP server (stdio):
-
-```bash
-npm run mcp:server
-```
-
-Quiet MCP server (minimal logs/warnings):
-
-```bash
-npm run mcp:server:quiet
-```
-
-MCP health check:
-
-```bash
 npm run mcp:doctor
 ```
 
-## 5. JSON Data Model
-The app currently reads and writes project state from JSON files.
+## JSON Data
 
-### 5.1 Project Registry
+### Project registry
 `src/data/reno/projects-index.json`
 
 ```json
@@ -132,8 +184,8 @@ The app currently reads and writes project state from JSON files.
 }
 ```
 
-### 5.2 Project File Shape
-Each project file (for example `src/data/reno/99-regent.json`) must follow this structure:
+### Project file schema (current)
+Each project file in `src/data/reno/*.json` must include:
 
 ```json
 {
@@ -142,225 +194,305 @@ Each project file (for example `src/data/reno/99-regent.json`) must follow this 
   "address": "99 Regent St, Toronto, ON",
   "phase": "Planning",
   "targetCompletion": "2026-08-15",
+  "overview": {
+    "projectDescription": "...",
+    "area": {
+      "groundFloorSqFtApprox": 1000,
+      "basementSqFtApprox": 1000
+    },
+    "occupancyPlan": {
+      "groundFloorUnits": 4,
+      "basementUnits": 3,
+      "totalUnits": 7
+    },
+    "currentState": {
+      "permitObtained": true,
+      "occupancy": "Fully vacant",
+      "framing": "...",
+      "groundFloorExteriorWalls": "...",
+      "basementExteriorWalls": "...",
+      "hazmat": "No asbestos/hazmat risk"
+    },
+    "unitMixAndSystems": {
+      "totalUnits": 7,
+      "bathrooms": 5,
+      "kitchens": 7,
+      "laundry": "...",
+      "hotWater": "...",
+      "basementCeilingHeight": "..."
+    },
+    "tradesAndFinancing": {
+      "generalContractor": "Owner-managed",
+      "confirmedTrades": ["Architect/Designer"],
+      "pendingBeforeStart": ["Trade scheduling"],
+      "financing": "Fully funded"
+    },
+    "scopeExclusions": ["..."]
+  },
   "sections": [
     {
       "id": "hvac",
       "title": "HVAC",
-      "description": "Heating and cooling scope"
+      "description": "...",
+      "position": 0
     }
   ],
   "items": [
     {
       "id": "hv-1",
       "sectionId": "hvac",
-      "title": "Install heat pump",
+      "title": "Relocate return vent in hallway",
       "status": "todo",
-      "estimate": 12000,
-      "estimatedCompletionDate": "2026-06-01",
+      "estimate": 1200,
+      "estimatedCompletionDate": "2026-03-01",
       "actualCompletionDate": "",
-      "performers": ["Northwind HVAC"],
-      "description": "Main item overview",
+      "performers": ["Vendor A"],
+      "description": "Overview text",
       "note": "Execution notes",
       "materials": [
         {
           "id": "mat-1",
-          "name": "Outdoor unit",
-          "quantity": 1,
-          "estimatedPrice": 4800,
-          "note": "Model per design"
+          "name": "Duct section",
+          "quantity": 2,
+          "unitType": "piece",
+          "estimatedPrice": 90,
+          "url": "",
+          "note": ""
         }
       ],
       "expenses": [
         {
           "id": "exp-1",
-          "date": "2026-02-21",
-          "amount": 350,
+          "date": "2026-02-20",
+          "amount": 312.5,
           "type": "material",
-          "vendor": "HVAC Supply",
-          "note": "Refrigerant lines"
+          "vendor": "SupplyHouse",
+          "note": "PEX fittings"
+        }
+      ]
+    }
+  ],
+  "units": [
+    {
+      "id": "unit-1",
+      "name": "Unit 1 - Main Floor",
+      "floor": "main",
+      "bedrooms": 1,
+      "totalAreaSqm": 42,
+      "status": "planned",
+      "description": "",
+      "rooms": [
+        {
+          "id": "room-1",
+          "roomType": "kitchen",
+          "widthMm": 3200,
+          "lengthMm": 2800,
+          "heightMm": 2400,
+          "description": ""
         }
       ]
     }
   ],
   "notes": [
     {
-      "id": "note-1",
-      "title": "Inspection lesson",
-      "content": "Take rough-in photos before closure",
+      "id": "n-1",
+      "title": "Inspection prep",
+      "content": "...",
       "linkedSectionId": null
+    }
+  ],
+  "attachments": [
+    {
+      "id": "att-1",
+      "projectId": "99-regent",
+      "scopeType": "project",
+      "scopeId": null,
+      "category": "permit",
+      "fileTitle": "Final Approved Plans",
+      "originalName": "Building Permit Drawings.PDF",
+      "mimeType": "application/pdf",
+      "sizeBytes": 6439208,
+      "storageKey": "projects/99-regent/project/att-1-Building-Permit-Drawings.PDF",
+      "uploadedAt": "2026-02-22T17:53:58.125Z",
+      "note": "Site plan + floor plans"
     }
   ]
 }
 ```
 
-### 5.3 Enum Rules
-`items[].status` must be one of:
-- `todo`
-- `in_progress`
-- `blocked`
-- `done`
+### Enums
 
-`items[].expenses[].type` must be one of:
-- `material`
-- `labor`
-- `permit`
-- `tool`
-- `other`
+- Item status: `todo`, `in_progress`, `blocked`, `done`
+- Expense type: `material`, `labor`, `permit`, `tool`, `other`
+- Material unit type:
+  - `linear_ft`, `sqft`, `sqm`, `piece`, `bundle`, `box`, `roll`, `sheet`, `bag`, `gallon`, `liter`, `kg`, `lb`, `meter`, `other`
+- Unit floor: `main`, `basement`
+- Unit status: `planned`, `in_progress`, `done`
+- Unit room type: `kitchen`, `living_area`, `bedroom`, `bathroom`, `storage`, `other`
+- Attachment scope: `project`, `section`, `item`, `expense`
+- Attachment category: `drawing`, `invoice`, `permit`, `photo`, `other`
 
-### 5.4 Numeric Rules
-These must be numbers (not `null`, not strings):
-- `items[].estimate`
-- `items[].materials[].quantity`
-- `items[].materials[].estimatedPrice`
-- `items[].expenses[].amount`
+### Numeric constraints
+- `sections[].position`: non-negative integer, unique
+- `items[].estimate`: number
+- `materials[].quantity`: number
+- `materials[].estimatedPrice`: number
+- `expenses[].amount`: number
+- `units[].bedrooms`: non-negative integer (`0` valid)
+- `units[].totalAreaSqm`: number
+- `rooms[].widthMm`, `lengthMm`, `heightMm`: number
 
-If unknown, use `0`.
+## Importing/Updating JSON Data
 
-## 6. Importing Real Data
-Use the importer to add or replace project JSON safely.
-
-### 6.1 Dry Run (recommended first)
-No files are changed.
+Dry run:
 
 ```bash
 npm run import:data:dry-run -- --source path/to/project.json --project-id my-project
 ```
 
-This prints:
-- source file
-- resolved project ID
-- target data file
-- whether backup would be created
-- whether `projects-index.json` would be updated
-
-### 6.2 Actual Import
-Performs validation, backups, writes, and post-write validation.
+Actual import:
 
 ```bash
 npm run import:data -- --source path/to/project.json --project-id my-project
 ```
 
-Behavior:
-- validates incoming JSON
-- creates backup if target exists:
-  - `src/data/reno/backups/<projectId>-<timestamp>.json`
-- writes project file to `src/data/reno/<file>.json`
-- inserts project entry into `projects-index.json` if missing
-- runs `validate:data`
+Import behavior:
+- validates incoming data
+- creates backup in `src/data/reno/backups/` if target exists
+- writes target project file
+- updates `projects-index.json` when needed
+- runs post-write validation
 
-## 7. Editing and Persistence Behavior
-Current persistence status:
-- Sections add/edit/delete: persisted
-- Section items add/delete + quick status updates: persisted
-- Item overview/schedule/notes: persisted
-- Item title/estimate/status/schedule/performers/notes: persisted
-- Materials add/edit/remove: persisted
-- Expenses add/edit/remove: persisted
-- Lessons learned add/edit/link: persisted
+## File Storage (Local)
 
-All writes are currently implemented through server actions in:
-- `src/lib/reno-actions.ts`
-and committed through:
-- `src/lib/reno-repository.ts`
+Attachments are stored in local filesystem under `storage/`.
 
-## 8. Routing Model
-- `/app` redirects to the default project from `projects-index.json`
-- primary pages are under `/app/[projectId]/*`
-- unknown catch-all app routes return 404
+- This folder is ignored by git.
+- JSON stores metadata (`storageKey`, filename, mime type, etc.).
+- Files can be downloaded through API endpoints.
 
-## 9. MCP Server (LLM Integration)
-This repository includes an MCP server that exposes renovation actions over stdio so LLM tools can operate your app without manual UI interaction.
+Current API routes:
+- `POST /api/files/upload`
+- `DELETE /api/files/[attachmentId]?projectId=...`
+- `GET /api/files/[attachmentId]/download?projectId=...`
 
-Server entrypoint:
-- `apps/mcp-server/server.mjs`
+## MCP Integration
 
-Shared backend used by both Next actions and MCP:
-- `src/core/reno-service.ts`
+The MCP server uses the same `renoService` as the app UI.
 
-Current MCP resources:
-- `resource://project/{projectId}`
-- `resource://item/{projectId}/{itemId}`
-
-Both resource templates are listable via MCP `resources/list` so clients can discover concrete project/item URIs automatically.
-
-Current MCP tools:
-- `reno_list_projects`
-- `reno_get_project`
-- `reno_list_sections`
-- `reno_add_section`
-- `reno_update_section`
-- `reno_delete_section`
-- `reno_list_items`
-- `reno_get_item`
-- `reno_add_item`
-- `reno_delete_item`
-- `reno_update_item_fields`
-- `reno_add_material`
-- `reno_update_material`
-- `reno_delete_material`
-- `reno_add_expense`
-- `reno_update_expense`
-- `reno_delete_expense`
-- `reno_add_note`
-- `reno_update_note`
-- `reno_link_note`
-
-Example MCP client command:
-- `node --experimental-strip-types /absolute/path/to/reno-manager/apps/mcp-server/server.mjs`
-
-Notes:
-- The MCP server uses the same JSON-backed repository as the app right now.
-- When moving to Postgres/Prisma, only the repository binding changes; MCP tools can remain stable.
-- Safe mode for destructive MCP tools can be enabled with:
-  - `RENO_MCP_SAFE_MODE=1`
-  - When enabled, delete tools require `confirm: true` in tool input.
-
-## 10. Known MVP Constraints
-- JSON file persistence is ideal for local development and rapid iteration.
-- For hosted production environments (for example Vercel serverless), filesystem writes are not a long-term persistence strategy.
-- Auth baseline is still pending.
-
-## 11. Planned Expansion to DB (Recommended Path)
-Target stack for production:
-- Vercel Postgres
-- Prisma ORM + migrations
-- App Router server actions / route handlers
-- minimal single-tenant auth (JWT/httpOnly cookies)
-
-### 10.1 Migration Strategy
-1. Keep the current repository interface as the contract.
-2. Add a `PrismaProjectRepository` implementing the same methods as `JsonProjectRepository`.
-3. Switch binding from JSON repo to Prisma repo behind config/env.
-4. Keep `validate:data` and importer as bootstrap/seed tools.
-5. Add migrations for:
-   - projects
-   - sections
-   - items
-   - materials
-   - expenses
-   - notes
-
-### 10.2 Suggested DB Mapping
-- `projects` (id, name, address, phase, target_completion)
-- `sections` (id, project_id, title, description)
-- `items` (id, project_id, section_id, title, status, estimate, dates, description, note)
-- `item_performers` (id, item_id, name)
-- `materials` (id, item_id, name, quantity, estimated_price, note)
-- `expenses` (id, item_id, date, amount, type, vendor, note)
-- `notes` (id, project_id, title, content, linked_section_id nullable)
-
-## 12. Suggested Next Steps
-- Add auth baseline (password hash + signed httpOnly cookie + login throttling)
-- Add test coverage for repository and server actions
-- Add integration tests for key mutation flows (sections/items/materials/expenses/notes)
-- Add export snapshot command (JSON backup by project)
-- Introduce Prisma repository and environment switch
-
----
-If you update project JSON manually, always run:
+Run MCP server:
 
 ```bash
-npm run validate:data
+npm run mcp:server
 ```
 
-before running the app.
+Quiet mode:
+
+```bash
+npm run mcp:server:quiet
+```
+
+Doctor check:
+
+```bash
+npm run mcp:doctor
+```
+
+### MCP resources
+- `resource://project/{projectId}`
+- `resource://item/{projectId}/{itemId}`
+- `resource://unit/{projectId}/{unitId}`
+- `resource://section/{projectId}/{sectionId}`
+- `resource://note/{projectId}/{noteId}`
+
+### MCP tools
+- Project:
+  - `reno_list_projects`
+  - `reno_get_project`
+  - `reno_get_project_meta`
+  - `reno_update_project_meta`
+- Sections:
+  - `reno_list_sections`
+  - `reno_add_section`
+  - `reno_update_section`
+  - `reno_delete_section`
+  - `reno_move_section`
+  - `reno_set_section_position`
+- Items:
+  - `reno_list_items`
+  - `reno_get_item`
+  - `reno_add_item`
+  - `reno_delete_item`
+  - `reno_update_item_fields`
+  - `reno_update_item_status`
+- Materials:
+  - `reno_add_material`
+  - `reno_update_material`
+  - `reno_delete_material`
+- Expenses:
+  - `reno_add_expense`
+  - `reno_update_expense`
+  - `reno_delete_expense`
+- Units:
+  - `reno_list_units`
+  - `reno_get_unit`
+  - `reno_add_unit`
+  - `reno_update_unit`
+  - `reno_delete_unit`
+  - `reno_add_unit_room`
+  - `reno_update_unit_room`
+  - `reno_delete_unit_room`
+- Notes:
+  - `reno_list_notes`
+  - `reno_add_note`
+  - `reno_update_note`
+  - `reno_delete_note`
+  - `reno_link_note`
+- Attachments:
+  - `reno_list_attachments`
+  - `reno_add_attachment_from_path`
+  - `reno_delete_attachment`
+  - `reno_get_attachment_download_url`
+
+### MCP safe mode
+Enable confirmation requirement for destructive operations:
+
+```bash
+RENO_MCP_SAFE_MODE=1 npm run mcp:server
+```
+
+With safe mode on, delete tools require `confirm: true`.
+
+## UI Routes
+
+- `/app` -> redirects to default project
+- `/app/[projectId]` -> dashboard
+- `/app/[projectId]/sections/[sectionId]`
+- `/app/[projectId]/items`
+- `/app/[projectId]/items/[itemId]`
+- `/app/[projectId]/units`
+- `/app/[projectId]/purchases`
+- `/app/[projectId]/expenses`
+- `/app/[projectId]/notes`
+- `/app/[projectId]/settings`
+
+## Current Constraints
+
+- JSON and local filesystem persistence are ideal for local/dev workflows.
+- For production hosting, plan migration to durable storage.
+
+## Database Migration Path (Planned)
+
+Current architecture already isolates persistence behind repository + service layers.
+
+Recommended next step:
+1. Implement a Postgres/Prisma repository with the same interface as `JsonProjectRepository`.
+2. Swap repository binding in one place.
+3. Keep `renoService`, server actions, and MCP tools unchanged.
+
+Target stack (planned):
+- Vercel Postgres
+- Prisma migrations
+- Minimal single-tenant auth (HTTP-only signed session)
+- Add login rate limiting and password hashing baseline
+
