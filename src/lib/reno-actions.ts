@@ -11,8 +11,12 @@ import {
   type AddExpenseInput,
   type AddMaterialInput,
   type AddProjectNoteInput,
+  type AddUnitInput,
+  type AddUnitRoomInput,
   type UpdateProjectMetaInput,
   type UpdateItemFieldsInput,
+  type UpdateUnitInput,
+  type UpdateUnitRoomInput,
 } from "@/core/reno-service";
 
 function refreshProjectPaths(projectId: string) {
@@ -21,6 +25,7 @@ function refreshProjectPaths(projectId: string) {
   revalidatePath(`/app/${projectId}/expenses`);
   revalidatePath(`/app/${projectId}/purchases`);
   revalidatePath(`/app/${projectId}/notes`);
+  revalidatePath(`/app/${projectId}/units`);
 }
 
 export async function updateItemFieldsAction(payload: UpdateItemFieldsInput) {
@@ -196,5 +201,42 @@ export async function moveSectionAction(payload: {
   direction: "up" | "down";
 }) {
   await renoService.moveSection(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function addUnitAction(payload: AddUnitInput) {
+  await renoService.addUnit(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function updateUnitAction(payload: UpdateUnitInput) {
+  await renoService.updateUnit(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function deleteUnitAction(payload: {
+  projectId: string;
+  unitId: string;
+}) {
+  await renoService.deleteUnit(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function addUnitRoomAction(payload: AddUnitRoomInput) {
+  await renoService.addUnitRoom(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function updateUnitRoomAction(payload: UpdateUnitRoomInput) {
+  await renoService.updateUnitRoom(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function deleteUnitRoomAction(payload: {
+  projectId: string;
+  unitId: string;
+  roomId: string;
+}) {
+  await renoService.deleteUnitRoom(payload);
   refreshProjectPaths(payload.projectId);
 }

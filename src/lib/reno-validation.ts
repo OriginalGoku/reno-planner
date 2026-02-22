@@ -4,6 +4,9 @@ import type {
   ItemStatus,
   MaterialUnitType,
   RenovationProject,
+  UnitFloor,
+  UnitRoomType,
+  UnitStatus,
 } from "./reno-types.ts";
 
 const VALID_STATUS: ItemStatus[] = ["todo", "in_progress", "blocked", "done"];
@@ -36,6 +39,14 @@ const VALID_ATTACHMENT_SCOPES: AttachmentScopeType[] = [
   "section",
   "item",
   "expense",
+];
+const VALID_UNIT_FLOORS: UnitFloor[] = ["main", "basement"];
+const VALID_UNIT_STATUS: UnitStatus[] = ["planned", "in_progress", "done"];
+const VALID_UNIT_ROOM_TYPES: UnitRoomType[] = [
+  "kitchen_living_area",
+  "bathroom",
+  "storage",
+  "other",
 ];
 const VALID_ATTACHMENT_CATEGORIES = [
   "drawing",
@@ -200,6 +211,7 @@ export function validateProjectData(value: unknown): RenovationProject {
 
   ensure(Array.isArray(project.sections), "Project.sections must be an array.");
   ensure(Array.isArray(project.items), "Project.items must be an array.");
+  ensure(Array.isArray(project.units), "Project.units must be an array.");
   ensure(Array.isArray(project.notes), "Project.notes must be an array.");
   ensure(
     Array.isArray(project.attachments),
@@ -332,6 +344,63 @@ export function validateProjectData(value: unknown): RenovationProject {
       ensure(
         isOptionalString(expense.note),
         "Expense.note must be a string when provided.",
+      );
+    }
+  }
+
+  for (const unit of project.units) {
+    ensure(isRecord(unit), "Each unit must be an object.");
+    ensure(typeof unit.id === "string", "Unit.id must be a string.");
+    ensure(typeof unit.name === "string", "Unit.name must be a string.");
+    ensure(
+      typeof unit.floor === "string" &&
+        VALID_UNIT_FLOORS.includes(unit.floor as UnitFloor),
+      `Unit.floor must be one of: ${VALID_UNIT_FLOORS.join(", ")}.`,
+    );
+    ensure(
+      typeof unit.totalAreaSqm === "number",
+      "Unit.totalAreaSqm must be a number.",
+    );
+    ensure(
+      typeof unit.bedrooms === "number" &&
+        Number.isInteger(unit.bedrooms) &&
+        unit.bedrooms >= 0,
+      "Unit.bedrooms must be a non-negative integer.",
+    );
+    ensure(
+      typeof unit.status === "string" &&
+        VALID_UNIT_STATUS.includes(unit.status as UnitStatus),
+      `Unit.status must be one of: ${VALID_UNIT_STATUS.join(", ")}.`,
+    );
+    ensure(
+      typeof unit.description === "string",
+      "Unit.description must be a string.",
+    );
+    ensure(Array.isArray(unit.rooms), "Unit.rooms must be an array.");
+
+    for (const room of unit.rooms) {
+      ensure(isRecord(room), "Each unit room must be an object.");
+      ensure(typeof room.id === "string", "Room.id must be a string.");
+      ensure(
+        typeof room.roomType === "string" &&
+          VALID_UNIT_ROOM_TYPES.includes(room.roomType as UnitRoomType),
+        `Room.roomType must be one of: ${VALID_UNIT_ROOM_TYPES.join(", ")}.`,
+      );
+      ensure(
+        typeof room.widthMm === "number",
+        "Room.widthMm must be a number.",
+      );
+      ensure(
+        typeof room.lengthMm === "number",
+        "Room.lengthMm must be a number.",
+      );
+      ensure(
+        typeof room.heightMm === "number",
+        "Room.heightMm must be a number.",
+      );
+      ensure(
+        typeof room.description === "string",
+        "Room.description must be a string.",
       );
     }
   }

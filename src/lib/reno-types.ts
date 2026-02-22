@@ -2,6 +2,16 @@ export type ItemStatus = "todo" | "in_progress" | "blocked" | "done";
 
 export type ExpenseType = "material" | "labor" | "permit" | "tool" | "other";
 
+export type UnitFloor = "main" | "basement";
+
+export type UnitStatus = "planned" | "in_progress" | "done";
+
+export type UnitRoomType =
+  | "kitchen_living_area"
+  | "bathroom"
+  | "storage"
+  | "other";
+
 export type MaterialUnitType =
   | "linear_ft"
   | "sqft"
@@ -58,6 +68,26 @@ export type RenovationSection = {
   title: string;
   description: string;
   position: number;
+};
+
+export type RenovationUnitRoom = {
+  id: string;
+  roomType: UnitRoomType;
+  widthMm: number;
+  lengthMm: number;
+  heightMm: number;
+  description: string;
+};
+
+export type RenovationUnit = {
+  id: string;
+  name: string;
+  floor: UnitFloor;
+  bedrooms: number;
+  totalAreaSqm: number;
+  status: UnitStatus;
+  description: string;
+  rooms: RenovationUnitRoom[];
 };
 
 export type RenovationNote = {
@@ -129,6 +159,7 @@ export type RenovationProject = {
   overview: ProjectOverview;
   sections: RenovationSection[];
   items: RenovationItem[];
+  units: RenovationUnit[];
   notes: RenovationNote[];
   attachments: RenovationAttachment[];
 };

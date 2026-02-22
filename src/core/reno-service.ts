@@ -12,6 +12,9 @@ import type {
   ProjectOverview,
   RenovationAttachment,
   RenovationProject,
+  UnitFloor,
+  UnitRoomType,
+  UnitStatus,
 } from "../lib/reno-types.ts";
 
 export type UpdateItemFieldsInput = {
@@ -76,6 +79,48 @@ export type AddProjectNoteInput = {
   title: string;
   content: string;
   linkedSectionId?: string | null;
+};
+
+export type AddUnitInput = {
+  projectId: string;
+  name: string;
+  floor: UnitFloor;
+  bedrooms: number;
+  totalAreaSqm: number;
+  status: UnitStatus;
+  description: string;
+};
+
+export type UpdateUnitInput = {
+  projectId: string;
+  unitId: string;
+  name: string;
+  floor: UnitFloor;
+  bedrooms: number;
+  totalAreaSqm: number;
+  status: UnitStatus;
+  description: string;
+};
+
+export type AddUnitRoomInput = {
+  projectId: string;
+  unitId: string;
+  roomType: UnitRoomType;
+  widthMm: number;
+  lengthMm: number;
+  heightMm: number;
+  description: string;
+};
+
+export type UpdateUnitRoomInput = {
+  projectId: string;
+  unitId: string;
+  roomId: string;
+  roomType: UnitRoomType;
+  widthMm: number;
+  lengthMm: number;
+  heightMm: number;
+  description: string;
 };
 
 export type UpdateProjectMetaInput = {
@@ -272,6 +317,105 @@ export const renoService = {
       content: payload.content,
       linkedSectionId: payload.linkedSectionId ?? null,
     });
+  },
+
+  async addUnit(payload: AddUnitInput) {
+    return projectRepository.addUnit(payload.projectId, {
+      id: crypto.randomUUID(),
+      name: payload.name.trim(),
+      floor: payload.floor,
+      bedrooms: payload.bedrooms,
+      totalAreaSqm: payload.totalAreaSqm,
+      status: payload.status,
+      description: payload.description.trim(),
+      rooms: [
+        {
+          id: crypto.randomUUID(),
+          roomType: "kitchen_living_area",
+          widthMm: 0,
+          lengthMm: 0,
+          heightMm: 0,
+          description: "",
+        },
+        {
+          id: crypto.randomUUID(),
+          roomType: "bathroom",
+          widthMm: 0,
+          lengthMm: 0,
+          heightMm: 0,
+          description: "",
+        },
+        {
+          id: crypto.randomUUID(),
+          roomType: "storage",
+          widthMm: 0,
+          lengthMm: 0,
+          heightMm: 0,
+          description: "",
+        },
+        {
+          id: crypto.randomUUID(),
+          roomType: "other",
+          widthMm: 0,
+          lengthMm: 0,
+          heightMm: 0,
+          description: "",
+        },
+      ],
+    });
+  },
+
+  async updateUnit(payload: UpdateUnitInput) {
+    return projectRepository.updateUnit(payload.projectId, payload.unitId, {
+      name: payload.name.trim(),
+      floor: payload.floor,
+      bedrooms: payload.bedrooms,
+      totalAreaSqm: payload.totalAreaSqm,
+      status: payload.status,
+      description: payload.description.trim(),
+    });
+  },
+
+  async deleteUnit(payload: { projectId: string; unitId: string }) {
+    return projectRepository.deleteUnit(payload.projectId, payload.unitId);
+  },
+
+  async addUnitRoom(payload: AddUnitRoomInput) {
+    return projectRepository.addUnitRoom(payload.projectId, payload.unitId, {
+      id: crypto.randomUUID(),
+      roomType: payload.roomType,
+      widthMm: payload.widthMm,
+      lengthMm: payload.lengthMm,
+      heightMm: payload.heightMm,
+      description: payload.description.trim(),
+    });
+  },
+
+  async updateUnitRoom(payload: UpdateUnitRoomInput) {
+    return projectRepository.updateUnitRoom(
+      payload.projectId,
+      payload.unitId,
+      payload.roomId,
+      {
+        roomType: payload.roomType,
+        widthMm: payload.widthMm,
+        lengthMm: payload.lengthMm,
+        heightMm: payload.heightMm,
+        description: payload.description.trim(),
+      },
+    );
+  },
+
+  async deleteUnitRoom(payload: {
+    projectId: string;
+    unitId: string;
+    roomId: string;
+  }) {
+    return projectRepository.deleteUnitRoom(
+      payload.projectId,
+      payload.unitId,
+      payload.roomId,
+    );
   },
 
   async updateProjectNoteLink(payload: {

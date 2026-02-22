@@ -28,6 +28,7 @@ import {
   ClipboardList,
   FileText,
   FolderKanban,
+  Home,
   LayoutDashboard,
   PackageSearch,
   Pencil,
@@ -50,6 +51,7 @@ type NavItem = {
   href: string;
   icon: ComponentType<{ className?: string }>;
   children?: NavChild[];
+  childKind?: "section" | "unit";
 };
 
 export function AppSidebar() {
@@ -130,6 +132,7 @@ export function AppSidebar() {
       title: project.name,
       href: `/app/${project.id}`,
       icon: FolderKanban,
+      childKind: "section",
       children: project.sections.map((section) => ({
         id: section.id,
         title: section.title,
@@ -140,6 +143,17 @@ export function AppSidebar() {
       title: "All Items",
       href: `/app/${project.id}/items`,
       icon: ClipboardList,
+    },
+    {
+      title: "Units",
+      href: `/app/${project.id}/units`,
+      icon: Home,
+      childKind: "unit",
+      children: project.units.map((unit) => ({
+        id: unit.id,
+        title: unit.name,
+        href: `/app/${project.id}/units#unit-${unit.id}`,
+      })),
     },
     {
       title: "Purchases",
@@ -209,34 +223,36 @@ export function AppSidebar() {
                                     <span>{child.title}</span>
                                   </Link>
                                 </SidebarMenuSubButton>
-                                <div className="absolute top-1 right-1 flex gap-1 opacity-0 transition-opacity group-hover/menu-sub-item:opacity-100">
-                                  <button
-                                    type="button"
-                                    aria-label={`Edit ${child.title}`}
-                                    onClick={(event) => {
-                                      event.preventDefault();
-                                      event.stopPropagation();
-                                      editSection(child.id);
-                                    }}
-                                    disabled={isPending}
-                                    className="inline-flex size-5 items-center justify-center rounded border bg-background text-muted-foreground hover:bg-muted"
-                                  >
-                                    <Pencil className="size-3" />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    aria-label={`Delete ${child.title}`}
-                                    onClick={(event) => {
-                                      event.preventDefault();
-                                      event.stopPropagation();
-                                      removeSection(child.id);
-                                    }}
-                                    disabled={isPending}
-                                    className="inline-flex size-5 items-center justify-center rounded border border-red-200 bg-background text-red-700 hover:bg-red-50"
-                                  >
-                                    <Trash2 className="size-3" />
-                                  </button>
-                                </div>
+                                {item.childKind === "section" ? (
+                                  <div className="absolute top-1 right-1 flex gap-1 opacity-0 transition-opacity group-hover/menu-sub-item:opacity-100">
+                                    <button
+                                      type="button"
+                                      aria-label={`Edit ${child.title}`}
+                                      onClick={(event) => {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                        editSection(child.id);
+                                      }}
+                                      disabled={isPending}
+                                      className="inline-flex size-5 items-center justify-center rounded border bg-background text-muted-foreground hover:bg-muted"
+                                    >
+                                      <Pencil className="size-3" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      aria-label={`Delete ${child.title}`}
+                                      onClick={(event) => {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                        removeSection(child.id);
+                                      }}
+                                      disabled={isPending}
+                                      className="inline-flex size-5 items-center justify-center rounded border border-red-200 bg-background text-red-700 hover:bg-red-50"
+                                    >
+                                      <Trash2 className="size-3" />
+                                    </button>
+                                  </div>
+                                ) : null}
                               </SidebarMenuSubItem>
                             ))}
                           </SidebarMenuSub>

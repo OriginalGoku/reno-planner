@@ -204,6 +204,64 @@ server.registerResource(
   },
 );
 
+server.registerResource(
+  "reno-unit-resource",
+  new ResourceTemplate("resource://unit/{projectId}/{unitId}", {
+    list: async () => {
+      const projectIds = await renoService.listProjectIds();
+      const projects = await Promise.all(
+        projectIds.map((projectId) => renoService.getProjectById(projectId)),
+      );
+
+      return {
+        resources: projects
+          .filter((project) => project !== null)
+          .flatMap((project) =>
+            project.units.map((unit) => ({
+              uri: `resource://unit/${project.id}/${unit.id}`,
+              name: unit.id,
+              title: unit.name,
+              mimeType: "application/json",
+              description: `${project.name} / ${unit.floor === "main" ? "Main" : "Basement"} floor`,
+            })),
+          ),
+      };
+    },
+  }),
+  {
+    title: "Reno Unit",
+    description: "Read one unit by projectId and unitId",
+    mimeType: "application/json",
+  },
+  async (_uri, variables) => {
+    const projectId = variables.projectId;
+    const unitId = variables.unitId;
+    if (!projectId || !unitId) {
+      throw new Error("projectId and unitId are required.");
+    }
+
+    const project = await renoService.getProjectById(projectId);
+    if (!project) {
+      throw new Error(`Unknown projectId: ${projectId}`);
+    }
+
+    const unit = project.units.find((entry) => entry.id === unitId);
+    if (!unit) {
+      throw new Error(`Unknown unitId: ${unitId}`);
+    }
+
+    return {
+      contents: [
+        {
+          uri: `resource://unit/${projectId}/${unitId}`,
+          mimeType: "application/json",
+          text: JSON.stringify(unit, null, 2),
+        },
+      ],
+    };
+  },
+);
+
 server.registerTool(
   "reno_list_projects",
   {
@@ -214,6 +272,245 @@ server.registerTool(
     try {
       const projectIds = await renoService.listProjectIds();
       return asToolResult({ projectIds });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_list_units",
+  {
+    description: "List units in a project",
+    inputSchema: {
+      projectId: z.string().optional(),
+    },
+  },
+  async ({ projectId }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      const project = await renoService.getProjectById(resolvedProjectId);
+      if (!project) {
+        throw new Error(`Unknown projectId: ${resolvedProjectId}`);
+      }
+      return asToolResult({ units: project.units });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_get_unit",
+  {
+    description: "Get one unit by ID",
+    inputSchema: {
+      projectId: z.string().optional(),
+      unitId: z.string(),
+    },
+  },
+  async ({ projectId, unitId }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      const project = await renoService.getProjectById(resolvedProjectId);
+      if (!project) {
+        throw new Error(`Unknown projectId: ${resolvedProjectId}`);
+      }
+
+      const unit = project.units.find((entry) => entry.id === unitId);
+      if (!unit) {
+        throw new Error(`Unknown unitId: ${unitId}`);
+      }
+
+      return asToolResult({ unit });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_add_unit",
+  {
+    description: "Add a new unit",
+    inputSchema: {
+      projectId: z.string().optional(),
+      name: z.string(),
+      floor: z.enum(["main", "basement"]),
+      bedrooms: z.number().int().min(0),
+      totalAreaSqm: z.number(),
+      status: z.enum(["planned", "in_progress", "done"]),
+      description: z.string(),
+    },
+  },
+  async (input) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(input.projectId);
+      await renoService.addUnit({
+        ...input,
+        projectId: resolvedProjectId,
+      });
+      return asToolResult({ ok: true, projectId: resolvedProjectId });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_update_unit",
+  {
+    description: "Update unit core fields",
+    inputSchema: {
+      projectId: z.string().optional(),
+      unitId: z.string(),
+      name: z.string(),
+      floor: z.enum(["main", "basement"]),
+      bedrooms: z.number().int().min(0),
+      totalAreaSqm: z.number(),
+      status: z.enum(["planned", "in_progress", "done"]),
+      description: z.string(),
+    },
+  },
+  async (input) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(input.projectId);
+      await renoService.updateUnit({
+        ...input,
+        projectId: resolvedProjectId,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        unitId: input.unitId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_delete_unit",
+  {
+    description: "Delete a unit and all nested rooms",
+    inputSchema: {
+      projectId: z.string().optional(),
+      unitId: z.string(),
+      confirm: z.boolean().optional(),
+    },
+  },
+  async (input) => {
+    try {
+      assertDestructiveAllowed("reno_delete_unit", input.confirm);
+      const resolvedProjectId = await resolveProjectId(input.projectId);
+      await renoService.deleteUnit({
+        projectId: resolvedProjectId,
+        unitId: input.unitId,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        unitId: input.unitId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_add_unit_room",
+  {
+    description: "Add a room under a unit",
+    inputSchema: {
+      projectId: z.string().optional(),
+      unitId: z.string(),
+      roomType: z.enum(["kitchen_living_area", "bathroom", "storage", "other"]),
+      widthMm: z.number(),
+      lengthMm: z.number(),
+      heightMm: z.number(),
+      description: z.string(),
+    },
+  },
+  async (input) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(input.projectId);
+      await renoService.addUnitRoom({
+        ...input,
+        projectId: resolvedProjectId,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        unitId: input.unitId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_update_unit_room",
+  {
+    description: "Update one room under a unit",
+    inputSchema: {
+      projectId: z.string().optional(),
+      unitId: z.string(),
+      roomId: z.string(),
+      roomType: z.enum(["kitchen_living_area", "bathroom", "storage", "other"]),
+      widthMm: z.number(),
+      lengthMm: z.number(),
+      heightMm: z.number(),
+      description: z.string(),
+    },
+  },
+  async (input) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(input.projectId);
+      await renoService.updateUnitRoom({
+        ...input,
+        projectId: resolvedProjectId,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        unitId: input.unitId,
+        roomId: input.roomId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_delete_unit_room",
+  {
+    description: "Delete one room from a unit",
+    inputSchema: {
+      projectId: z.string().optional(),
+      unitId: z.string(),
+      roomId: z.string(),
+      confirm: z.boolean().optional(),
+    },
+  },
+  async (input) => {
+    try {
+      assertDestructiveAllowed("reno_delete_unit_room", input.confirm);
+      const resolvedProjectId = await resolveProjectId(input.projectId);
+      await renoService.deleteUnitRoom({
+        projectId: resolvedProjectId,
+        unitId: input.unitId,
+        roomId: input.roomId,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        unitId: input.unitId,
+        roomId: input.roomId,
+      });
     } catch (error) {
       return asToolError(error);
     }

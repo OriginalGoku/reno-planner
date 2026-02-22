@@ -40,6 +40,20 @@ type UpdateProjectMetaInput = {
   overview: ProjectOverview;
 };
 
+type AddUnitInput = RenovationProject["units"][number];
+
+type UpdateUnitInput = Pick<
+  RenovationProject["units"][number],
+  "name" | "floor" | "bedrooms" | "totalAreaSqm" | "status" | "description"
+>;
+
+type AddUnitRoomInput = RenovationProject["units"][number]["rooms"][number];
+
+type UpdateUnitRoomInput = Pick<
+  RenovationProject["units"][number]["rooms"][number],
+  "roomType" | "widthMm" | "lengthMm" | "heightMm" | "description"
+>;
+
 type SectionMoveDirection = "up" | "down";
 
 function normalizeSectionOrder(
@@ -111,6 +125,29 @@ export interface ProjectRepository {
   addProjectNote(
     projectId: string,
     note: RenovationNote,
+  ): Promise<RenovationProject>;
+  addUnit(projectId: string, unit: AddUnitInput): Promise<RenovationProject>;
+  updateUnit(
+    projectId: string,
+    unitId: string,
+    payload: UpdateUnitInput,
+  ): Promise<RenovationProject>;
+  deleteUnit(projectId: string, unitId: string): Promise<RenovationProject>;
+  addUnitRoom(
+    projectId: string,
+    unitId: string,
+    room: AddUnitRoomInput,
+  ): Promise<RenovationProject>;
+  updateUnitRoom(
+    projectId: string,
+    unitId: string,
+    roomId: string,
+    payload: UpdateUnitRoomInput,
+  ): Promise<RenovationProject>;
+  deleteUnitRoom(
+    projectId: string,
+    unitId: string,
+    roomId: string,
   ): Promise<RenovationProject>;
   addSectionItem(
     projectId: string,
@@ -211,9 +248,23 @@ export class JsonProjectRepository implements ProjectRepository {
     ) {
       const projectLike = parsed as {
         sections: RenovationProject["sections"];
+        units?: RenovationProject["units"];
         attachments?: RenovationProject["attachments"];
       };
       projectLike.sections = normalizeSectionOrder(projectLike.sections);
+      if (!Array.isArray(projectLike.units)) {
+        projectLike.units = [];
+      } else {
+        projectLike.units = projectLike.units.map((unit) => ({
+          ...unit,
+          bedrooms:
+            typeof unit.bedrooms === "number" &&
+            Number.isInteger(unit.bedrooms) &&
+            unit.bedrooms >= 0
+              ? unit.bedrooms
+              : 0,
+        }));
+      }
       if (!Array.isArray(projectLike.attachments)) {
         projectLike.attachments = [];
       }
@@ -442,6 +493,102 @@ export class JsonProjectRepository implements ProjectRepository {
   ): Promise<RenovationProject> {
     return this.mutateProject(projectId, (project) => {
       project.notes = [note, ...project.notes];
+      return project;
+    });
+  }
+
+  async addUnit(
+    projectId: string,
+    unit: AddUnitInput,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      project.units = [unit, ...project.units];
+      return project;
+    });
+  }
+
+  async updateUnit(
+    projectId: string,
+    unitId: string,
+    payload: UpdateUnitInput,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const unit = project.units.find((entry) => entry.id === unitId);
+      if (!unit) {
+        throw new Error(`Unknown unitId: ${unitId}`);
+      }
+
+      unit.name = payload.name;
+      unit.floor = payload.floor;
+      unit.bedrooms = payload.bedrooms;
+      unit.totalAreaSqm = payload.totalAreaSqm;
+      unit.status = payload.status;
+      unit.description = payload.description;
+      return project;
+    });
+  }
+
+  async deleteUnit(
+    projectId: string,
+    unitId: string,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      project.units = project.units.filter((unit) => unit.id !== unitId);
+      return project;
+    });
+  }
+
+  async addUnitRoom(
+    projectId: string,
+    unitId: string,
+    room: AddUnitRoomInput,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const unit = project.units.find((entry) => entry.id === unitId);
+      if (!unit) {
+        throw new Error(`Unknown unitId: ${unitId}`);
+      }
+      unit.rooms = [room, ...unit.rooms];
+      return project;
+    });
+  }
+
+  async updateUnitRoom(
+    projectId: string,
+    unitId: string,
+    roomId: string,
+    payload: UpdateUnitRoomInput,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const unit = project.units.find((entry) => entry.id === unitId);
+      if (!unit) {
+        throw new Error(`Unknown unitId: ${unitId}`);
+      }
+      const room = unit.rooms.find((entry) => entry.id === roomId);
+      if (!room) {
+        throw new Error(`Unknown roomId: ${roomId}`);
+      }
+
+      room.roomType = payload.roomType;
+      room.widthMm = payload.widthMm;
+      room.lengthMm = payload.lengthMm;
+      room.heightMm = payload.heightMm;
+      room.description = payload.description;
+      return project;
+    });
+  }
+
+  async deleteUnitRoom(
+    projectId: string,
+    unitId: string,
+    roomId: string,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const unit = project.units.find((entry) => entry.id === unitId);
+      if (!unit) {
+        throw new Error(`Unknown unitId: ${unitId}`);
+      }
+      unit.rooms = unit.rooms.filter((room) => room.id !== roomId);
       return project;
     });
   }

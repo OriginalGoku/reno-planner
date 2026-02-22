@@ -175,7 +175,7 @@
       "title": "Basement - Right Unit (Moving wall)",
       "status": "todo",
       "estimate": 0,
-      "description": "",
+      "description": "We need to build two wall of the following dimensions:\n10 feet X 8 Feet (Fire rated wall)\n5 Feet X 8 feet",
       "note": "",
       "materials": [],
       "expenses": [],
@@ -1251,6 +1251,51 @@
       ],
       "expenses": [],
       "estimate": 0
+    }
+  ],
+  "units": [
+    {
+      "id": "4853af39-0e6b-40b8-8888-d4163d15f4c3",
+      "name": "Unit 1 - Front 1 Bedroom",
+      "floor": "main",
+      "bedrooms": 1,
+      "totalAreaSqm": 40,
+      "status": "planned",
+      "description": "",
+      "rooms": [
+        {
+          "id": "c98c92c9-55c1-4af7-ab77-b69995b18f49",
+          "roomType": "kitchen_living_area",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        },
+        {
+          "id": "2f477ba4-683f-4877-a030-28721137eb9a",
+          "roomType": "bathroom",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        },
+        {
+          "id": "18572dbf-76bc-4263-a9d8-8628defd23b6",
+          "roomType": "storage",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        },
+        {
+          "id": "58f2fee0-d001-46e5-ac89-dd060c05fe02",
+          "roomType": "other",
+          "widthMm": 0,
+          "lengthMm": 0,
+          "heightMm": 0,
+          "description": ""
+        }
+      ]
     }
   ],
   "notes": [
