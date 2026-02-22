@@ -1527,7 +1527,7 @@
       "bedrooms": 1,
       "totalAreaSqm": 30,
       "status": "planned",
-      "description": "Currently the Garage is non livable space. It requires full insulation as well as ceiling insulation. We also need to replace the current garage door with proper wall and windows. \nWe also need to build a 3 step stairs from the garage to the main building and we need to open the door from the garage to the main unit (in addition to the stairs). \nThe Garage floor has a slope towards the outside and this slope must be fixed in order to make the space livable. The garage floor is currently cement.",
+      "description": "Garage conversion to livable space. Currently non-livable with no plumbing. The garage door (9' × 8' opening) will be replaced with a proper wall and window. A 3-step stair connects the garage to the main building, with a doorway to be opened. The garage floor is cement with a slope towards the outside that must be corrected (approach TBD). The bedroom is a separate enclosed space accessed via the stairs connecting to the main house.\n\nInsulation & shared walls:\n- Two exterior walls require insulation (2\" rigid foam + 2×4 framing with batt): 19' and 9' walls, both ~12' ceiling height.\n- Ceiling requires insulation.\n- One shared wall with Unit 1 (cement) — no soundproofing required.",
       "rooms": [
         {
           "id": "d6837f65-1a69-4028-b59a-f2bf40fbd852",
@@ -1540,10 +1540,10 @@
         {
           "id": "122e43bc-c775-45c3-b41a-1b93a9eee95b",
           "roomType": "living_area",
-          "widthMm": 0,
-          "lengthMm": 0,
-          "heightMm": 0,
-          "description": ""
+          "widthMm": 5800,
+          "lengthMm": 2700,
+          "heightMm": 3658,
+          "description": "Main garage open space, open concept with kitchen."
         },
         {
           "id": "ca82b97b-6d77-4727-971c-23979c8b6c35",

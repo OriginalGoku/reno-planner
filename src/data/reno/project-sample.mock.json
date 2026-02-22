@@ -1,0 +1,151 @@
+{
+  "id": "sample-project",
+  "name": "Sample Reno Project",
+  "address": "100 Example Ave, Toronto, ON",
+  "phase": "Planning",
+  "targetCompletion": "2026-12-31",
+  "overview": {
+    "projectDescription": "Sample data file for open-source/public sharing.",
+    "area": {
+      "groundFloorSqFtApprox": 900,
+      "basementSqFtApprox": 900
+    },
+    "occupancyPlan": {
+      "groundFloorUnits": 2,
+      "basementUnits": 1,
+      "totalUnits": 3
+    },
+    "currentState": {
+      "permitObtained": false,
+      "occupancy": "Vacant",
+      "framing": "Partial demo complete.",
+      "groundFloorExteriorWalls": "Needs insulation review.",
+      "basementExteriorWalls": "Existing walls to inspect.",
+      "hazmat": "Unknown - verify before work starts."
+    },
+    "unitMixAndSystems": {
+      "totalUnits": 3,
+      "bathrooms": 2,
+      "kitchens": 3,
+      "laundry": "Shared laundry room",
+      "hotWater": "Tank",
+      "basementCeilingHeight": "To be verified"
+    },
+    "tradesAndFinancing": {
+      "generalContractor": "TBD",
+      "confirmedTrades": [
+        "Plumber"
+      ],
+      "pendingBeforeStart": [
+        "Finalize schedule"
+      ],
+      "financing": "Self-funded"
+    },
+    "scopeExclusions": [
+      "No exterior addition"
+    ]
+  },
+  "sections": [
+    {
+      "id": "plumbing",
+      "title": "Plumbing",
+      "description": "Rough-in and fixture planning.",
+      "position": 0
+    }
+  ],
+  "items": [
+    {
+      "id": "item-1",
+      "sectionId": "plumbing",
+      "unitId": "unit-1",
+      "title": "Rough-in for Unit 1 bathroom",
+      "status": "todo",
+      "estimate": 1200,
+      "estimatedCompletionDate": "2026-03-15",
+      "performers": [
+        "Sample Plumbing Inc."
+      ],
+      "description": "Basic rough-in scope.",
+      "note": "Confirm fixture locations.",
+      "materials": [
+        {
+          "id": "mat-1",
+          "name": "PEX pipe",
+          "quantity": 10,
+          "unitType": "meter",
+          "estimatedPrice": 80,
+          "url": "",
+          "note": ""
+        }
+      ],
+      "expenses": []
+    }
+  ],
+  "units": [
+    {
+      "id": "unit-1",
+      "name": "Unit 1 - Main",
+      "floor": "main",
+      "bedrooms": 1,
+      "totalAreaSqm": 42,
+      "status": "planned",
+      "description": "Sample unit",
+      "rooms": [
+        {
+          "id": "room-1",
+          "roomType": "kitchen",
+          "widthMm": 3000,
+          "lengthMm": 2500,
+          "heightMm": 2400,
+          "description": "Sample room"
+        }
+      ]
+    }
+  ],
+  "serviceSections": [
+    {
+      "id": "mechanical-services",
+      "name": "Mechanical & Building Services",
+      "subsections": [
+        {
+          "id": "mechanical-systems",
+          "name": "Mechanical Systems",
+          "fields": [
+            {
+              "id": "field-1",
+              "name": "Hot Water",
+              "notes": "",
+              "linkedSections": [
+                "plumbing"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "notes": [
+    {
+      "id": "note-1",
+      "title": "Sample lesson",
+      "content": "Keep permit package concise.",
+      "linkedSectionId": null
+    }
+  ],
+  "attachments": [
+    {
+      "id": "att-1",
+      "projectId": "sample-project",
+      "scopeType": "project",
+      "scopeId": null,
+      "category": "other",
+      "fileTitle": "Sample Attachment",
+      "originalName": "sample.txt",
+      "mimeType": "text/plain",
+      "sizeBytes": 12,
+      "storageKey": "projects/sample-project/project/att-1-sample.txt",
+      "uploadedAt": "2026-02-22T00:00:00.000Z",
+      "note": "Sample only"
+    }
+  ]
+}

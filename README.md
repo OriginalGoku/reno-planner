@@ -25,6 +25,7 @@ It is intentionally practical and low-overhead:
 ### Item management
 - Add item to a section
 - Delete item
+- Optionally link item to a unit (`unitId`) without duplicating data
 - Update item fields:
   - title
   - status (`todo`, `in_progress`, `blocked`, `done`)
@@ -76,6 +77,12 @@ It is intentionally practical and low-overhead:
   - Bedroom
   - Storage
   - Other
+- Units also support linked section items (same shared item model):
+  - add/edit/delete unit-linked items
+  - click item title to jump to its original section item card
+- Dedicated unit pages are available via sidebar:
+  - `/app/[projectId]/units/[unitId]`
+  - dynamic tab layout (currently `Rooms` and `Items`)
 
 ### Room management (one level deep under a unit)
 - Add room
@@ -120,7 +127,7 @@ It is intentionally practical and low-overhead:
 ## Repository Layout
 
 - `src/app/app/[projectId]/*`
-  - Project pages (`dashboard`, `sections`, `items`, `units`, `purchases`, `expenses`, `notes`, `settings`)
+  - Project pages (`dashboard`, `sections`, `items`, `units`, `unit detail`, `purchases`, `expenses`, `notes`, `settings`)
 - `src/components/reno/*`
   - Feature wireframes and forms
 - `src/components/ui/*`
@@ -168,6 +175,26 @@ npm run mcp:doctor
 ```
 
 ## JSON Data
+
+### Private data policy (recommended)
+- Keep your real project data files private and untracked:
+  - `src/data/reno/99-regent.json`
+  - `src/data/reno/projects-index.json`
+- This repository includes sanitized mock files for sharing/open-source use:
+  - `src/data/reno/project-sample.mock.json`
+  - `src/data/reno/projects-index.mock.json`
+
+If you are setting up locally:
+1. Copy `src/data/reno/projects-index.mock.json` to `src/data/reno/projects-index.json`
+2. Copy `src/data/reno/project-sample.mock.json` to `src/data/reno/99-regent.json` (or your own file name)
+3. Update `projects-index.json` entries to point to your local data files
+
+Example:
+
+```bash
+cp src/data/reno/projects-index.mock.json src/data/reno/projects-index.json
+cp src/data/reno/project-sample.mock.json src/data/reno/99-regent.json
+```
 
 ### Project registry
 `src/data/reno/projects-index.json`
@@ -241,6 +268,7 @@ Each project file in `src/data/reno/*.json` must include:
     {
       "id": "hv-1",
       "sectionId": "hvac",
+      "unitId": "unit-1",
       "title": "Relocate return vent in hallway",
       "status": "todo",
       "estimate": 1200,
@@ -342,6 +370,12 @@ Each project file in `src/data/reno/*.json` must include:
 - `units[].totalAreaSqm`: number
 - `rooms[].widthMm`, `lengthMm`, `heightMm`: number
 
+### Item linkage behavior
+- `items[].unitId` is optional:
+  - omitted or `null` -> project-wide item
+  - string -> linked to an existing unit ID
+- Validation enforces that any non-null `unitId` references an existing unit.
+
 ## Importing/Updating JSON Data
 
 Dry run:
@@ -362,6 +396,8 @@ Import behavior:
 - writes target project file
 - updates `projects-index.json` when needed
 - runs post-write validation
+
+For public repositories, import into locally ignored data files (for example `99-regent.json`) and keep mock files as committed examples only.
 
 ## File Storage (Local)
 
@@ -463,6 +499,20 @@ RENO_MCP_SAFE_MODE=1 npm run mcp:server
 
 With safe mode on, delete tools require `confirm: true`.
 
+### MCP item + unit linkage details
+- `reno_add_item` supports optional `unitId` and full optional fields:
+  - `status`, `estimatedCompletionDate`, `actualCompletionDate`
+  - `performers`, `description`, `note`
+  - `materials[]`, `expenses[]`
+- `reno_update_item_fields` supports:
+  - all core fields
+  - optional `unitId` reassignment/clear
+  - optional full replacement of `materials[]` and `expenses[]`
+- `reno_list_items` supports filtering by `unitId` (in addition to `sectionId` and `status`).
+- `reno_get_unit` returns:
+  - `unit`
+  - `items` linked to that unit
+
 ## UI Routes
 
 - `/app` -> redirects to default project
@@ -471,6 +521,7 @@ With safe mode on, delete tools require `confirm: true`.
 - `/app/[projectId]/items`
 - `/app/[projectId]/items/[itemId]`
 - `/app/[projectId]/units`
+- `/app/[projectId]/units/[unitId]`
 - `/app/[projectId]/purchases`
 - `/app/[projectId]/expenses`
 - `/app/[projectId]/notes`
@@ -480,6 +531,15 @@ With safe mode on, delete tools require `confirm: true`.
 
 - JSON and local filesystem persistence are ideal for local/dev workflows.
 - For production hosting, plan migration to durable storage.
+
+## UX Notes (Current)
+- Sidebar project menu is collapsed by default.
+- `All Items` supports filters for:
+  - section
+  - status
+  - unit (including project-wide items)
+- Item links in `All Items` and unit item lists deep-link to section item anchors:
+  - `/app/[projectId]/sections/[sectionId]#item-[itemId]`
 
 ## Database Migration Path (Planned)
 
@@ -495,4 +555,3 @@ Target stack (planned):
 - Prisma migrations
 - Minimal single-tenant auth (HTTP-only signed session)
 - Add login rate limiting and password hashing baseline
-

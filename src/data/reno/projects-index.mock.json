@@ -1,0 +1,9 @@
+{
+  "defaultProjectId": "sample-project",
+  "projects": [
+    {
+      "id": "sample-project",
+      "file": "project-sample.mock.json"
+    }
+  ]
+}

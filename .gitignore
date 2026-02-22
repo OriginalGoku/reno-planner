@@ -20,6 +20,8 @@
 # production
 /build
 /storage
+src/data/reno/99-regent.json
+src/data/reno/projects-index.json
 
 # misc
 .DS_Store
