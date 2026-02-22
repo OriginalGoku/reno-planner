@@ -1,9 +1,16 @@
 import { projectRepository } from "../lib/reno-repository.ts";
+import {
+  buildStorageKey,
+  deleteStorageFile,
+  saveBufferToStorage,
+} from "../lib/local-file-store.ts";
 import type {
+  AttachmentScopeType,
   ExpenseType,
   ItemStatus,
   MaterialUnitType,
   ProjectOverview,
+  RenovationAttachment,
   RenovationProject,
 } from "../lib/reno-types.ts";
 
@@ -80,6 +87,19 @@ export type UpdateProjectMetaInput = {
   overview: ProjectOverview;
 };
 
+export type AddAttachmentInput = {
+  projectId: string;
+  scopeType: AttachmentScopeType;
+  scopeId?: string | null;
+  category: RenovationAttachment["category"];
+  fileTitle?: string;
+  note?: string;
+  originalName: string;
+  mimeType: string;
+  sizeBytes: number;
+  fileBuffer: Buffer;
+};
+
 function toSectionId(title: string) {
   return title
     .trim()
@@ -121,6 +141,33 @@ export const renoService = {
       phase: payload.phase.trim(),
       targetCompletion: payload.targetCompletion.trim(),
       overview: payload.overview,
+    });
+  },
+
+  async addAttachment(payload: AddAttachmentInput) {
+    const attachmentId = crypto.randomUUID();
+    const storageKey = buildStorageKey({
+      projectId: payload.projectId,
+      scopeType: payload.scopeType,
+      scopeId: payload.scopeId,
+      attachmentId,
+      originalName: payload.originalName,
+    });
+    await saveBufferToStorage(storageKey, payload.fileBuffer);
+    const uploadedAt = new Date().toISOString();
+    return projectRepository.addAttachment(payload.projectId, {
+      id: attachmentId,
+      projectId: payload.projectId,
+      scopeType: payload.scopeType,
+      scopeId: payload.scopeId ?? null,
+      category: payload.category,
+      fileTitle: payload.fileTitle?.trim() || undefined,
+      originalName: payload.originalName,
+      mimeType: payload.mimeType || "application/octet-stream",
+      sizeBytes: payload.sizeBytes,
+      storageKey,
+      uploadedAt,
+      note: payload.note?.trim() || undefined,
     });
   },
 
@@ -259,6 +306,25 @@ export const renoService = {
     return projectRepository.deleteProjectNote(
       payload.projectId,
       payload.noteId,
+    );
+  },
+
+  async deleteAttachment(payload: { projectId: string; attachmentId: string }) {
+    const project = await projectRepository.getProjectById(payload.projectId);
+    if (!project) {
+      throw new Error(`Unknown projectId: ${payload.projectId}`);
+    }
+    const attachment = project.attachments.find(
+      (entry) => entry.id === payload.attachmentId,
+    );
+    if (!attachment) {
+      throw new Error(`Unknown attachmentId: ${payload.attachmentId}`);
+    }
+
+    await deleteStorageFile(attachment.storageKey);
+    return projectRepository.deleteAttachment(
+      payload.projectId,
+      payload.attachmentId,
     );
   },
 

@@ -67,6 +67,23 @@ export type RenovationNote = {
   linkedSectionId?: string | null;
 };
 
+export type AttachmentScopeType = "project" | "section" | "item" | "expense";
+
+export type RenovationAttachment = {
+  id: string;
+  projectId: string;
+  scopeType: AttachmentScopeType;
+  scopeId?: string | null;
+  category: "drawing" | "invoice" | "permit" | "photo" | "other";
+  fileTitle?: string;
+  originalName: string;
+  mimeType: string;
+  sizeBytes: number;
+  storageKey: string;
+  uploadedAt: string;
+  note?: string;
+};
+
 export type ProjectOverview = {
   projectDescription: string;
   area: {
@@ -113,6 +130,7 @@ export type RenovationProject = {
   sections: RenovationSection[];
   items: RenovationItem[];
   notes: RenovationNote[];
+  attachments: RenovationAttachment[];
 };
 
 export const STATUS_LABELS: Record<ItemStatus, string> = {

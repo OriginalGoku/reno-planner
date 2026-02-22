@@ -1266,5 +1266,21 @@
       "content": "Maintain an inspection checklist and ensure key materials (firestopping, access panels, labels) are ready before booking.",
       "linkedSectionId": "permits-design"
     }
+  ],
+  "attachments": [
+    {
+      "id": "fa5f11c8-5e2e-41de-9dd6-83d5b5a1db01",
+      "projectId": "99-regent",
+      "scopeType": "project",
+      "scopeId": null,
+      "category": "permit",
+      "fileTitle": "Final Approved Plans",
+      "originalName": "Building Permit Drawings.PDF",
+      "mimeType": "application/pdf",
+      "sizeBytes": 6439208,
+      "storageKey": "projects/99-regent/project/fa5f11c8-5e2e-41de-9dd6-83d5b5a1db01-Building-Permit-Drawings.PDF",
+      "uploadedAt": "2026-02-22T17:53:58.125Z",
+      "note": "Site Plan + Floor plan + Outside"
+    }
   ]
 }

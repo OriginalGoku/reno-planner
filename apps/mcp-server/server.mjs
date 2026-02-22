@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -53,6 +54,33 @@ function assertDestructiveAllowed(action, confirm) {
     throw new Error(
       `${action} is blocked because safe mode is enabled. Re-run with confirm=true.`,
     );
+  }
+}
+
+function guessMimeType(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  switch (ext) {
+    case ".pdf":
+      return "application/pdf";
+    case ".png":
+      return "image/png";
+    case ".jpg":
+    case ".jpeg":
+      return "image/jpeg";
+    case ".webp":
+      return "image/webp";
+    case ".gif":
+      return "image/gif";
+    case ".txt":
+      return "text/plain";
+    case ".csv":
+      return "text/csv";
+    case ".doc":
+      return "application/msword";
+    case ".docx":
+      return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    default:
+      return "application/octet-stream";
   }
 }
 
@@ -304,6 +332,140 @@ server.registerTool(
         phase: project.phase,
         targetCompletion: project.targetCompletion,
         overview: project.overview,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_list_attachments",
+  {
+    description:
+      "List project attachments with optional scope/category filters",
+    inputSchema: {
+      projectId: z.string().optional(),
+      scopeType: z.enum(["project", "section", "item", "expense"]).optional(),
+      scopeId: z.string().nullable().optional(),
+      category: z
+        .enum(["drawing", "invoice", "permit", "photo", "other"])
+        .optional(),
+    },
+  },
+  async ({ projectId, scopeType, scopeId, category }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      const project = await renoService.getProjectById(resolvedProjectId);
+      if (!project) {
+        throw new Error(`Unknown projectId: ${resolvedProjectId}`);
+      }
+
+      const attachments = project.attachments.filter((entry) => {
+        const scopeTypeMatch = !scopeType || entry.scopeType === scopeType;
+        const scopeIdMatch =
+          scopeId === undefined ? true : (entry.scopeId ?? null) === scopeId;
+        const categoryMatch = !category || entry.category === category;
+        return scopeTypeMatch && scopeIdMatch && categoryMatch;
+      });
+
+      return asToolResult({ projectId: resolvedProjectId, attachments });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_add_attachment_from_path",
+  {
+    description:
+      "Attach a local file to a project/section/item/expense using a filesystem path",
+    inputSchema: {
+      projectId: z.string().optional(),
+      scopeType: z.enum(["project", "section", "item", "expense"]),
+      scopeId: z.string().nullable().optional(),
+      category: z.enum(["drawing", "invoice", "permit", "photo", "other"]),
+      filePath: z.string(),
+      fileTitle: z.string().optional(),
+      note: z.string().optional(),
+    },
+  },
+  async (input) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(input.projectId);
+      const fileBuffer = await readFile(input.filePath);
+      const originalName = path.basename(input.filePath);
+      const mimeType = guessMimeType(input.filePath);
+
+      await renoService.addAttachment({
+        projectId: resolvedProjectId,
+        scopeType: input.scopeType,
+        scopeId: input.scopeId ?? null,
+        category: input.category,
+        fileTitle: input.fileTitle,
+        note: input.note,
+        originalName,
+        mimeType,
+        sizeBytes: fileBuffer.length,
+        fileBuffer,
+      });
+      return asToolResult({ ok: true, projectId: resolvedProjectId });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_delete_attachment",
+  {
+    description: "Delete one attachment by ID",
+    inputSchema: {
+      projectId: z.string().optional(),
+      attachmentId: z.string(),
+      confirm: z.boolean().optional(),
+    },
+  },
+  async ({ projectId, attachmentId, confirm }) => {
+    try {
+      assertDestructiveAllowed("reno_delete_attachment", confirm);
+      const resolvedProjectId = await resolveProjectId(projectId);
+      await renoService.deleteAttachment({
+        projectId: resolvedProjectId,
+        attachmentId,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        attachmentId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_get_attachment_download_url",
+  {
+    description: "Get app download URL for an attachment",
+    inputSchema: {
+      projectId: z.string().optional(),
+      attachmentId: z.string(),
+      baseUrl: z.string().optional(),
+    },
+  },
+  async ({ projectId, attachmentId, baseUrl }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      const effectiveBase =
+        baseUrl || process.env.RENO_APP_BASE_URL || "http://localhost:3000";
+      const downloadUrl = `${effectiveBase.replace(/\/$/, "")}/api/files/${attachmentId}/download?projectId=${encodeURIComponent(resolvedProjectId)}`;
+      return asToolResult({
+        projectId: resolvedProjectId,
+        attachmentId,
+        downloadUrl,
       });
     } catch (error) {
       return asToolError(error);

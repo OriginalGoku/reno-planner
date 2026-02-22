@@ -1,8 +1,5 @@
 import { notFound } from "next/navigation";
-import {
-  getItemsBySectionId,
-  getSectionById,
-} from "@/lib/reno-data-loader";
+import { getItemsBySectionId, getSectionById } from "@/lib/reno-data-loader";
 import { loadRenoProject } from "@/lib/reno-project-service";
 import { SectionItemsWireframe } from "@/components/reno/section-items-wireframe";
 
@@ -26,6 +23,7 @@ export default async function SectionPage({ params }: SectionPageProps) {
       projectId={project.id}
       section={section}
       items={items}
+      attachments={project.attachments}
     />
   );
 }

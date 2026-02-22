@@ -1,9 +1,6 @@
 import { notFound } from "next/navigation";
 import { ItemDetailWireframe } from "@/components/reno/item-detail-wireframe";
-import {
-  getItemById,
-  getSectionById,
-} from "@/lib/reno-data-loader";
+import { getItemById, getSectionById } from "@/lib/reno-data-loader";
 import { loadRenoProject } from "@/lib/reno-project-service";
 
 type ItemPageProps = {
@@ -26,6 +23,7 @@ export default async function ItemPage({ params }: ItemPageProps) {
       projectId={project.id}
       item={item}
       sectionTitle={section?.title ?? "Unknown Section"}
+      attachments={project.attachments}
     />
   );
 }

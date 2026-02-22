@@ -6,10 +6,12 @@ import { useRouter } from "next/navigation";
 import {
   getTotalActualForItem,
   STATUS_LABELS,
+  type RenovationAttachment,
   type ItemStatus,
   type RenovationItem,
   type RenovationSection,
 } from "@/lib/reno-data-loader";
+import { AttachmentManager } from "@/components/reno/attachment-manager";
 import {
   addSectionItemAction,
   deleteSectionAction,
@@ -22,6 +24,7 @@ type SectionItemsWireframeProps = {
   projectId: string;
   section: RenovationSection;
   items: RenovationItem[];
+  attachments: RenovationAttachment[];
 };
 
 type Feedback = {
@@ -33,6 +36,7 @@ export function SectionItemsWireframe({
   projectId,
   section,
   items,
+  attachments,
 }: SectionItemsWireframeProps) {
   const [sectionDraft, setSectionDraft] = useState({
     title: section.title,
@@ -318,6 +322,14 @@ export function SectionItemsWireframe({
           </>
         )}
       </section>
+
+      <AttachmentManager
+        projectId={projectId}
+        scopeType="section"
+        scopeId={section.id}
+        attachments={attachments}
+        title="Section Files"
+      />
 
       <section className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-lg border p-4">

@@ -1,4 +1,5 @@
 import type {
+  AttachmentScopeType,
   ExpenseType,
   ItemStatus,
   MaterialUnitType,
@@ -30,6 +31,19 @@ const VALID_MATERIAL_UNITS: MaterialUnitType[] = [
   "meter",
   "other",
 ];
+const VALID_ATTACHMENT_SCOPES: AttachmentScopeType[] = [
+  "project",
+  "section",
+  "item",
+  "expense",
+];
+const VALID_ATTACHMENT_CATEGORIES = [
+  "drawing",
+  "invoice",
+  "permit",
+  "photo",
+  "other",
+] as const;
 
 function ensure(condition: boolean, message: string): asserts condition {
   if (!condition) {
@@ -187,6 +201,10 @@ export function validateProjectData(value: unknown): RenovationProject {
   ensure(Array.isArray(project.sections), "Project.sections must be an array.");
   ensure(Array.isArray(project.items), "Project.items must be an array.");
   ensure(Array.isArray(project.notes), "Project.notes must be an array.");
+  ensure(
+    Array.isArray(project.attachments),
+    "Project.attachments must be an array.",
+  );
 
   for (const section of project.sections) {
     ensure(isRecord(section), "Each section must be an object.");
@@ -328,6 +346,67 @@ export function validateProjectData(value: unknown): RenovationProject {
         note.linkedSectionId === null ||
         typeof note.linkedSectionId === "string",
       "Note.linkedSectionId must be string/null/undefined.",
+    );
+  }
+
+  for (const attachment of project.attachments) {
+    ensure(isRecord(attachment), "Each attachment must be an object.");
+    ensure(
+      typeof attachment.id === "string",
+      "Attachment.id must be a string.",
+    );
+    ensure(
+      typeof attachment.projectId === "string",
+      "Attachment.projectId must be a string.",
+    );
+    ensure(
+      typeof attachment.scopeType === "string" &&
+        VALID_ATTACHMENT_SCOPES.includes(
+          attachment.scopeType as AttachmentScopeType,
+        ),
+      `Attachment.scopeType must be one of: ${VALID_ATTACHMENT_SCOPES.join(", ")}.`,
+    );
+    ensure(
+      attachment.scopeId === undefined ||
+        attachment.scopeId === null ||
+        typeof attachment.scopeId === "string",
+      "Attachment.scopeId must be string/null/undefined.",
+    );
+    ensure(
+      typeof attachment.category === "string" &&
+        VALID_ATTACHMENT_CATEGORIES.includes(
+          attachment.category as (typeof VALID_ATTACHMENT_CATEGORIES)[number],
+        ),
+      `Attachment.category must be one of: ${VALID_ATTACHMENT_CATEGORIES.join(", ")}.`,
+    );
+    ensure(
+      attachment.fileTitle === undefined ||
+        typeof attachment.fileTitle === "string",
+      "Attachment.fileTitle must be a string when provided.",
+    );
+    ensure(
+      typeof attachment.originalName === "string",
+      "Attachment.originalName must be a string.",
+    );
+    ensure(
+      typeof attachment.mimeType === "string",
+      "Attachment.mimeType must be a string.",
+    );
+    ensure(
+      typeof attachment.sizeBytes === "number",
+      "Attachment.sizeBytes must be a number.",
+    );
+    ensure(
+      typeof attachment.storageKey === "string",
+      "Attachment.storageKey must be a string.",
+    );
+    ensure(
+      typeof attachment.uploadedAt === "string",
+      "Attachment.uploadedAt must be a string.",
+    );
+    ensure(
+      attachment.note === undefined || typeof attachment.note === "string",
+      "Attachment.note must be a string when provided.",
     );
   }
 

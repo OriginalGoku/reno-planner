@@ -1,8 +1,10 @@
 import type { RenovationItem, RenovationProject } from "@/lib/reno-types";
 export type {
+  AttachmentScopeType,
   ExpenseType,
   ItemStatus,
   MaterialUnitType,
+  RenovationAttachment,
   RenovationExpense,
   RenovationMaterial,
   RenovationItem,

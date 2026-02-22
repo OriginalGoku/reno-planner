@@ -2,10 +2,12 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { AttachmentManager } from "@/components/reno/attachment-manager";
 import type {
   ExpenseType,
   ItemStatus,
   MaterialUnitType,
+  RenovationAttachment,
   RenovationExpense,
   RenovationMaterial,
   RenovationItem,
@@ -21,12 +23,13 @@ import {
   updateItemFieldsAction,
 } from "@/lib/reno-actions";
 
-type TabKey = "overview" | "notes" | "materials" | "expenses";
+type TabKey = "overview" | "notes" | "materials" | "expenses" | "files";
 
 type ItemDetailWireframeProps = {
   projectId: string;
   item: RenovationItem;
   sectionTitle: string;
+  attachments: RenovationAttachment[];
 };
 
 type Feedback = {
@@ -39,6 +42,7 @@ const tabs: { key: TabKey; label: string }[] = [
   { key: "notes", label: "Notes" },
   { key: "materials", label: "Materials" },
   { key: "expenses", label: "Expenses" },
+  { key: "files", label: "Files" },
 ];
 
 const expenseTypes: ExpenseType[] = [
@@ -83,6 +87,7 @@ export function ItemDetailWireframe({
   projectId,
   item,
   sectionTitle,
+  attachments,
 }: ItemDetailWireframeProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
   const [itemTitle, setItemTitle] = useState(item.title);
@@ -1326,6 +1331,16 @@ export function ItemDetailWireframe({
                               </button>
                             </div>
                           </div>
+                          <div className="mt-3">
+                            <AttachmentManager
+                              projectId={projectId}
+                              scopeType="expense"
+                              scopeId={expense.id}
+                              attachments={attachments}
+                              title="Expense Files"
+                              compact
+                            />
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1338,6 +1353,16 @@ export function ItemDetailWireframe({
               )}
             </div>
           </div>
+        ) : null}
+
+        {activeTab === "files" ? (
+          <AttachmentManager
+            projectId={projectId}
+            scopeType="item"
+            scopeId={item.id}
+            attachments={attachments}
+            title="Item Files"
+          />
         ) : null}
       </section>
     </div>

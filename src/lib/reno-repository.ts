@@ -3,6 +3,7 @@ import path from "node:path";
 import type {
   ItemStatus,
   ProjectOverview,
+  RenovationAttachment,
   RenovationExpense,
   RenovationMaterial,
   RenovationNote,
@@ -157,6 +158,14 @@ export interface ProjectRepository {
     projectId: string,
     noteId: string,
   ): Promise<RenovationProject>;
+  addAttachment(
+    projectId: string,
+    attachment: RenovationAttachment,
+  ): Promise<RenovationProject>;
+  deleteAttachment(
+    projectId: string,
+    attachmentId: string,
+  ): Promise<RenovationProject>;
 }
 
 export class JsonProjectRepository implements ProjectRepository {
@@ -202,8 +211,12 @@ export class JsonProjectRepository implements ProjectRepository {
     ) {
       const projectLike = parsed as {
         sections: RenovationProject["sections"];
+        attachments?: RenovationProject["attachments"];
       };
       projectLike.sections = normalizeSectionOrder(projectLike.sections);
+      if (!Array.isArray(projectLike.attachments)) {
+        projectLike.attachments = [];
+      }
     }
     return validateProjectData(parsed);
   }
@@ -603,6 +616,63 @@ export class JsonProjectRepository implements ProjectRepository {
   ): Promise<RenovationProject> {
     return this.mutateProject(projectId, (project) => {
       project.notes = project.notes.filter((note) => note.id !== noteId);
+      return project;
+    });
+  }
+
+  async addAttachment(
+    projectId: string,
+    attachment: RenovationAttachment,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      if (attachment.projectId !== projectId) {
+        throw new Error("Attachment.projectId must match target project.");
+      }
+
+      if (attachment.scopeType === "section") {
+        const exists = project.sections.some(
+          (section) => section.id === attachment.scopeId,
+        );
+        if (!exists) {
+          throw new Error(`Unknown sectionId: ${attachment.scopeId}`);
+        }
+      }
+
+      if (attachment.scopeType === "item") {
+        const exists = project.items.some(
+          (item) => item.id === attachment.scopeId,
+        );
+        if (!exists) {
+          throw new Error(`Unknown itemId: ${attachment.scopeId}`);
+        }
+      }
+
+      if (attachment.scopeType === "expense") {
+        const exists = project.items.some((item) =>
+          item.expenses.some((expense) => expense.id === attachment.scopeId),
+        );
+        if (!exists) {
+          throw new Error(`Unknown expenseId: ${attachment.scopeId}`);
+        }
+      }
+
+      if (attachment.scopeType === "project") {
+        attachment.scopeId = null;
+      }
+
+      project.attachments = [attachment, ...project.attachments];
+      return project;
+    });
+  }
+
+  async deleteAttachment(
+    projectId: string,
+    attachmentId: string,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      project.attachments = project.attachments.filter(
+        (attachment) => attachment.id !== attachmentId,
+      );
       return project;
     });
   }

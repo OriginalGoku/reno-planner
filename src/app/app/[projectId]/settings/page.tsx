@@ -1,4 +1,5 @@
 import { ProjectSettingsForm } from "@/components/reno/project-settings-form";
+import { AttachmentManager } from "@/components/reno/attachment-manager";
 import { loadRenoProject } from "@/lib/reno-project-service";
 
 type SettingsPageProps = {
@@ -21,6 +22,12 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
         </p>
       </section>
       <ProjectSettingsForm project={project} />
+      <AttachmentManager
+        projectId={project.id}
+        scopeType="project"
+        attachments={project.attachments}
+        title="Project Files (Drawings, Permits, etc.)"
+      />
     </div>
   );
 }
