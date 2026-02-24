@@ -189,6 +189,12 @@ npm run mcp:doctor
 - Units: list/get/add/update/delete and room CRUD
 - Notes: list/add/update/delete/link
 - Attachments: list/add/delete/get download URL
+- Invoices: extract draft, update draft, confirm draft, delete draft, force second-pass re-extraction, list/get invoices, list purchase ledger
+
+### MCP invoice draft extraction
+- `reno_extract_invoice_draft`: create draft from invoice attachment (LLM extraction).
+- `reno_force_second_pass_invoice_draft`: force pass-2 extraction on an existing draft and replace extracted fields/lines.
+- UI shows extraction marker (`First Pass` or `Second Pass`) and exposes `Force Second Pass` when pass-1 results need improvement.
 
 ### MCP item + unit linkage support
 - `reno_add_item`: supports optional `unitId` and full optional payload (`status`, dates, performers, description, note, materials, expenses).
