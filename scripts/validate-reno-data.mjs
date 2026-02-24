@@ -114,10 +114,13 @@ function validateProject(project, fileName) {
     }
 
     for (const material of asArray(item.materials)) {
-      if (hasMaterialCatalog && hasMaterialCategories) {
+      if (
+        hasMaterialCatalog &&
+        hasMaterialCategories &&
+        typeof material.materialId === "string"
+      ) {
         assert(
-          typeof material.materialId === "string" &&
-            catalogIds.has(material.materialId),
+          catalogIds.has(material.materialId),
           `${fileName}: item ${item.id} material.materialId must reference a known materialCatalog entry`,
         );
       } else {
