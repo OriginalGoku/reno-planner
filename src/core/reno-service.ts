@@ -2,8 +2,10 @@ import { projectRepository } from "../lib/reno-repository.ts";
 import {
   buildStorageKey,
   deleteStorageFile,
+  readStorageFile,
   saveBufferToStorage,
 } from "../lib/local-file-store.ts";
+import { buildInvoiceExtractor } from "./invoice-extractor.ts";
 import type {
   AttachmentScopeType,
   ExpenseType,
@@ -965,11 +967,22 @@ export const renoService = {
       throw new Error("Attachment category must be invoice.");
     }
 
+    const extractor = buildInvoiceExtractor();
+    const fileBuffer = await readStorageFile(attachment.storageKey);
+    const extracted = await extractor.extract({
+      fileBuffer,
+      mimeType: attachment.mimeType || "application/octet-stream",
+      fileName: attachment.fileTitle || attachment.originalName,
+      provider: payload.provider,
+      model: payload.model,
+    });
+
     const now = new Date().toISOString();
     const invoiceId = `inv-${crypto.randomUUID()}`;
-    const lineId = `line-${crypto.randomUUID()}`;
     const invoiceNumber =
-      attachment.fileTitle?.trim() || attachment.originalName;
+      extracted.invoiceNumber ||
+      attachment.fileTitle?.trim() ||
+      attachment.originalName;
 
     return projectRepository.createInvoiceDraftFromExtraction(
       payload.projectId,
@@ -978,42 +991,35 @@ export const renoService = {
         status: "draft",
         projectId: payload.projectId,
         attachmentId: payload.attachmentId,
-        vendorName: "",
+        vendorName: extracted.vendorName,
         invoiceNumber,
-        invoiceDate: now.slice(0, 10),
-        currency: "CAD",
-        totals: {
-          subTotal: 0,
-          tax: 0,
-          shipping: 0,
-          otherFees: 0,
-          grandTotal: 0,
-        },
-        lines: [
-          {
-            id: lineId,
-            sourceText: attachment.fileTitle || attachment.originalName,
-            description: "",
-            quantity: 0,
-            unitType: "other",
-            unitPrice: 0,
-            lineTotal: 0,
-            materialId: undefined,
-            confidence: 0,
-            needsReview: true,
-            notes: "Auto-created draft. Review and fill extracted fields.",
-          },
-        ],
+        invoiceDate: extracted.invoiceDate || now.slice(0, 10),
+        currency: extracted.currency || "CAD",
+        totals: extracted.totals,
+        lines: extracted.lines.map((line) => ({
+          id: `line-${crypto.randomUUID()}`,
+          sourceText: line.sourceText,
+          description: line.description,
+          quantity: line.quantity,
+          unitType: line.unitType,
+          unitPrice: line.unitPrice,
+          lineTotal: line.lineTotal,
+          materialId: undefined,
+          confidence: line.confidence,
+          needsReview: line.needsReview,
+          notes: line.notes,
+        })),
         extraction: {
-          provider: payload.provider?.trim() || "manual",
-          model: payload.model?.trim() || "none",
+          provider:
+            payload.provider?.trim() ||
+            process.env.RENO_INVOICE_LLM_PROVIDER?.trim() ||
+            "openai",
+          model:
+            payload.model?.trim() ||
+            process.env.RENO_INVOICE_LLM_MODEL?.trim() ||
+            "gpt-5-nano",
           extractedAt: now,
-          rawOutput: {
-            attachmentId: attachment.id,
-            originalName: attachment.originalName,
-            fileTitle: attachment.fileTitle ?? "",
-            note: "No OCR/LLM parser configured in this environment.",
-          },
+          rawOutput: extracted.rawOutput,
         },
         review: {
           totalsMismatchOverride: false,

@@ -1580,7 +1580,7 @@ export function UnitsWireframe({
                                   <div className="flex flex-wrap items-center justify-between gap-2">
                                     <div>
                                       <Link
-                                        href={`/app/${projectId}/sections/${item.sectionId}#item-${item.id}`}
+                                        href={`/app/${projectId}/items/${item.id}`}
                                         className="text-sm font-medium underline-offset-2 hover:underline"
                                       >
                                         {item.title}

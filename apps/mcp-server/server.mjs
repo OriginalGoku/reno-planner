@@ -1277,7 +1277,7 @@ server.registerTool(
   "reno_extract_invoice_draft",
   {
     description:
-      "Create an invoice draft from an uploaded invoice attachment (manual extraction placeholder in local mode)",
+      "Create an invoice draft from an uploaded invoice attachment using configured LLM extractor (OpenAI by default)",
     inputSchema: {
       projectId: z.string().optional(),
       attachmentId: z.string(),
