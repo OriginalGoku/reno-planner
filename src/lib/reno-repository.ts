@@ -4,6 +4,11 @@ import path from "node:path";
 import type {
   ItemStatus,
   MaterialUnitType,
+  PurchaseInvoice,
+  PurchaseInvoiceLine,
+  PurchaseInvoiceReview,
+  PurchaseInvoiceTotals,
+  PurchaseLedgerEntry,
   ProjectOverview,
   RenovationAttachment,
   RenovationExpense,
@@ -84,6 +89,16 @@ type UpdateMaterialCatalogItemInput = Pick<
   RenovationProject["materialCatalog"][number],
   "name" | "unitType" | "estimatedPrice" | "sampleUrl" | "notes" | "categoryId"
 >;
+
+type UpdateInvoiceDraftInput = {
+  vendorName: string;
+  invoiceNumber: string;
+  invoiceDate: string;
+  currency: string;
+  totals: PurchaseInvoiceTotals;
+  lines: PurchaseInvoiceLine[];
+  review: PurchaseInvoiceReview;
+};
 
 type SectionMoveDirection = "up" | "down";
 const DEFAULT_MATERIAL_CATEGORY_ID = "uncategorized";
@@ -337,6 +352,25 @@ export interface ProjectRepository {
     projectId: string,
     attachment: RenovationAttachment,
   ): Promise<RenovationProject>;
+  createInvoiceDraftFromExtraction(
+    projectId: string,
+    invoice: PurchaseInvoice,
+  ): Promise<RenovationProject>;
+  updateInvoiceDraft(
+    projectId: string,
+    invoiceId: string,
+    payload: UpdateInvoiceDraftInput,
+  ): Promise<RenovationProject>;
+  confirmInvoiceDraft(
+    projectId: string,
+    invoiceId: string,
+    payload: {
+      review: PurchaseInvoiceReview;
+      confirmedAt: string;
+      postedAt: string;
+      ledgerEntries: PurchaseLedgerEntry[];
+    },
+  ): Promise<RenovationProject>;
   deleteAttachment(
     projectId: string,
     attachmentId: string,
@@ -393,6 +427,9 @@ export class JsonProjectRepository implements ProjectRepository {
           | RenovationProject["materialCategories"]
           | unknown[];
         materialCatalog?: RenovationProject["materialCatalog"] | unknown[];
+        purchaseInvoices?: RenovationProject["purchaseInvoices"];
+        purchaseLedger?: RenovationProject["purchaseLedger"];
+        notes?: RenovationProject["notes"];
         attachments?: RenovationProject["attachments"];
       };
       projectLike.sections = normalizeSectionOrder(projectLike.sections);
@@ -551,6 +588,15 @@ export class JsonProjectRepository implements ProjectRepository {
       }
 
       projectLike.materialCatalog = seededCatalog;
+      if (!Array.isArray(projectLike.purchaseInvoices)) {
+        projectLike.purchaseInvoices = [];
+      }
+      if (!Array.isArray(projectLike.purchaseLedger)) {
+        projectLike.purchaseLedger = [];
+      }
+      if (!Array.isArray(projectLike.notes)) {
+        projectLike.notes = [];
+      }
       if (!Array.isArray(projectLike.attachments)) {
         projectLike.attachments = [];
       }
@@ -1470,6 +1516,107 @@ export class JsonProjectRepository implements ProjectRepository {
       }
 
       project.attachments = [attachment, ...project.attachments];
+      return project;
+    });
+  }
+
+  async createInvoiceDraftFromExtraction(
+    projectId: string,
+    invoice: PurchaseInvoice,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      if (invoice.projectId !== projectId) {
+        throw new Error("Invoice.projectId must match target project.");
+      }
+      const attachment = project.attachments.find(
+        (entry) => entry.id === invoice.attachmentId,
+      );
+      if (!attachment) {
+        throw new Error(`Unknown attachmentId: ${invoice.attachmentId}`);
+      }
+      if (attachment.category !== "invoice") {
+        throw new Error("Attachment category must be invoice.");
+      }
+      const exists = project.purchaseInvoices.some(
+        (entry) => entry.id === invoice.id,
+      );
+      if (exists) {
+        throw new Error(`Invoice id already exists: ${invoice.id}`);
+      }
+      project.purchaseInvoices = [invoice, ...project.purchaseInvoices];
+      return project;
+    });
+  }
+
+  async updateInvoiceDraft(
+    projectId: string,
+    invoiceId: string,
+    payload: UpdateInvoiceDraftInput,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const invoice = project.purchaseInvoices.find(
+        (entry) => entry.id === invoiceId,
+      );
+      if (!invoice) {
+        throw new Error(`Unknown invoiceId: ${invoiceId}`);
+      }
+      if (invoice.status !== "draft") {
+        throw new Error("Only draft invoices can be edited.");
+      }
+      invoice.vendorName = payload.vendorName;
+      invoice.invoiceNumber = payload.invoiceNumber;
+      invoice.invoiceDate = payload.invoiceDate;
+      invoice.currency = payload.currency;
+      invoice.totals = payload.totals;
+      invoice.lines = payload.lines;
+      invoice.review = payload.review;
+      invoice.updatedAt = new Date().toISOString();
+      return project;
+    });
+  }
+
+  async confirmInvoiceDraft(
+    projectId: string,
+    invoiceId: string,
+    payload: {
+      review: PurchaseInvoiceReview;
+      confirmedAt: string;
+      postedAt: string;
+      ledgerEntries: PurchaseLedgerEntry[];
+    },
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const invoice = project.purchaseInvoices.find(
+        (entry) => entry.id === invoiceId,
+      );
+      if (!invoice) {
+        throw new Error(`Unknown invoiceId: ${invoiceId}`);
+      }
+      if (invoice.status !== "draft") {
+        throw new Error("Only draft invoices can be confirmed.");
+      }
+      const lineIds = new Set(invoice.lines.map((line) => line.id));
+      for (const ledgerEntry of payload.ledgerEntries) {
+        if (ledgerEntry.projectId !== projectId) {
+          throw new Error("Ledger entry projectId must match target project.");
+        }
+        if (ledgerEntry.invoiceId !== invoiceId) {
+          throw new Error("Ledger entry invoiceId must match target invoice.");
+        }
+        if (!lineIds.has(ledgerEntry.invoiceLineId)) {
+          throw new Error(
+            `Ledger entry references unknown invoiceLineId: ${ledgerEntry.invoiceLineId}`,
+          );
+        }
+      }
+      invoice.review = payload.review;
+      invoice.status = "confirmed";
+      invoice.confirmedAt = payload.confirmedAt;
+      invoice.updatedAt = payload.confirmedAt;
+      project.purchaseLedger = [
+        ...payload.ledgerEntries,
+        ...project.purchaseLedger,
+      ];
       return project;
     });
   }

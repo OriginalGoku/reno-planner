@@ -66,6 +66,80 @@ export type MaterialCategory = {
   sortOrder: number;
 };
 
+export type PurchaseInvoiceStatus = "draft" | "confirmed" | "voided";
+
+export type PurchaseInvoiceTotals = {
+  subTotal: number;
+  tax: number;
+  shipping: number;
+  otherFees: number;
+  grandTotal: number;
+};
+
+export type PurchaseInvoiceLine = {
+  id: string;
+  sourceText: string;
+  description: string;
+  quantity: number;
+  unitType: MaterialUnitType;
+  unitPrice: number;
+  lineTotal: number;
+  materialId?: string;
+  confidence: number;
+  needsReview: boolean;
+  notes: string;
+};
+
+export type PurchaseInvoiceExtraction = {
+  provider: string;
+  model: string;
+  extractedAt: string;
+  rawOutput: unknown;
+};
+
+export type PurchaseInvoiceReview = {
+  totalsMismatchOverride: boolean;
+  overrideReason: string;
+};
+
+export type PurchaseInvoice = {
+  id: string;
+  status: PurchaseInvoiceStatus;
+  projectId: string;
+  attachmentId: string;
+  vendorName: string;
+  invoiceNumber: string;
+  invoiceDate: string;
+  currency: string;
+  totals: PurchaseInvoiceTotals;
+  lines: PurchaseInvoiceLine[];
+  extraction: PurchaseInvoiceExtraction;
+  review: PurchaseInvoiceReview;
+  createdAt: string;
+  updatedAt: string;
+  confirmedAt?: string | null;
+};
+
+export type PurchaseLedgerEntryType = "purchase" | "adjustment";
+
+export type PurchaseLedgerEntry = {
+  id: string;
+  projectId: string;
+  invoiceId: string;
+  invoiceLineId: string;
+  postedAt: string;
+  materialId: string;
+  quantity: number;
+  unitType: MaterialUnitType;
+  unitPrice: number;
+  lineTotal: number;
+  vendorName: string;
+  invoiceDate: string;
+  currency: string;
+  entryType: PurchaseLedgerEntryType;
+  note: string;
+};
+
 export type RenovationItem = {
   id: string;
   sectionId: string;
@@ -201,6 +275,8 @@ export type RenovationProject = {
   serviceSections: ServiceSection[];
   materialCategories: MaterialCategory[];
   materialCatalog: MaterialCatalogItem[];
+  purchaseInvoices: PurchaseInvoice[];
+  purchaseLedger: PurchaseLedgerEntry[];
   notes: RenovationNote[];
   attachments: RenovationAttachment[];
 };

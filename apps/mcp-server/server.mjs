@@ -564,6 +564,101 @@ server.registerResource(
   },
 );
 
+server.registerResource(
+  "reno-invoice-resource",
+  new ResourceTemplate("resource://invoice/{projectId}/{invoiceId}", {
+    list: async () => {
+      const projectIds = await renoService.listProjectIds();
+      const projects = await Promise.all(
+        projectIds.map((projectId) => renoService.getProjectById(projectId)),
+      );
+
+      return {
+        resources: projects
+          .filter((project) => project !== null)
+          .flatMap((project) =>
+            project.purchaseInvoices.map((invoice) => ({
+              uri: `resource://invoice/${project.id}/${invoice.id}`,
+              name: invoice.id,
+              title: invoice.invoiceNumber || invoice.id,
+              mimeType: "application/json",
+              description: `${project.name} invoice (${invoice.status})`,
+            })),
+          ),
+      };
+    },
+  }),
+  {
+    title: "Reno Invoice",
+    description: "Read one invoice by projectId and invoiceId",
+    mimeType: "application/json",
+  },
+  async (_uri, variables) => {
+    const projectId = variables.projectId;
+    const invoiceId = variables.invoiceId;
+    if (!projectId || !invoiceId) {
+      throw new Error("projectId and invoiceId are required.");
+    }
+
+    const invoice = await renoService.getInvoice({ projectId, invoiceId });
+    return {
+      contents: [
+        {
+          uri: `resource://invoice/${projectId}/${invoiceId}`,
+          mimeType: "application/json",
+          text: JSON.stringify(invoice, null, 2),
+        },
+      ],
+    };
+  },
+);
+
+server.registerResource(
+  "reno-ledger-resource",
+  new ResourceTemplate("resource://ledger/{projectId}", {
+    list: async () => {
+      const projectIds = await renoService.listProjectIds();
+      const projects = await Promise.all(
+        projectIds.map((projectId) => renoService.getProjectById(projectId)),
+      );
+
+      return {
+        resources: projects
+          .filter((project) => project !== null)
+          .map((project) => ({
+            uri: `resource://ledger/${project.id}`,
+            name: project.id,
+            title: `${project.name} ledger`,
+            mimeType: "application/json",
+            description: "Posted purchase ledger rows",
+          })),
+      };
+    },
+  }),
+  {
+    title: "Reno Purchase Ledger",
+    description: "Read purchase ledger rows by projectId",
+    mimeType: "application/json",
+  },
+  async (_uri, variables) => {
+    const projectId = variables.projectId;
+    if (!projectId) {
+      throw new Error("projectId is required.");
+    }
+
+    const ledger = await renoService.listPurchaseLedger({ projectId });
+    return {
+      contents: [
+        {
+          uri: `resource://ledger/${projectId}`,
+          mimeType: "application/json",
+          text: JSON.stringify(ledger, null, 2),
+        },
+      ],
+    };
+  },
+);
+
 server.registerTool(
   "reno_list_projects",
   {
@@ -1172,6 +1267,225 @@ server.registerTool(
         throw new Error(`Unknown projectId: ${resolvedProjectId}`);
       }
       return asToolResult({ project });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_extract_invoice_draft",
+  {
+    description:
+      "Create an invoice draft from an uploaded invoice attachment (manual extraction placeholder in local mode)",
+    inputSchema: {
+      projectId: z.string().optional(),
+      attachmentId: z.string(),
+      provider: z.string().optional(),
+      model: z.string().optional(),
+    },
+  },
+  async ({ projectId, attachmentId, provider, model }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      await renoService.createInvoiceDraftFromExtraction({
+        projectId: resolvedProjectId,
+        attachmentId,
+        provider,
+        model,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        attachmentId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_update_invoice_draft",
+  {
+    description: "Update an existing draft invoice and its line items",
+    inputSchema: {
+      projectId: z.string().optional(),
+      invoiceId: z.string(),
+      vendorName: z.string(),
+      invoiceNumber: z.string(),
+      invoiceDate: z.string(),
+      currency: z.string(),
+      totals: z.object({
+        subTotal: z.number(),
+        tax: z.number(),
+        shipping: z.number(),
+        otherFees: z.number(),
+        grandTotal: z.number(),
+      }),
+      lines: z.array(
+        z.object({
+          id: z.string().optional(),
+          sourceText: z.string(),
+          description: z.string(),
+          quantity: z.number(),
+          unitType: z.enum([
+            "linear_ft",
+            "sqft",
+            "sqm",
+            "piece",
+            "bundle",
+            "box",
+            "roll",
+            "sheet",
+            "bag",
+            "gallon",
+            "liter",
+            "kg",
+            "lb",
+            "meter",
+            "other",
+          ]),
+          unitPrice: z.number(),
+          lineTotal: z.number(),
+          materialId: z.string().optional(),
+          confidence: z.number(),
+          needsReview: z.boolean(),
+          notes: z.string(),
+        }),
+      ),
+      review: z.object({
+        totalsMismatchOverride: z.boolean(),
+        overrideReason: z.string(),
+      }),
+    },
+  },
+  async (input) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(input.projectId);
+      await renoService.updateInvoiceDraft({
+        projectId: resolvedProjectId,
+        invoiceId: input.invoiceId,
+        vendorName: input.vendorName,
+        invoiceNumber: input.invoiceNumber,
+        invoiceDate: input.invoiceDate,
+        currency: input.currency,
+        totals: input.totals,
+        lines: input.lines.map((line) => ({
+          ...line,
+          id: line.id ?? `line-${randomUUID()}`,
+        })),
+        review: input.review,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        invoiceId: input.invoiceId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_confirm_invoice_draft",
+  {
+    description: "Confirm a draft invoice and post immutable ledger entries",
+    inputSchema: {
+      projectId: z.string().optional(),
+      invoiceId: z.string(),
+      review: z.object({
+        totalsMismatchOverride: z.boolean(),
+        overrideReason: z.string(),
+      }),
+    },
+  },
+  async ({ projectId, invoiceId, review }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      await renoService.confirmInvoiceDraft({
+        projectId: resolvedProjectId,
+        invoiceId,
+        review,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        invoiceId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_list_invoices",
+  {
+    description: "List project invoices",
+    inputSchema: {
+      projectId: z.string().optional(),
+      status: z.enum(["draft", "confirmed", "voided"]).optional(),
+    },
+  },
+  async ({ projectId, status }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      const invoices = await renoService.listInvoices({
+        projectId: resolvedProjectId,
+      });
+      return asToolResult({
+        invoices: invoices.filter(
+          (entry) => !status || entry.status === status,
+        ),
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_get_invoice",
+  {
+    description: "Get a single invoice by ID",
+    inputSchema: {
+      projectId: z.string().optional(),
+      invoiceId: z.string(),
+    },
+  },
+  async ({ projectId, invoiceId }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      const invoice = await renoService.getInvoice({
+        projectId: resolvedProjectId,
+        invoiceId,
+      });
+      return asToolResult({ invoice });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_list_purchase_ledger",
+  {
+    description: "List immutable posted purchase ledger entries",
+    inputSchema: {
+      projectId: z.string().optional(),
+      invoiceId: z.string().optional(),
+    },
+  },
+  async ({ projectId, invoiceId }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      const entries = await renoService.listPurchaseLedger({
+        projectId: resolvedProjectId,
+        invoiceId,
+      });
+      return asToolResult({ purchaseLedger: entries });
     } catch (error) {
       return asToolError(error);
     }

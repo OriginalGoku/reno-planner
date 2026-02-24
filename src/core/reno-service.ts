@@ -10,6 +10,9 @@ import type {
   ItemStatus,
   MaterialCatalogItem,
   MaterialUnitType,
+  PurchaseInvoiceLine,
+  PurchaseInvoiceReview,
+  PurchaseInvoiceTotals,
   ProjectOverview,
   RenovationAttachment,
   RenovationProject,
@@ -225,6 +228,31 @@ export type AddAttachmentInput = {
   mimeType: string;
   sizeBytes: number;
   fileBuffer: Buffer;
+};
+
+export type ExtractInvoiceDraftInput = {
+  projectId: string;
+  attachmentId: string;
+  provider?: string;
+  model?: string;
+};
+
+export type UpdateInvoiceDraftInput = {
+  projectId: string;
+  invoiceId: string;
+  vendorName: string;
+  invoiceNumber: string;
+  invoiceDate: string;
+  currency: string;
+  totals: PurchaseInvoiceTotals;
+  lines: PurchaseInvoiceLine[];
+  review: PurchaseInvoiceReview;
+};
+
+export type ConfirmInvoiceDraftInput = {
+  projectId: string;
+  invoiceId: string;
+  review: PurchaseInvoiceReview;
 };
 
 function toSectionId(title: string) {
@@ -920,6 +948,227 @@ export const renoService = {
       payload.sectionId,
       payload.position,
     );
+  },
+
+  async createInvoiceDraftFromExtraction(payload: ExtractInvoiceDraftInput) {
+    const project = await projectRepository.getProjectById(payload.projectId);
+    if (!project) {
+      throw new Error(`Unknown projectId: ${payload.projectId}`);
+    }
+    const attachment = project.attachments.find(
+      (entry) => entry.id === payload.attachmentId,
+    );
+    if (!attachment) {
+      throw new Error(`Unknown attachmentId: ${payload.attachmentId}`);
+    }
+    if (attachment.category !== "invoice") {
+      throw new Error("Attachment category must be invoice.");
+    }
+
+    const now = new Date().toISOString();
+    const invoiceId = `inv-${crypto.randomUUID()}`;
+    const lineId = `line-${crypto.randomUUID()}`;
+    const invoiceNumber =
+      attachment.fileTitle?.trim() || attachment.originalName;
+
+    return projectRepository.createInvoiceDraftFromExtraction(
+      payload.projectId,
+      {
+        id: invoiceId,
+        status: "draft",
+        projectId: payload.projectId,
+        attachmentId: payload.attachmentId,
+        vendorName: "",
+        invoiceNumber,
+        invoiceDate: now.slice(0, 10),
+        currency: "CAD",
+        totals: {
+          subTotal: 0,
+          tax: 0,
+          shipping: 0,
+          otherFees: 0,
+          grandTotal: 0,
+        },
+        lines: [
+          {
+            id: lineId,
+            sourceText: attachment.fileTitle || attachment.originalName,
+            description: "",
+            quantity: 0,
+            unitType: "other",
+            unitPrice: 0,
+            lineTotal: 0,
+            materialId: undefined,
+            confidence: 0,
+            needsReview: true,
+            notes: "Auto-created draft. Review and fill extracted fields.",
+          },
+        ],
+        extraction: {
+          provider: payload.provider?.trim() || "manual",
+          model: payload.model?.trim() || "none",
+          extractedAt: now,
+          rawOutput: {
+            attachmentId: attachment.id,
+            originalName: attachment.originalName,
+            fileTitle: attachment.fileTitle ?? "",
+            note: "No OCR/LLM parser configured in this environment.",
+          },
+        },
+        review: {
+          totalsMismatchOverride: false,
+          overrideReason: "",
+        },
+        createdAt: now,
+        updatedAt: now,
+        confirmedAt: null,
+      },
+    );
+  },
+
+  async updateInvoiceDraft(payload: UpdateInvoiceDraftInput) {
+    const project = await projectRepository.getProjectById(payload.projectId);
+    if (!project) {
+      throw new Error(`Unknown projectId: ${payload.projectId}`);
+    }
+    const materialIds = new Set(
+      project.materialCatalog.map((entry) => entry.id),
+    );
+    for (const line of payload.lines) {
+      if (line.materialId && !materialIds.has(line.materialId)) {
+        throw new Error(
+          `Unknown materialId in line ${line.id}: ${line.materialId}`,
+        );
+      }
+    }
+    return projectRepository.updateInvoiceDraft(
+      payload.projectId,
+      payload.invoiceId,
+      {
+        vendorName: payload.vendorName.trim(),
+        invoiceNumber: payload.invoiceNumber.trim(),
+        invoiceDate: payload.invoiceDate.trim(),
+        currency: payload.currency.trim() || "CAD",
+        totals: payload.totals,
+        lines: payload.lines,
+        review: payload.review,
+      },
+    );
+  },
+
+  async confirmInvoiceDraft(payload: ConfirmInvoiceDraftInput) {
+    const project = await projectRepository.getProjectById(payload.projectId);
+    if (!project) {
+      throw new Error(`Unknown projectId: ${payload.projectId}`);
+    }
+    const invoice = project.purchaseInvoices.find(
+      (entry) => entry.id === payload.invoiceId,
+    );
+    if (!invoice) {
+      throw new Error(`Unknown invoiceId: ${payload.invoiceId}`);
+    }
+    if (invoice.status !== "draft") {
+      throw new Error("Only draft invoices can be confirmed.");
+    }
+
+    const materialIds = new Set(
+      project.materialCatalog.map((entry) => entry.id),
+    );
+    const lineSubTotal = invoice.lines.reduce(
+      (sum, line) => sum + line.quantity * line.unitPrice,
+      0,
+    );
+    const hasMismatch = Math.abs(lineSubTotal - invoice.totals.subTotal) > 0.01;
+    if (hasMismatch && !payload.review.totalsMismatchOverride) {
+      throw new Error(
+        "Invoice subtotal does not match sum of line totals. Set totalsMismatchOverride to confirm.",
+      );
+    }
+    if (
+      payload.review.totalsMismatchOverride &&
+      !payload.review.overrideReason.trim()
+    ) {
+      throw new Error(
+        "overrideReason is required when totalsMismatchOverride is true.",
+      );
+    }
+
+    const postedAt = new Date().toISOString();
+    const ledgerEntries = invoice.lines.map((line) => {
+      if (!line.materialId) {
+        throw new Error(
+          `Invoice line ${line.id} is missing materialId and cannot be posted.`,
+        );
+      }
+      if (!materialIds.has(line.materialId)) {
+        throw new Error(
+          `Unknown materialId in line ${line.id}: ${line.materialId}`,
+        );
+      }
+      return {
+        id: `led-${crypto.randomUUID()}`,
+        projectId: payload.projectId,
+        invoiceId: invoice.id,
+        invoiceLineId: line.id,
+        postedAt,
+        materialId: line.materialId,
+        quantity: line.quantity,
+        unitType: line.unitType,
+        unitPrice: line.unitPrice,
+        lineTotal: line.lineTotal,
+        vendorName: invoice.vendorName,
+        invoiceDate: invoice.invoiceDate,
+        currency: invoice.currency,
+        entryType: "purchase" as const,
+        note: line.notes ?? "",
+      };
+    });
+
+    return projectRepository.confirmInvoiceDraft(
+      payload.projectId,
+      payload.invoiceId,
+      {
+        review: payload.review,
+        confirmedAt: postedAt,
+        postedAt,
+        ledgerEntries,
+      },
+    );
+  },
+
+  async listInvoices(payload: { projectId: string }) {
+    const project = await projectRepository.getProjectById(payload.projectId);
+    if (!project) {
+      throw new Error(`Unknown projectId: ${payload.projectId}`);
+    }
+    return [...project.purchaseInvoices].sort((a, b) =>
+      b.createdAt.localeCompare(a.createdAt),
+    );
+  },
+
+  async getInvoice(payload: { projectId: string; invoiceId: string }) {
+    const project = await projectRepository.getProjectById(payload.projectId);
+    if (!project) {
+      throw new Error(`Unknown projectId: ${payload.projectId}`);
+    }
+    const invoice = project.purchaseInvoices.find(
+      (entry) => entry.id === payload.invoiceId,
+    );
+    if (!invoice) {
+      throw new Error(`Unknown invoiceId: ${payload.invoiceId}`);
+    }
+    return invoice;
+  },
+
+  async listPurchaseLedger(payload: { projectId: string; invoiceId?: string }) {
+    const project = await projectRepository.getProjectById(payload.projectId);
+    if (!project) {
+      throw new Error(`Unknown projectId: ${payload.projectId}`);
+    }
+    const rows = project.purchaseLedger.filter(
+      (entry) => !payload.invoiceId || entry.invoiceId === payload.invoiceId,
+    );
+    return rows.sort((a, b) => b.postedAt.localeCompare(a.postedAt));
   },
 
   async getProjectById(projectId: string): Promise<RenovationProject | null> {

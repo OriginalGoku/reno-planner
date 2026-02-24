@@ -14,8 +14,11 @@ import {
   type AddServiceFieldInput,
   type AddServiceSectionInput,
   type AddServiceSubsectionInput,
+  type ConfirmInvoiceDraftInput,
+  type ExtractInvoiceDraftInput,
   type UpdateProjectMetaInput,
   type UpdateItemFieldsInput,
+  type UpdateInvoiceDraftInput,
   type UpdateServiceFieldInput,
   type UpdateServiceSectionInput,
   type UpdateServiceSubsectionInput,
@@ -364,5 +367,26 @@ export async function deleteServiceFieldAction(payload: {
   fieldId: string;
 }) {
   await renoService.deleteServiceField(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function extractInvoiceDraftAction(
+  payload: ExtractInvoiceDraftInput,
+) {
+  await renoService.createInvoiceDraftFromExtraction(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function updateInvoiceDraftAction(
+  payload: UpdateInvoiceDraftInput,
+) {
+  await renoService.updateInvoiceDraft(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function confirmInvoiceDraftAction(
+  payload: ConfirmInvoiceDraftInput,
+) {
+  await renoService.confirmInvoiceDraft(payload);
   refreshProjectPaths(payload.projectId);
 }

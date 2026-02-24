@@ -226,6 +226,14 @@ export function validateProjectData(value: unknown): RenovationProject {
     Array.isArray(project.materialCatalog),
     "Project.materialCatalog must be an array.",
   );
+  ensure(
+    Array.isArray(project.purchaseInvoices),
+    "Project.purchaseInvoices must be an array.",
+  );
+  ensure(
+    Array.isArray(project.purchaseLedger),
+    "Project.purchaseLedger must be an array.",
+  );
   ensure(Array.isArray(project.notes), "Project.notes must be an array.");
   ensure(
     Array.isArray(project.attachments),
@@ -445,6 +453,260 @@ export function validateProjectData(value: unknown): RenovationProject {
         `Item.unitId "${item.unitId}" must reference an existing unit.`,
       );
     }
+  }
+
+  const attachmentIds = new Set<string>();
+  for (const attachment of project.attachments) {
+    attachmentIds.add(attachment.id);
+  }
+
+  const invoiceIds = new Set<string>();
+  const invoiceLineIdsByInvoice = new Map<string, Set<string>>();
+  for (const invoice of project.purchaseInvoices) {
+    ensure(isRecord(invoice), "Each purchase invoice must be an object.");
+    ensure(
+      typeof invoice.id === "string",
+      "PurchaseInvoice.id must be a string.",
+    );
+    ensure(
+      !invoiceIds.has(invoice.id),
+      `PurchaseInvoice.id must be unique: ${invoice.id}.`,
+    );
+    invoiceIds.add(invoice.id);
+    ensure(
+      invoice.projectId === project.id,
+      "PurchaseInvoice.projectId must match project.id.",
+    );
+    ensure(
+      typeof invoice.status === "string" &&
+        ["draft", "confirmed", "voided"].includes(invoice.status),
+      "PurchaseInvoice.status must be draft, confirmed, or voided.",
+    );
+    ensure(
+      typeof invoice.attachmentId === "string" &&
+        attachmentIds.has(invoice.attachmentId),
+      "PurchaseInvoice.attachmentId must reference an existing attachment.",
+    );
+    ensure(
+      typeof invoice.vendorName === "string",
+      "PurchaseInvoice.vendorName must be a string.",
+    );
+    ensure(
+      typeof invoice.invoiceNumber === "string",
+      "PurchaseInvoice.invoiceNumber must be a string.",
+    );
+    ensure(
+      typeof invoice.invoiceDate === "string",
+      "PurchaseInvoice.invoiceDate must be a string.",
+    );
+    ensure(
+      typeof invoice.currency === "string",
+      "PurchaseInvoice.currency must be a string.",
+    );
+    ensure(
+      isRecord(invoice.totals),
+      "PurchaseInvoice.totals must be an object.",
+    );
+    ensure(
+      typeof invoice.totals.subTotal === "number",
+      "PurchaseInvoice.totals.subTotal must be a number.",
+    );
+    ensure(
+      typeof invoice.totals.tax === "number",
+      "PurchaseInvoice.totals.tax must be a number.",
+    );
+    ensure(
+      typeof invoice.totals.shipping === "number",
+      "PurchaseInvoice.totals.shipping must be a number.",
+    );
+    ensure(
+      typeof invoice.totals.otherFees === "number",
+      "PurchaseInvoice.totals.otherFees must be a number.",
+    );
+    ensure(
+      typeof invoice.totals.grandTotal === "number",
+      "PurchaseInvoice.totals.grandTotal must be a number.",
+    );
+    ensure(
+      Array.isArray(invoice.lines),
+      "PurchaseInvoice.lines must be an array.",
+    );
+    ensure(
+      isRecord(invoice.extraction),
+      "PurchaseInvoice.extraction must be an object.",
+    );
+    ensure(
+      typeof invoice.extraction.provider === "string",
+      "PurchaseInvoice.extraction.provider must be a string.",
+    );
+    ensure(
+      typeof invoice.extraction.model === "string",
+      "PurchaseInvoice.extraction.model must be a string.",
+    );
+    ensure(
+      typeof invoice.extraction.extractedAt === "string",
+      "PurchaseInvoice.extraction.extractedAt must be a string.",
+    );
+    ensure(
+      isRecord(invoice.review),
+      "PurchaseInvoice.review must be an object.",
+    );
+    ensure(
+      typeof invoice.review.totalsMismatchOverride === "boolean",
+      "PurchaseInvoice.review.totalsMismatchOverride must be a boolean.",
+    );
+    ensure(
+      typeof invoice.review.overrideReason === "string",
+      "PurchaseInvoice.review.overrideReason must be a string.",
+    );
+    ensure(
+      typeof invoice.createdAt === "string",
+      "PurchaseInvoice.createdAt must be a string.",
+    );
+    ensure(
+      typeof invoice.updatedAt === "string",
+      "PurchaseInvoice.updatedAt must be a string.",
+    );
+    ensure(
+      invoice.confirmedAt === null ||
+        invoice.confirmedAt === undefined ||
+        typeof invoice.confirmedAt === "string",
+      "PurchaseInvoice.confirmedAt must be string/null/undefined.",
+    );
+
+    const lineIds = new Set<string>();
+    for (const line of invoice.lines) {
+      ensure(isRecord(line), "Each purchase invoice line must be an object.");
+      ensure(
+        typeof line.id === "string",
+        "PurchaseInvoiceLine.id must be a string.",
+      );
+      ensure(
+        !lineIds.has(line.id),
+        `PurchaseInvoiceLine.id must be unique per invoice: ${line.id}.`,
+      );
+      lineIds.add(line.id);
+      ensure(
+        typeof line.sourceText === "string",
+        "PurchaseInvoiceLine.sourceText must be a string.",
+      );
+      ensure(
+        typeof line.description === "string",
+        "PurchaseInvoiceLine.description must be a string.",
+      );
+      ensure(
+        typeof line.quantity === "number",
+        "PurchaseInvoiceLine.quantity must be a number.",
+      );
+      ensure(
+        typeof line.unitType === "string" &&
+          VALID_MATERIAL_UNITS.includes(line.unitType as MaterialUnitType),
+        `PurchaseInvoiceLine.unitType must be one of: ${VALID_MATERIAL_UNITS.join(", ")}.`,
+      );
+      ensure(
+        typeof line.unitPrice === "number",
+        "PurchaseInvoiceLine.unitPrice must be a number.",
+      );
+      ensure(
+        typeof line.lineTotal === "number",
+        "PurchaseInvoiceLine.lineTotal must be a number.",
+      );
+      ensure(
+        line.materialId === undefined ||
+          (typeof line.materialId === "string" &&
+            materialCatalogIds.has(line.materialId)),
+        "PurchaseInvoiceLine.materialId must reference a valid materialCatalog entry when provided.",
+      );
+      ensure(
+        typeof line.confidence === "number",
+        "PurchaseInvoiceLine.confidence must be a number.",
+      );
+      ensure(
+        typeof line.needsReview === "boolean",
+        "PurchaseInvoiceLine.needsReview must be a boolean.",
+      );
+      ensure(
+        typeof line.notes === "string",
+        "PurchaseInvoiceLine.notes must be a string.",
+      );
+    }
+    invoiceLineIdsByInvoice.set(invoice.id, lineIds);
+  }
+
+  const ledgerIds = new Set<string>();
+  for (const entry of project.purchaseLedger) {
+    ensure(isRecord(entry), "Each purchase ledger entry must be an object.");
+    ensure(
+      typeof entry.id === "string",
+      "PurchaseLedgerEntry.id must be a string.",
+    );
+    ensure(
+      !ledgerIds.has(entry.id),
+      `PurchaseLedgerEntry.id must be unique: ${entry.id}.`,
+    );
+    ledgerIds.add(entry.id);
+    ensure(
+      entry.projectId === project.id,
+      "PurchaseLedgerEntry.projectId must match project.id.",
+    );
+    ensure(
+      typeof entry.invoiceId === "string" && invoiceIds.has(entry.invoiceId),
+      "PurchaseLedgerEntry.invoiceId must reference an existing invoice.",
+    );
+    ensure(
+      typeof entry.invoiceLineId === "string" &&
+        !!invoiceLineIdsByInvoice
+          .get(entry.invoiceId)
+          ?.has(entry.invoiceLineId),
+      "PurchaseLedgerEntry.invoiceLineId must reference an existing line in its invoice.",
+    );
+    ensure(
+      typeof entry.postedAt === "string",
+      "PurchaseLedgerEntry.postedAt must be a string.",
+    );
+    ensure(
+      typeof entry.materialId === "string" &&
+        materialCatalogIds.has(entry.materialId),
+      "PurchaseLedgerEntry.materialId must reference a valid materialCatalog entry.",
+    );
+    ensure(
+      typeof entry.quantity === "number",
+      "PurchaseLedgerEntry.quantity must be a number.",
+    );
+    ensure(
+      typeof entry.unitType === "string" &&
+        VALID_MATERIAL_UNITS.includes(entry.unitType as MaterialUnitType),
+      `PurchaseLedgerEntry.unitType must be one of: ${VALID_MATERIAL_UNITS.join(", ")}.`,
+    );
+    ensure(
+      typeof entry.unitPrice === "number",
+      "PurchaseLedgerEntry.unitPrice must be a number.",
+    );
+    ensure(
+      typeof entry.lineTotal === "number",
+      "PurchaseLedgerEntry.lineTotal must be a number.",
+    );
+    ensure(
+      typeof entry.vendorName === "string",
+      "PurchaseLedgerEntry.vendorName must be a string.",
+    );
+    ensure(
+      typeof entry.invoiceDate === "string",
+      "PurchaseLedgerEntry.invoiceDate must be a string.",
+    );
+    ensure(
+      typeof entry.currency === "string",
+      "PurchaseLedgerEntry.currency must be a string.",
+    );
+    ensure(
+      typeof entry.entryType === "string" &&
+        ["purchase", "adjustment"].includes(entry.entryType),
+      "PurchaseLedgerEntry.entryType must be purchase or adjustment.",
+    );
+    ensure(
+      typeof entry.note === "string",
+      "PurchaseLedgerEntry.note must be a string.",
+    );
   }
 
   for (const unit of project.units) {
