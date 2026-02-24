@@ -24,6 +24,8 @@ export default async function ItemPage({ params }: ItemPageProps) {
       item={item}
       sectionTitle={section?.title ?? "Unknown Section"}
       attachments={project.attachments}
+      materialCatalog={project.materialCatalog}
+      materialCategories={project.materialCategories}
     />
   );
 }

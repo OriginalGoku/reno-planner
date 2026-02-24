@@ -6,6 +6,8 @@ import { AttachmentManager } from "@/components/reno/attachment-manager";
 import type {
   ExpenseType,
   ItemStatus,
+  MaterialCatalogItem,
+  MaterialCategory,
   MaterialUnitType,
   RenovationAttachment,
   RenovationExpense,
@@ -30,6 +32,8 @@ type ItemDetailWireframeProps = {
   item: RenovationItem;
   sectionTitle: string;
   attachments: RenovationAttachment[];
+  materialCatalog: MaterialCatalogItem[];
+  materialCategories: MaterialCategory[];
 };
 
 type Feedback = {
@@ -88,6 +92,8 @@ export function ItemDetailWireframe({
   item,
   sectionTitle,
   attachments,
+  materialCatalog,
+  materialCategories,
 }: ItemDetailWireframeProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
   const [itemTitle, setItemTitle] = useState(item.title);
@@ -107,10 +113,13 @@ export function ItemDetailWireframe({
     item.materials ?? [],
   );
   const [expenses, setExpenses] = useState<RenovationExpense[]>(item.expenses);
-  const [materialName, setMaterialName] = useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState(
+    materialCatalog[0]?.categoryId ?? "",
+  );
+  const [selectedMaterialId, setSelectedMaterialId] = useState(
+    materialCatalog[0]?.id ?? "",
+  );
   const [materialQuantity, setMaterialQuantity] = useState("");
-  const [materialUnitType, setMaterialUnitType] =
-    useState<MaterialUnitType>("piece");
   const [materialEstimatedPrice, setMaterialEstimatedPrice] = useState("");
   const [materialUrl, setMaterialUrl] = useState("");
   const [materialNote, setMaterialNote] = useState("");
@@ -136,6 +145,27 @@ export function ItemDetailWireframe({
   const [isSavingMaterial, startSavingMaterial] = useTransition();
   const [isSavingExpense, startSavingExpense] = useTransition();
   const router = useRouter();
+  const materialCatalogMap = useMemo(
+    () => new Map(materialCatalog.map((entry) => [entry.id, entry])),
+    [materialCatalog],
+  );
+  const materialCategoryOptions = useMemo(() => {
+    const lookup = new Map(
+      materialCategories.map((category) => [category.id, category.name]),
+    );
+    const unique = new Set(materialCatalog.map((entry) => entry.categoryId));
+    return Array.from(unique).map((categoryId) => ({
+      id: categoryId,
+      name: lookup.get(categoryId) ?? categoryId,
+    }));
+  }, [materialCatalog, materialCategories]);
+  const materialsForSelectedCategory = useMemo(
+    () =>
+      materialCatalog
+        .filter((entry) => entry.categoryId === selectedCategoryId)
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [materialCatalog, selectedCategoryId],
+  );
 
   const actualTotal = useMemo(
     () => getTotalActualForItem({ ...item, expenses }),
@@ -395,11 +425,16 @@ export function ItemDetailWireframe({
   }
 
   function addMaterial() {
-    const name = materialName.trim();
+    const materialId = selectedMaterialId;
     const quantity = Number(materialQuantity);
     const estimatedPrice = Number(materialEstimatedPrice);
+    const catalogEntry = materialCatalogMap.get(materialId);
 
-    if (!name || Number.isNaN(quantity) || Number.isNaN(estimatedPrice)) {
+    if (
+      !catalogEntry ||
+      Number.isNaN(quantity) ||
+      Number.isNaN(estimatedPrice)
+    ) {
       return;
     }
     if (quantity <= 0 || estimatedPrice < 0) {
@@ -408,9 +443,8 @@ export function ItemDetailWireframe({
 
     const newMaterial: RenovationMaterial = {
       id: `local-material-${Date.now()}`,
-      name,
+      materialId,
       quantity,
-      unitType: materialUnitType,
       estimatedPrice,
       url: materialUrl.trim(),
       note: materialNote.trim() || undefined,
@@ -418,9 +452,11 @@ export function ItemDetailWireframe({
 
     setMaterials((current) => [newMaterial, ...current]);
     setMaterialsFeedback(null);
-    setMaterialName("");
+    const firstInCategory = materialCatalog.find(
+      (entry) => entry.categoryId === selectedCategoryId,
+    );
+    setSelectedMaterialId(firstInCategory?.id ?? "");
     setMaterialQuantity("");
-    setMaterialUnitType("piece");
     setMaterialEstimatedPrice("");
     setMaterialUrl("");
     setMaterialNote("");
@@ -430,9 +466,8 @@ export function ItemDetailWireframe({
         await addItemMaterialAction({
           projectId,
           itemId: item.id,
-          name: newMaterial.name,
+          materialId: newMaterial.materialId,
           quantity: newMaterial.quantity,
-          unitType: newMaterial.unitType,
           estimatedPrice: newMaterial.estimatedPrice,
           url: newMaterial.url,
           note: newMaterial.note,
@@ -451,7 +486,9 @@ export function ItemDetailWireframe({
 
   function removeMaterial(materialId: string) {
     const target = materials.find((material) => material.id === materialId);
-    const materialLabel = target?.name ?? "this material";
+    const materialLabel = target
+      ? (materialCatalogMap.get(target.materialId)?.name ?? target.materialId)
+      : "this material";
     const confirmed = window.confirm(
       `Remove "${materialLabel}" from materials?`,
     );
@@ -502,7 +539,7 @@ export function ItemDetailWireframe({
       return;
     }
     if (
-      !editingMaterialDraft.name.trim() ||
+      !materialCatalogMap.has(editingMaterialDraft.materialId) ||
       editingMaterialDraft.quantity < 0 ||
       editingMaterialDraft.estimatedPrice < 0
     ) {
@@ -531,9 +568,8 @@ export function ItemDetailWireframe({
           projectId,
           itemId: item.id,
           materialId,
-          name: materialDraft.name.trim(),
+          catalogMaterialId: materialDraft.materialId,
           quantity: materialDraft.quantity,
-          unitType: materialDraft.unitType,
           estimatedPrice: materialDraft.estimatedPrice,
           url: materialDraft.url,
           note: materialDraft.note,
@@ -774,15 +810,53 @@ export function ItemDetailWireframe({
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground">
-                  Material Name
+                  Category
                 </label>
-                <input
-                  value={materialName}
-                  onChange={(event) => setMaterialName(event.target.value)}
-                  type="text"
-                  placeholder={'e.g., Flexible Duct 6"'}
+                <select
+                  value={selectedCategoryId}
+                  onChange={(event) => {
+                    const nextCategoryId = event.target.value;
+                    setSelectedCategoryId(nextCategoryId);
+                    const firstInCategory = materialCatalog.find(
+                      (entry) => entry.categoryId === nextCategoryId,
+                    );
+                    setSelectedMaterialId(firstInCategory?.id ?? "");
+                  }}
                   className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-                />
+                >
+                  {materialCategoryOptions.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1 lg:col-span-2">
+                <label className="text-xs text-muted-foreground">
+                  Catalog Material
+                </label>
+                <select
+                  value={selectedMaterialId}
+                  onChange={(event) =>
+                    setSelectedMaterialId(event.target.value)
+                  }
+                  className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                >
+                  {materialsForSelectedCategory.map((catalogItem) => (
+                    <option key={catalogItem.id} value={catalogItem.id}>
+                      {catalogItem.name}
+                    </option>
+                  ))}
+                </select>
+                {selectedMaterialId ? (
+                  <p className="text-[11px] text-muted-foreground">
+                    Unit type:{" "}
+                    {materialUnitLabel(
+                      materialCatalogMap.get(selectedMaterialId)?.unitType ??
+                        "other",
+                    )}
+                  </p>
+                ) : null}
               </div>
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground">
@@ -797,24 +871,6 @@ export function ItemDetailWireframe({
                   placeholder="0"
                   className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
                 />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">
-                  Unit Type
-                </label>
-                <select
-                  value={materialUnitType}
-                  onChange={(event) =>
-                    setMaterialUnitType(event.target.value as MaterialUnitType)
-                  }
-                  className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-                >
-                  {materialUnitOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
               </div>
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground">
@@ -858,7 +914,7 @@ export function ItemDetailWireframe({
             <button
               type="button"
               onClick={addMaterial}
-              disabled={isSavingMaterial || !materialName.trim()}
+              disabled={isSavingMaterial || !selectedMaterialId}
               className="rounded-md bg-foreground px-3 py-2 text-sm text-background disabled:opacity-60"
             >
               {isSavingMaterial ? "Saving..." : "Add Material"}
@@ -888,22 +944,86 @@ export function ItemDetailWireframe({
                       editingMaterialDraft ? (
                         <div className="space-y-3">
                           <div className="grid gap-2 sm:grid-cols-2">
-                            <div className="space-y-1">
+                            <div className="space-y-1 sm:col-span-2">
                               <label className="text-xs text-muted-foreground">
-                                Material Name
+                                Category
                               </label>
-                              <input
-                                value={editingMaterialDraft.name}
+                              <select
+                                value={
+                                  materialCatalogMap.get(
+                                    editingMaterialDraft.materialId,
+                                  )?.categoryId ?? ""
+                                }
+                                onChange={(event) => {
+                                  const nextCategoryId = event.target.value;
+                                  const firstInCategory = materialCatalog.find(
+                                    (entry) =>
+                                      entry.categoryId === nextCategoryId,
+                                  );
+                                  if (!firstInCategory) {
+                                    return;
+                                  }
+                                  setEditingMaterialDraft((current) =>
+                                    current
+                                      ? {
+                                          ...current,
+                                          materialId: firstInCategory.id,
+                                        }
+                                      : current,
+                                  );
+                                }}
+                                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
+                              >
+                                {materialCategoryOptions.map((category) => (
+                                  <option key={category.id} value={category.id}>
+                                    {category.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="space-y-1 sm:col-span-2">
+                              <label className="text-xs text-muted-foreground">
+                                Catalog Material
+                              </label>
+                              <select
+                                value={editingMaterialDraft.materialId}
                                 onChange={(event) =>
                                   setEditingMaterialDraft((current) =>
                                     current
-                                      ? { ...current, name: event.target.value }
+                                      ? {
+                                          ...current,
+                                          materialId: event.target.value,
+                                        }
                                       : current,
                                   )
                                 }
                                 className="w-full rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
-                                placeholder="Material name"
-                              />
+                              >
+                                {materialCatalog
+                                  .filter(
+                                    (catalogItem) =>
+                                      catalogItem.categoryId ===
+                                      (materialCatalogMap.get(
+                                        editingMaterialDraft.materialId,
+                                      )?.categoryId ?? ""),
+                                  )
+                                  .map((catalogItem) => (
+                                    <option
+                                      key={catalogItem.id}
+                                      value={catalogItem.id}
+                                    >
+                                      {catalogItem.name}
+                                    </option>
+                                  ))}
+                              </select>
+                              <p className="text-[11px] text-muted-foreground">
+                                Unit type:{" "}
+                                {materialUnitLabel(
+                                  materialCatalogMap.get(
+                                    editingMaterialDraft.materialId,
+                                  )?.unitType ?? "other",
+                                )}
+                              </p>
                             </div>
                             <div className="space-y-1">
                               <label className="text-xs text-muted-foreground">
@@ -971,35 +1091,6 @@ export function ItemDetailWireframe({
                             </div>
                             <div className="space-y-1">
                               <label className="text-xs text-muted-foreground">
-                                Unit Type
-                              </label>
-                              <select
-                                value={editingMaterialDraft.unitType}
-                                onChange={(event) =>
-                                  setEditingMaterialDraft((current) =>
-                                    current
-                                      ? {
-                                          ...current,
-                                          unitType: event.target
-                                            .value as MaterialUnitType,
-                                        }
-                                      : current,
-                                  )
-                                }
-                                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
-                              >
-                                {materialUnitOptions.map((option) => (
-                                  <option
-                                    key={option.value}
-                                    value={option.value}
-                                  >
-                                    {option.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-xs text-muted-foreground">
                                 Estimated Price (Unit)
                               </label>
                               <input
@@ -1045,14 +1136,27 @@ export function ItemDetailWireframe({
                       ) : (
                         <div className="flex flex-wrap items-start justify-between gap-2">
                           <div>
-                            <p className="font-medium text-foreground">
-                              {material.name}
-                            </p>
-                            <p>
-                              Qty: {material.quantity}{" "}
-                              {materialUnitLabel(material.unitType)} • Unit est:
-                              ${material.estimatedPrice.toLocaleString()}
-                            </p>
+                            {(() => {
+                              const catalogEntry = materialCatalogMap.get(
+                                material.materialId,
+                              );
+                              return (
+                                <>
+                                  <p className="font-medium text-foreground">
+                                    {catalogEntry?.name ??
+                                      `Unknown material (${material.materialId})`}
+                                  </p>
+                                  <p>
+                                    Qty: {material.quantity}{" "}
+                                    {materialUnitLabel(
+                                      catalogEntry?.unitType ?? "other",
+                                    )}{" "}
+                                    • Unit est: $
+                                    {material.estimatedPrice.toLocaleString()}
+                                  </p>
+                                </>
+                              );
+                            })()}
                             <p>
                               Line est: $
                               {(

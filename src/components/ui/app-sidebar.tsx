@@ -31,6 +31,7 @@ import {
   Home,
   LayoutDashboard,
   PackageSearch,
+  Package,
   Pencil,
   Receipt,
   Settings,
@@ -207,6 +208,11 @@ export function AppSidebar() {
       children: unitNavChildren,
     },
     ...serviceNavItems,
+    {
+      title: "Materials",
+      href: `/app/${project.id}/materials`,
+      icon: Package,
+    },
     {
       title: "Purchases",
       href: `/app/${project.id}/purchases`,

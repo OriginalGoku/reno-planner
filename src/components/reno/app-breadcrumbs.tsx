@@ -26,6 +26,7 @@ type Crumb = {
 const ROUTE_LABELS: Record<string, string> = {
   items: "All Items",
   purchases: "Purchases",
+  materials: "Materials",
   expenses: "Expenses",
   units: "Units",
   services: "Mechanical & Building Services",

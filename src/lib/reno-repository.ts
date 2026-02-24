@@ -1,7 +1,9 @@
 import { readFile, writeFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import path from "node:path";
 import type {
   ItemStatus,
+  MaterialUnitType,
   ProjectOverview,
   RenovationAttachment,
   RenovationExpense,
@@ -69,7 +71,22 @@ type UpdateServiceFieldInput = Pick<
   "name" | "notes" | "linkedSections"
 >;
 
+type AddMaterialCategoryInput = RenovationProject["materialCategories"][number];
+
+type UpdateMaterialCategoryInput = Pick<
+  RenovationProject["materialCategories"][number],
+  "name" | "description"
+>;
+
+type AddMaterialCatalogItemInput = RenovationProject["materialCatalog"][number];
+
+type UpdateMaterialCatalogItemInput = Pick<
+  RenovationProject["materialCatalog"][number],
+  "name" | "unitType" | "estimatedPrice" | "sampleUrl" | "notes" | "categoryId"
+>;
+
 type SectionMoveDirection = "up" | "down";
+const DEFAULT_MATERIAL_CATEGORY_ID = "uncategorized";
 
 function normalizeSectionOrder(
   sections: RenovationProject["sections"],
@@ -87,6 +104,33 @@ function normalizeSectionOrder(
   return withFallback
     .sort((a, b) => a.position - b.position)
     .map((section, index) => ({ ...section, position: index }));
+}
+
+function normalizeMaterialCategoryOrder(
+  categories: RenovationProject["materialCategories"],
+): RenovationProject["materialCategories"] {
+  const withFallback = categories.map((category, index) => ({
+    ...category,
+    sortOrder:
+      typeof category.sortOrder === "number" &&
+      Number.isInteger(category.sortOrder) &&
+      category.sortOrder >= 0
+        ? category.sortOrder
+        : index,
+  }));
+
+  return withFallback
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((category, index) => ({ ...category, sortOrder: index }));
+}
+
+function toCatalogId(input: string) {
+  const normalized = input
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return normalized || "material";
 }
 
 export interface ProjectRepository {
@@ -136,6 +180,37 @@ export interface ProjectRepository {
     projectId: string,
     itemId: string,
     materialId: string,
+  ): Promise<RenovationProject>;
+  addMaterialCatalogItem(
+    projectId: string,
+    material: AddMaterialCatalogItemInput,
+  ): Promise<RenovationProject>;
+  updateMaterialCatalogItem(
+    projectId: string,
+    materialId: string,
+    payload: UpdateMaterialCatalogItemInput,
+  ): Promise<RenovationProject>;
+  deleteMaterialCatalogItem(
+    projectId: string,
+    materialId: string,
+  ): Promise<RenovationProject>;
+  addMaterialCategory(
+    projectId: string,
+    category: AddMaterialCategoryInput,
+  ): Promise<RenovationProject>;
+  updateMaterialCategory(
+    projectId: string,
+    categoryId: string,
+    payload: UpdateMaterialCategoryInput,
+  ): Promise<RenovationProject>;
+  deleteMaterialCategory(
+    projectId: string,
+    categoryId: string,
+  ): Promise<RenovationProject>;
+  moveMaterialCategory(
+    projectId: string,
+    categoryId: string,
+    direction: SectionMoveDirection,
   ): Promise<RenovationProject>;
   addProjectNote(
     projectId: string,
@@ -311,8 +386,13 @@ export class JsonProjectRepository implements ProjectRepository {
     ) {
       const projectLike = parsed as {
         sections: RenovationProject["sections"];
+        items?: RenovationProject["items"];
         units?: RenovationProject["units"];
         serviceSections?: RenovationProject["serviceSections"];
+        materialCategories?:
+          | RenovationProject["materialCategories"]
+          | unknown[];
+        materialCatalog?: RenovationProject["materialCatalog"] | unknown[];
         attachments?: RenovationProject["attachments"];
       };
       projectLike.sections = normalizeSectionOrder(projectLike.sections);
@@ -331,7 +411,7 @@ export class JsonProjectRepository implements ProjectRepository {
             ? unit.rooms.map((room) => ({
                 ...room,
                 roomType:
-                  room.roomType === "kitchen_living_area"
+                  (room.roomType as string) === "kitchen_living_area"
                     ? "kitchen"
                     : room.roomType,
               }))
@@ -341,6 +421,136 @@ export class JsonProjectRepository implements ProjectRepository {
       if (!Array.isArray(projectLike.serviceSections)) {
         projectLike.serviceSections = [];
       }
+      const seededCategories: RenovationProject["materialCategories"] = [];
+      if (Array.isArray(projectLike.materialCategories)) {
+        for (const entry of projectLike.materialCategories) {
+          if (
+            typeof entry === "object" &&
+            entry !== null &&
+            typeof (entry as { id?: unknown }).id === "string"
+          ) {
+            seededCategories.push(
+              entry as RenovationProject["materialCategories"][number],
+            );
+          }
+        }
+      }
+      if (
+        !seededCategories.some(
+          (entry) => entry.id === DEFAULT_MATERIAL_CATEGORY_ID,
+        )
+      ) {
+        seededCategories.push({
+          id: DEFAULT_MATERIAL_CATEGORY_ID,
+          name: "Uncategorized",
+          description: "Default category for uncategorized materials.",
+          sortOrder: seededCategories.length,
+        });
+      }
+      const normalizedCategories =
+        normalizeMaterialCategoryOrder(seededCategories);
+      projectLike.materialCategories = normalizedCategories;
+      const knownCategoryIds = new Set(
+        normalizedCategories.map((entry) => entry.id),
+      );
+
+      const seededCatalog: RenovationProject["materialCatalog"] = [];
+      const seenCatalogIds = new Set<string>();
+      if (Array.isArray(projectLike.materialCatalog)) {
+        for (const entry of projectLike.materialCatalog) {
+          if (
+            typeof entry === "object" &&
+            entry !== null &&
+            typeof (entry as { id?: unknown }).id === "string"
+          ) {
+            const catalogEntry =
+              entry as RenovationProject["materialCatalog"][number];
+            if (
+              !catalogEntry.categoryId ||
+              !knownCategoryIds.has(catalogEntry.categoryId)
+            ) {
+              catalogEntry.categoryId = DEFAULT_MATERIAL_CATEGORY_ID;
+            }
+            if (!seenCatalogIds.has(catalogEntry.id)) {
+              seededCatalog.push(catalogEntry);
+              seenCatalogIds.add(catalogEntry.id);
+            }
+          }
+        }
+      }
+
+      const upsertCatalogFromLegacy = (
+        name: string,
+        unitType: MaterialUnitType | undefined,
+      ) => {
+        const normalizedName = name.trim();
+        if (!normalizedName) {
+          return null;
+        }
+        const safeUnitType = unitType ?? "other";
+        const existing = seededCatalog.find(
+          (entry) =>
+            entry.name.toLowerCase() === normalizedName.toLowerCase() &&
+            entry.unitType === safeUnitType,
+        );
+        if (existing) {
+          return existing.id;
+        }
+        const baseId = toCatalogId(normalizedName);
+        let nextId = baseId;
+        let suffix = 2;
+        while (seenCatalogIds.has(nextId)) {
+          nextId = `${baseId}-${suffix}`;
+          suffix += 1;
+        }
+        seededCatalog.push({
+          id: nextId,
+          categoryId: DEFAULT_MATERIAL_CATEGORY_ID,
+          name: normalizedName,
+          unitType: safeUnitType,
+          estimatedPrice: undefined,
+          sampleUrl: "",
+          notes: "",
+        });
+        seenCatalogIds.add(nextId);
+        return nextId;
+      };
+
+      if (Array.isArray(projectLike.items)) {
+        const items = projectLike.items;
+        for (const item of items) {
+          if (!Array.isArray(item.materials)) {
+            item.materials = [];
+            continue;
+          }
+          item.materials = item.materials.map((material) => {
+            if (material.materialId) {
+              return material;
+            }
+            const materialId = upsertCatalogFromLegacy(
+              (material as { name?: string }).name ?? "Uncategorized Material",
+              (material as { unitType?: MaterialUnitType }).unitType,
+            );
+            return {
+              id:
+                typeof material.id === "string" && material.id.length > 0
+                  ? material.id
+                  : randomUUID(),
+              materialId: materialId ?? "uncategorized-material",
+              quantity:
+                typeof material.quantity === "number" ? material.quantity : 0,
+              estimatedPrice:
+                typeof material.estimatedPrice === "number"
+                  ? material.estimatedPrice
+                  : 0,
+              url: typeof material.url === "string" ? material.url : "",
+              note: material.note,
+            };
+          });
+        }
+      }
+
+      projectLike.materialCatalog = seededCatalog;
       if (!Array.isArray(projectLike.attachments)) {
         projectLike.attachments = [];
       }
@@ -355,6 +565,9 @@ export class JsonProjectRepository implements ProjectRepository {
     }
 
     project.sections = normalizeSectionOrder(project.sections);
+    project.materialCategories = normalizeMaterialCategoryOrder(
+      project.materialCategories,
+    );
     validateProjectData(project);
     await writeFile(
       projectPath,
@@ -374,6 +587,9 @@ export class JsonProjectRepository implements ProjectRepository {
 
     const updated = mutate(project);
     updated.sections = normalizeSectionOrder(updated.sections);
+    updated.materialCategories = normalizeMaterialCategoryOrder(
+      updated.materialCategories,
+    );
     await this.writeProject(updated);
     return updated;
   }
@@ -576,6 +792,168 @@ export class JsonProjectRepository implements ProjectRepository {
 
       existingMaterials[materialIndex] = material;
       item.materials = existingMaterials;
+      return project;
+    });
+  }
+
+  async addMaterialCatalogItem(
+    projectId: string,
+    material: AddMaterialCatalogItemInput,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const exists = project.materialCatalog.some(
+        (entry) => entry.id === material.id,
+      );
+      if (exists) {
+        throw new Error(`Material catalog id already exists: ${material.id}`);
+      }
+      const categoryExists = project.materialCategories.some(
+        (entry) => entry.id === material.categoryId,
+      );
+      if (!categoryExists) {
+        throw new Error(`Unknown categoryId: ${material.categoryId}`);
+      }
+
+      project.materialCatalog = [material, ...project.materialCatalog];
+      return project;
+    });
+  }
+
+  async updateMaterialCatalogItem(
+    projectId: string,
+    materialId: string,
+    payload: UpdateMaterialCatalogItemInput,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const material = project.materialCatalog.find(
+        (entry) => entry.id === materialId,
+      );
+      if (!material) {
+        throw new Error(`Unknown materialId: ${materialId}`);
+      }
+      const categoryExists = project.materialCategories.some(
+        (entry) => entry.id === payload.categoryId,
+      );
+      if (!categoryExists) {
+        throw new Error(`Unknown categoryId: ${payload.categoryId}`);
+      }
+
+      material.name = payload.name;
+      material.unitType = payload.unitType;
+      material.estimatedPrice = payload.estimatedPrice;
+      material.sampleUrl = payload.sampleUrl;
+      material.notes = payload.notes;
+      material.categoryId = payload.categoryId;
+      return project;
+    });
+  }
+
+  async deleteMaterialCatalogItem(
+    projectId: string,
+    materialId: string,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const inUse = project.items.some((item) =>
+        (item.materials ?? []).some(
+          (material) => material.materialId === materialId,
+        ),
+      );
+      if (inUse) {
+        throw new Error(
+          `Material catalog item is in use by one or more item material lines: ${materialId}`,
+        );
+      }
+      project.materialCatalog = project.materialCatalog.filter(
+        (entry) => entry.id !== materialId,
+      );
+      return project;
+    });
+  }
+
+  async addMaterialCategory(
+    projectId: string,
+    category: AddMaterialCategoryInput,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const exists = project.materialCategories.some(
+        (entry) => entry.id === category.id,
+      );
+      if (exists) {
+        throw new Error(`Material category id already exists: ${category.id}`);
+      }
+      project.materialCategories = [...project.materialCategories, category];
+      return project;
+    });
+  }
+
+  async updateMaterialCategory(
+    projectId: string,
+    categoryId: string,
+    payload: UpdateMaterialCategoryInput,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const category = project.materialCategories.find(
+        (entry) => entry.id === categoryId,
+      );
+      if (!category) {
+        throw new Error(`Unknown categoryId: ${categoryId}`);
+      }
+      category.name = payload.name;
+      category.description = payload.description;
+      return project;
+    });
+  }
+
+  async deleteMaterialCategory(
+    projectId: string,
+    categoryId: string,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      if (categoryId === DEFAULT_MATERIAL_CATEGORY_ID) {
+        throw new Error("Cannot delete the default Uncategorized category.");
+      }
+      const exists = project.materialCategories.some(
+        (entry) => entry.id === categoryId,
+      );
+      if (!exists) {
+        throw new Error(`Unknown categoryId: ${categoryId}`);
+      }
+      project.materialCatalog = project.materialCatalog.map((material) =>
+        material.categoryId === categoryId
+          ? { ...material, categoryId: DEFAULT_MATERIAL_CATEGORY_ID }
+          : material,
+      );
+      project.materialCategories = project.materialCategories.filter(
+        (entry) => entry.id !== categoryId,
+      );
+      return project;
+    });
+  }
+
+  async moveMaterialCategory(
+    projectId: string,
+    categoryId: string,
+    direction: SectionMoveDirection,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const ordered = normalizeMaterialCategoryOrder(
+        project.materialCategories,
+      );
+      const index = ordered.findIndex((entry) => entry.id === categoryId);
+      if (index < 0) {
+        throw new Error(`Unknown categoryId: ${categoryId}`);
+      }
+      const targetIndex = direction === "up" ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= ordered.length) {
+        project.materialCategories = ordered;
+        return project;
+      }
+      const [moved] = ordered.splice(index, 1);
+      ordered.splice(targetIndex, 0, moved);
+      project.materialCategories = ordered.map((entry, orderIndex) => ({
+        ...entry,
+        sortOrder: orderIndex,
+      }));
       return project;
     });
   }

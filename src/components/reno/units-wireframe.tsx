@@ -502,7 +502,7 @@ export function UnitsWireframe({
           ? unit
           : {
               ...unit,
-              rooms: unit.rooms.map((room) =>
+              rooms: unit.rooms.map((room: RenovationUnit["rooms"][number]) =>
                 room.id === roomId ? { ...room, ...payload } : room,
               ),
             },
@@ -536,7 +536,12 @@ export function UnitsWireframe({
     setUnits((current) =>
       current.map((unit) =>
         unit.id === unitId
-          ? { ...unit, rooms: unit.rooms.filter((room) => room.id !== roomId) }
+          ? {
+              ...unit,
+              rooms: unit.rooms.filter(
+                (room: RenovationUnit["rooms"][number]) => room.id !== roomId,
+              ),
+            }
           : unit,
       ),
     );
@@ -1106,185 +1111,190 @@ export function UnitsWireframe({
                     <div className="mt-4 rounded-md border p-3">
                       <h4 className="text-sm font-semibold">Rooms</h4>
                       <div className="mt-2 space-y-2">
-                        {unit.rooms.map((room) => {
-                          const roomKey = `${unit.id}:${room.id}`;
-                          const isEditingRoom = editingRoomKey === roomKey;
-                          return (
-                            <div
-                              key={room.id}
-                              className="rounded-md border p-2"
-                            >
-                              {isEditingRoom && editingRoomDraft ? (
-                                <div className="grid gap-2 md:grid-cols-2">
-                                  <div className="space-y-1">
-                                    <label className="text-xs text-muted-foreground">
-                                      Room Type
-                                    </label>
-                                    <select
-                                      className="w-full rounded-md border bg-background px-2 py-1 text-sm"
-                                      value={editingRoomDraft.roomType}
-                                      onChange={(event) =>
-                                        setEditingRoomDraft((current) =>
-                                          current
-                                            ? {
-                                                ...current,
-                                                roomType: event.target
-                                                  .value as UnitRoomType,
-                                              }
-                                            : current,
-                                        )
-                                      }
-                                    >
-                                      {roomTypeOptions.map((option) => (
-                                        <option
-                                          key={option.value}
-                                          value={option.value}
-                                        >
-                                          {option.label}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </div>
-                                  <div className="space-y-1">
-                                    <label className="text-xs text-muted-foreground">
-                                      Width (mm)
-                                    </label>
-                                    <input
-                                      type="number"
-                                      className="w-full rounded-md border bg-background px-2 py-1 text-sm"
-                                      value={editingRoomDraft.widthMm}
-                                      onChange={(event) =>
-                                        setEditingRoomDraft((current) =>
-                                          current
-                                            ? {
-                                                ...current,
-                                                widthMm: event.target.value,
-                                              }
-                                            : current,
-                                        )
-                                      }
-                                    />
-                                  </div>
-                                  <div className="space-y-1">
-                                    <label className="text-xs text-muted-foreground">
-                                      Length (mm)
-                                    </label>
-                                    <input
-                                      type="number"
-                                      className="w-full rounded-md border bg-background px-2 py-1 text-sm"
-                                      value={editingRoomDraft.lengthMm}
-                                      onChange={(event) =>
-                                        setEditingRoomDraft((current) =>
-                                          current
-                                            ? {
-                                                ...current,
-                                                lengthMm: event.target.value,
-                                              }
-                                            : current,
-                                        )
-                                      }
-                                    />
-                                  </div>
-                                  <div className="space-y-1">
-                                    <label className="text-xs text-muted-foreground">
-                                      Height (mm)
-                                    </label>
-                                    <input
-                                      type="number"
-                                      className="w-full rounded-md border bg-background px-2 py-1 text-sm"
-                                      value={editingRoomDraft.heightMm}
-                                      onChange={(event) =>
-                                        setEditingRoomDraft((current) =>
-                                          current
-                                            ? {
-                                                ...current,
-                                                heightMm: event.target.value,
-                                              }
-                                            : current,
-                                        )
-                                      }
-                                    />
-                                  </div>
-                                  <div className="space-y-1 md:col-span-2">
-                                    <label className="text-xs text-muted-foreground">
-                                      Description / Notes
-                                    </label>
-                                    <textarea
-                                      className="min-h-16 w-full rounded-md border bg-background px-2 py-1 text-sm"
-                                      value={editingRoomDraft.description}
-                                      onChange={(event) =>
-                                        setEditingRoomDraft((current) =>
-                                          current
-                                            ? {
-                                                ...current,
-                                                description: event.target.value,
-                                              }
-                                            : current,
-                                        )
-                                      }
-                                    />
-                                  </div>
-                                  <div className="md:col-span-2 flex gap-2">
-                                    <button
-                                      type="button"
-                                      onClick={() => saveRoom(unit.id, room.id)}
-                                      disabled={isPending}
-                                      className="rounded-md border px-2 py-1 text-xs hover:bg-muted disabled:opacity-60"
-                                    >
-                                      Save Room
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={cancelEditRoom}
-                                      disabled={isPending}
-                                      className="rounded-md border px-2 py-1 text-xs text-muted-foreground hover:bg-muted disabled:opacity-60"
-                                    >
-                                      Cancel
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div>
-                                  <div className="flex flex-wrap items-center justify-between gap-2">
-                                    <p className="text-sm font-medium">
-                                      {roomTypeLabel(room.roomType)}
-                                    </p>
-                                    <div className="flex gap-2">
+                        {unit.rooms.map(
+                          (room: RenovationUnit["rooms"][number]) => {
+                            const roomKey = `${unit.id}:${room.id}`;
+                            const isEditingRoom = editingRoomKey === roomKey;
+                            return (
+                              <div
+                                key={room.id}
+                                className="rounded-md border p-2"
+                              >
+                                {isEditingRoom && editingRoomDraft ? (
+                                  <div className="grid gap-2 md:grid-cols-2">
+                                    <div className="space-y-1">
+                                      <label className="text-xs text-muted-foreground">
+                                        Room Type
+                                      </label>
+                                      <select
+                                        className="w-full rounded-md border bg-background px-2 py-1 text-sm"
+                                        value={editingRoomDraft.roomType}
+                                        onChange={(event) =>
+                                          setEditingRoomDraft((current) =>
+                                            current
+                                              ? {
+                                                  ...current,
+                                                  roomType: event.target
+                                                    .value as UnitRoomType,
+                                                }
+                                              : current,
+                                          )
+                                        }
+                                      >
+                                        {roomTypeOptions.map((option) => (
+                                          <option
+                                            key={option.value}
+                                            value={option.value}
+                                          >
+                                            {option.label}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-xs text-muted-foreground">
+                                        Width (mm)
+                                      </label>
+                                      <input
+                                        type="number"
+                                        className="w-full rounded-md border bg-background px-2 py-1 text-sm"
+                                        value={editingRoomDraft.widthMm}
+                                        onChange={(event) =>
+                                          setEditingRoomDraft((current) =>
+                                            current
+                                              ? {
+                                                  ...current,
+                                                  widthMm: event.target.value,
+                                                }
+                                              : current,
+                                          )
+                                        }
+                                      />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-xs text-muted-foreground">
+                                        Length (mm)
+                                      </label>
+                                      <input
+                                        type="number"
+                                        className="w-full rounded-md border bg-background px-2 py-1 text-sm"
+                                        value={editingRoomDraft.lengthMm}
+                                        onChange={(event) =>
+                                          setEditingRoomDraft((current) =>
+                                            current
+                                              ? {
+                                                  ...current,
+                                                  lengthMm: event.target.value,
+                                                }
+                                              : current,
+                                          )
+                                        }
+                                      />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-xs text-muted-foreground">
+                                        Height (mm)
+                                      </label>
+                                      <input
+                                        type="number"
+                                        className="w-full rounded-md border bg-background px-2 py-1 text-sm"
+                                        value={editingRoomDraft.heightMm}
+                                        onChange={(event) =>
+                                          setEditingRoomDraft((current) =>
+                                            current
+                                              ? {
+                                                  ...current,
+                                                  heightMm: event.target.value,
+                                                }
+                                              : current,
+                                          )
+                                        }
+                                      />
+                                    </div>
+                                    <div className="space-y-1 md:col-span-2">
+                                      <label className="text-xs text-muted-foreground">
+                                        Description / Notes
+                                      </label>
+                                      <textarea
+                                        className="min-h-16 w-full rounded-md border bg-background px-2 py-1 text-sm"
+                                        value={editingRoomDraft.description}
+                                        onChange={(event) =>
+                                          setEditingRoomDraft((current) =>
+                                            current
+                                              ? {
+                                                  ...current,
+                                                  description:
+                                                    event.target.value,
+                                                }
+                                              : current,
+                                          )
+                                        }
+                                      />
+                                    </div>
+                                    <div className="md:col-span-2 flex gap-2">
                                       <button
                                         type="button"
-                                        disabled={isPending}
                                         onClick={() =>
-                                          beginEditRoom(unit.id, room)
+                                          saveRoom(unit.id, room.id)
                                         }
+                                        disabled={isPending}
                                         className="rounded-md border px-2 py-1 text-xs hover:bg-muted disabled:opacity-60"
                                       >
-                                        Edit
+                                        Save Room
                                       </button>
                                       <button
                                         type="button"
+                                        onClick={cancelEditRoom}
                                         disabled={isPending}
-                                        onClick={() =>
-                                          removeRoom(unit.id, room.id)
-                                        }
-                                        className="rounded-md border border-red-200 px-2 py-1 text-xs text-red-700 hover:bg-red-50 disabled:opacity-60"
+                                        className="rounded-md border px-2 py-1 text-xs text-muted-foreground hover:bg-muted disabled:opacity-60"
                                       >
-                                        Delete
+                                        Cancel
                                       </button>
                                     </div>
                                   </div>
-                                  <p className="text-xs text-muted-foreground">
-                                    {room.widthMm}mm × {room.lengthMm}mm ×{" "}
-                                    {room.heightMm}
-                                    mm
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {room.description || "No notes."}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
+                                ) : (
+                                  <div>
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                      <p className="text-sm font-medium">
+                                        {roomTypeLabel(room.roomType)}
+                                      </p>
+                                      <div className="flex gap-2">
+                                        <button
+                                          type="button"
+                                          disabled={isPending}
+                                          onClick={() =>
+                                            beginEditRoom(unit.id, room)
+                                          }
+                                          className="rounded-md border px-2 py-1 text-xs hover:bg-muted disabled:opacity-60"
+                                        >
+                                          Edit
+                                        </button>
+                                        <button
+                                          type="button"
+                                          disabled={isPending}
+                                          onClick={() =>
+                                            removeRoom(unit.id, room.id)
+                                          }
+                                          className="rounded-md border border-red-200 px-2 py-1 text-xs text-red-700 hover:bg-red-50 disabled:opacity-60"
+                                        >
+                                          Delete
+                                        </button>
+                                      </div>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                      {room.widthMm}mm × {room.lengthMm}mm ×{" "}
+                                      {room.heightMm}
+                                      mm
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {room.description || "No notes."}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          },
+                        )}
 
                         {!unit.rooms.length ? (
                           <p className="text-xs text-muted-foreground">

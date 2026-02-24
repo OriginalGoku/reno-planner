@@ -10,6 +10,10 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
+function unitLabel(unitType: string) {
+  return unitType.replaceAll("_", " ");
+}
+
 type PurchasesWireframeProps = {
   project: RenovationProject;
 };
@@ -23,13 +27,24 @@ type ItemWithMaterials = {
 };
 
 export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
+  const materialCatalogMap = useMemo(
+    () => new Map(project.materialCatalog.map((entry) => [entry.id, entry])),
+    [project.materialCatalog],
+  );
+  const materialCategoryMap = useMemo(
+    () =>
+      new Map(
+        project.materialCategories.map((category) => [category.id, category]),
+      ),
+    [project.materialCategories],
+  );
   const itemsWithMaterials = useMemo<ItemWithMaterials[]>(() => {
     return project.items
       .filter((item) => item.materials && item.materials.length > 0)
       .map((item) => {
         const sectionTitle =
-          project.sections.find((section) => section.id === item.sectionId)?.title ??
-          item.sectionId;
+          project.sections.find((section) => section.id === item.sectionId)
+            ?.title ?? item.sectionId;
 
         return {
           itemId: item.id,
@@ -45,7 +60,9 @@ export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
     return project.sections
       .map((section) => ({
         section,
-        items: itemsWithMaterials.filter((item) => item.sectionId === section.id),
+        items: itemsWithMaterials.filter(
+          (item) => item.sectionId === section.id,
+        ),
       }))
       .filter((entry) => entry.items.length > 0);
   }, [itemsWithMaterials, project.sections]);
@@ -53,7 +70,8 @@ export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
   const projectEstimatedMaterialsTotal = useMemo(() => {
     return itemsWithMaterials.reduce((sum, item) => {
       const itemTotal = item.materials.reduce(
-        (lineSum, material) => lineSum + material.quantity * material.estimatedPrice,
+        (lineSum, material) =>
+          lineSum + material.quantity * material.estimatedPrice,
         0,
       );
       return sum + itemTotal;
@@ -78,7 +96,9 @@ export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
           <p className="text-2xl font-semibold">{itemsWithMaterials.length}</p>
         </div>
         <div className="rounded-lg border p-4">
-          <p className="text-xs text-muted-foreground">Estimated Material Total</p>
+          <p className="text-xs text-muted-foreground">
+            Estimated Material Total
+          </p>
           <p className="text-2xl font-semibold">
             ${projectEstimatedMaterialsTotal.toLocaleString()}
           </p>
@@ -89,7 +109,8 @@ export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
         {groupedBySection.map(({ section, items }) => {
           const sectionTotal = items.reduce((sum, item) => {
             const itemTotal = item.materials.reduce(
-              (lineSum, material) => lineSum + material.quantity * material.estimatedPrice,
+              (lineSum, material) =>
+                lineSum + material.quantity * material.estimatedPrice,
               0,
             );
             return sum + itemTotal;
@@ -112,7 +133,8 @@ export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
                 <CollapsibleContent className="space-y-3 border-t px-4 py-3">
                   {items.map((item) => {
                     const itemTotal = item.materials.reduce(
-                      (sum, material) => sum + material.quantity * material.estimatedPrice,
+                      (sum, material) =>
+                        sum + material.quantity * material.estimatedPrice,
                       0,
                     );
 
@@ -138,12 +160,38 @@ export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
                             >
                               <div className="flex flex-wrap items-start justify-between gap-2">
                                 <div>
-                                  <p className="font-medium text-foreground">{material.name}</p>
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <p className="font-medium text-foreground">
+                                      {materialCatalogMap.get(
+                                        material.materialId,
+                                      )?.name ??
+                                        `Unknown material (${material.materialId})`}
+                                    </p>
+                                    <span className="rounded-full border px-2 py-0.5 text-[11px] uppercase tracking-wide">
+                                      {materialCategoryMap.get(
+                                        materialCatalogMap.get(
+                                          material.materialId,
+                                        )?.categoryId ?? "",
+                                      )?.name ??
+                                        materialCatalogMap.get(
+                                          material.materialId,
+                                        )?.categoryId ??
+                                        "Uncategorized"}
+                                    </span>
+                                  </div>
                                   <p>
-                                    Qty: {material.quantity} • Unit est: $
+                                    Qty: {material.quantity}{" "}
+                                    {unitLabel(
+                                      materialCatalogMap.get(
+                                        material.materialId,
+                                      )?.unitType ?? "other",
+                                    )}{" "}
+                                    • Unit est: $
                                     {material.estimatedPrice.toLocaleString()}
                                   </p>
-                                  {material.note ? <p>{material.note}</p> : null}
+                                  {material.note ? (
+                                    <p>{material.note}</p>
+                                  ) : null}
                                 </div>
                                 <p className="font-medium text-foreground">
                                   $

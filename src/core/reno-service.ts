@@ -8,6 +8,7 @@ import type {
   AttachmentScopeType,
   ExpenseType,
   ItemStatus,
+  MaterialCatalogItem,
   MaterialUnitType,
   ProjectOverview,
   RenovationAttachment,
@@ -60,9 +61,8 @@ export type UpdateExpenseInput = {
 export type AddMaterialInput = {
   projectId: string;
   itemId: string;
-  name: string;
+  materialId: string;
   quantity: number;
-  unitType: MaterialUnitType;
   estimatedPrice: number;
   url: string;
   note?: string;
@@ -72,12 +72,45 @@ export type UpdateMaterialInput = {
   projectId: string;
   itemId: string;
   materialId: string;
-  name: string;
+  catalogMaterialId: string;
   quantity: number;
-  unitType: MaterialUnitType;
   estimatedPrice: number;
   url: string;
   note?: string;
+};
+
+export type AddMaterialCatalogItemInput = {
+  projectId: string;
+  categoryId: string;
+  name: string;
+  unitType: MaterialUnitType;
+  estimatedPrice?: number;
+  sampleUrl?: string;
+  notes?: string;
+};
+
+export type UpdateMaterialCatalogItemInput = {
+  projectId: string;
+  materialId: string;
+  categoryId: string;
+  name: string;
+  unitType: MaterialUnitType;
+  estimatedPrice?: number;
+  sampleUrl?: string;
+  notes?: string;
+};
+
+export type AddMaterialCategoryInput = {
+  projectId: string;
+  name: string;
+  description?: string;
+};
+
+export type UpdateMaterialCategoryInput = {
+  projectId: string;
+  categoryId: string;
+  name: string;
+  description?: string;
 };
 
 export type AddProjectNoteInput = {
@@ -327,14 +360,24 @@ export const renoService = {
   },
 
   async addItemMaterial(payload: AddMaterialInput) {
+    const project = await projectRepository.getProjectById(payload.projectId);
+    if (!project) {
+      throw new Error(`Unknown projectId: ${payload.projectId}`);
+    }
+    const catalogMaterial = project.materialCatalog.find(
+      (entry) => entry.id === payload.materialId,
+    );
+    if (!catalogMaterial) {
+      throw new Error(`Unknown materialId: ${payload.materialId}`);
+    }
+
     return projectRepository.addItemMaterial(
       payload.projectId,
       payload.itemId,
       {
         id: crypto.randomUUID(),
-        name: payload.name,
+        materialId: payload.materialId,
         quantity: payload.quantity,
-        unitType: payload.unitType,
         estimatedPrice: payload.estimatedPrice,
         url: payload.url,
         note: payload.note,
@@ -360,13 +403,123 @@ export const renoService = {
       payload.itemId,
       {
         id: payload.materialId,
-        name: payload.name,
+        materialId: payload.catalogMaterialId,
         quantity: payload.quantity,
-        unitType: payload.unitType,
         estimatedPrice: payload.estimatedPrice,
         url: payload.url,
         note: payload.note,
       },
+    );
+  },
+
+  async addMaterialCatalogItem(payload: AddMaterialCatalogItemInput) {
+    const project = await projectRepository.getProjectById(payload.projectId);
+    if (!project) {
+      throw new Error(`Unknown projectId: ${payload.projectId}`);
+    }
+    const base = toSlug(payload.name) || "material";
+    let id = base;
+    let suffix = 2;
+    while (project.materialCatalog.some((entry) => entry.id === id)) {
+      id = `${base}-${suffix}`;
+      suffix += 1;
+    }
+    const categoryExists = project.materialCategories.some(
+      (entry) => entry.id === payload.categoryId,
+    );
+    if (!categoryExists) {
+      throw new Error(`Unknown categoryId: ${payload.categoryId}`);
+    }
+    const material: MaterialCatalogItem = {
+      id,
+      categoryId: payload.categoryId,
+      name: payload.name.trim(),
+      unitType: payload.unitType,
+      estimatedPrice: payload.estimatedPrice,
+      sampleUrl: payload.sampleUrl?.trim() ?? "",
+      notes: payload.notes?.trim() ?? "",
+    };
+    return projectRepository.addMaterialCatalogItem(
+      payload.projectId,
+      material,
+    );
+  },
+
+  async updateMaterialCatalogItem(payload: UpdateMaterialCatalogItemInput) {
+    return projectRepository.updateMaterialCatalogItem(
+      payload.projectId,
+      payload.materialId,
+      {
+        name: payload.name.trim(),
+        unitType: payload.unitType,
+        categoryId: payload.categoryId,
+        estimatedPrice: payload.estimatedPrice,
+        sampleUrl: payload.sampleUrl?.trim() ?? "",
+        notes: payload.notes?.trim() ?? "",
+      },
+    );
+  },
+
+  async addMaterialCategory(payload: AddMaterialCategoryInput) {
+    const project = await projectRepository.getProjectById(payload.projectId);
+    if (!project) {
+      throw new Error(`Unknown projectId: ${payload.projectId}`);
+    }
+    const base = toSlug(payload.name) || "category";
+    let id = base;
+    let suffix = 2;
+    while (project.materialCategories.some((entry) => entry.id === id)) {
+      id = `${base}-${suffix}`;
+      suffix += 1;
+    }
+    return projectRepository.addMaterialCategory(payload.projectId, {
+      id,
+      name: payload.name.trim(),
+      description: payload.description?.trim() ?? "",
+      sortOrder: project.materialCategories.length,
+    });
+  },
+
+  async updateMaterialCategory(payload: UpdateMaterialCategoryInput) {
+    return projectRepository.updateMaterialCategory(
+      payload.projectId,
+      payload.categoryId,
+      {
+        name: payload.name.trim(),
+        description: payload.description?.trim() ?? "",
+      },
+    );
+  },
+
+  async deleteMaterialCategory(payload: {
+    projectId: string;
+    categoryId: string;
+  }) {
+    return projectRepository.deleteMaterialCategory(
+      payload.projectId,
+      payload.categoryId,
+    );
+  },
+
+  async moveMaterialCategory(payload: {
+    projectId: string;
+    categoryId: string;
+    direction: "up" | "down";
+  }) {
+    return projectRepository.moveMaterialCategory(
+      payload.projectId,
+      payload.categoryId,
+      payload.direction,
+    );
+  },
+
+  async deleteMaterialCatalogItem(payload: {
+    projectId: string;
+    materialId: string;
+  }) {
+    return projectRepository.deleteMaterialCatalogItem(
+      payload.projectId,
+      payload.materialId,
     );
   },
 

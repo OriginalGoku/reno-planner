@@ -218,6 +218,14 @@ export function validateProjectData(value: unknown): RenovationProject {
     Array.isArray(project.serviceSections),
     "Project.serviceSections must be an array.",
   );
+  ensure(
+    Array.isArray(project.materialCategories),
+    "Project.materialCategories must be an array.",
+  );
+  ensure(
+    Array.isArray(project.materialCatalog),
+    "Project.materialCatalog must be an array.",
+  );
   ensure(Array.isArray(project.notes), "Project.notes must be an array.");
   ensure(
     Array.isArray(project.attachments),
@@ -250,6 +258,81 @@ export function validateProjectData(value: unknown): RenovationProject {
     uniqueSectionPositions.size === project.sections.length,
     "Section.position values must be unique.",
   );
+
+  const materialCategoryIds = new Set<string>();
+  for (const category of project.materialCategories) {
+    ensure(
+      isRecord(category),
+      "Each materialCategory entry must be an object.",
+    );
+    ensure(
+      typeof category.id === "string" && category.id.length > 0,
+      "MaterialCategory.id must be a non-empty string.",
+    );
+    ensure(
+      !materialCategoryIds.has(category.id),
+      `MaterialCategory.id must be unique: ${category.id}.`,
+    );
+    materialCategoryIds.add(category.id);
+    ensure(
+      typeof category.name === "string" && category.name.length > 0,
+      "MaterialCategory.name must be a non-empty string.",
+    );
+    ensure(
+      typeof category.sortOrder === "number" &&
+        Number.isInteger(category.sortOrder) &&
+        category.sortOrder >= 0,
+      "MaterialCategory.sortOrder must be a non-negative integer.",
+    );
+    ensure(
+      isOptionalString(category.description),
+      "MaterialCategory.description must be a string when provided.",
+    );
+  }
+
+  const materialCatalogIds = new Set<string>();
+  for (const catalogItem of project.materialCatalog) {
+    ensure(
+      isRecord(catalogItem),
+      "Each materialCatalog entry must be an object.",
+    );
+    ensure(
+      typeof catalogItem.id === "string" && catalogItem.id.length > 0,
+      "MaterialCatalog.id must be a non-empty string.",
+    );
+    ensure(
+      !materialCatalogIds.has(catalogItem.id),
+      `MaterialCatalog.id must be unique: ${catalogItem.id}.`,
+    );
+    materialCatalogIds.add(catalogItem.id);
+    ensure(
+      typeof catalogItem.categoryId === "string" &&
+        materialCategoryIds.has(catalogItem.categoryId),
+      "MaterialCatalog.categoryId must reference a valid project materialCategories entry.",
+    );
+    ensure(
+      typeof catalogItem.name === "string",
+      "MaterialCatalog.name must be a string.",
+    );
+    ensure(
+      typeof catalogItem.unitType === "string" &&
+        VALID_MATERIAL_UNITS.includes(catalogItem.unitType as MaterialUnitType),
+      `MaterialCatalog.unitType must be one of: ${VALID_MATERIAL_UNITS.join(", ")}.`,
+    );
+    ensure(
+      catalogItem.estimatedPrice === undefined ||
+        typeof catalogItem.estimatedPrice === "number",
+      "MaterialCatalog.estimatedPrice must be a number when provided.",
+    );
+    ensure(
+      isOptionalString(catalogItem.sampleUrl),
+      "MaterialCatalog.sampleUrl must be a string when provided.",
+    );
+    ensure(
+      isOptionalString(catalogItem.notes),
+      "MaterialCatalog.notes must be a string when provided.",
+    );
+  }
 
   for (const item of project.items) {
     ensure(isRecord(item), "Each item must be an object.");
@@ -304,19 +387,13 @@ export function validateProjectData(value: unknown): RenovationProject {
           "Material.id must be a string.",
         );
         ensure(
-          typeof material.name === "string",
-          "Material.name must be a string.",
-        );
-        ensure(
           typeof material.quantity === "number",
           "Material.quantity must be a number.",
         );
         ensure(
-          typeof material.unitType === "string" &&
-            VALID_MATERIAL_UNITS.includes(
-              material.unitType as MaterialUnitType,
-            ),
-          `Material.unitType must be one of: ${VALID_MATERIAL_UNITS.join(", ")}.`,
+          typeof material.materialId === "string" &&
+            materialCatalogIds.has(material.materialId),
+          "Material.materialId must reference a valid project materialCatalog entry.",
         );
         ensure(
           typeof material.estimatedPrice === "number",

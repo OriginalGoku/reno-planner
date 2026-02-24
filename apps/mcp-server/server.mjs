@@ -443,6 +443,127 @@ server.registerResource(
   },
 );
 
+server.registerResource(
+  "reno-material-category-resource",
+  new ResourceTemplate(
+    "resource://material-category/{projectId}/{categoryId}",
+    {
+      list: async () => {
+        const projectIds = await renoService.listProjectIds();
+        const projects = await Promise.all(
+          projectIds.map((projectId) => renoService.getProjectById(projectId)),
+        );
+
+        return {
+          resources: projects
+            .filter((project) => project !== null)
+            .flatMap((project) =>
+              project.materialCategories.map((category) => ({
+                uri: `resource://material-category/${project.id}/${category.id}`,
+                name: category.id,
+                title: category.name,
+                mimeType: "application/json",
+                description: `${project.name} material category`,
+              })),
+            ),
+        };
+      },
+    },
+  ),
+  {
+    title: "Reno Material Category",
+    description: "Read one material category by projectId and categoryId",
+    mimeType: "application/json",
+  },
+  async (_uri, variables) => {
+    const projectId = variables.projectId;
+    const categoryId = variables.categoryId;
+    if (!projectId || !categoryId) {
+      throw new Error("projectId and categoryId are required.");
+    }
+
+    const project = await renoService.getProjectById(projectId);
+    if (!project) {
+      throw new Error(`Unknown projectId: ${projectId}`);
+    }
+    const category = project.materialCategories.find(
+      (entry) => entry.id === categoryId,
+    );
+    if (!category) {
+      throw new Error(`Unknown categoryId: ${categoryId}`);
+    }
+
+    return {
+      contents: [
+        {
+          uri: `resource://material-category/${projectId}/${categoryId}`,
+          mimeType: "application/json",
+          text: JSON.stringify(category, null, 2),
+        },
+      ],
+    };
+  },
+);
+
+server.registerResource(
+  "reno-material-catalog-resource",
+  new ResourceTemplate("resource://material/{projectId}/{materialId}", {
+    list: async () => {
+      const projectIds = await renoService.listProjectIds();
+      const projects = await Promise.all(
+        projectIds.map((projectId) => renoService.getProjectById(projectId)),
+      );
+
+      return {
+        resources: projects
+          .filter((project) => project !== null)
+          .flatMap((project) =>
+            project.materialCatalog.map((material) => ({
+              uri: `resource://material/${project.id}/${material.id}`,
+              name: material.id,
+              title: material.name,
+              mimeType: "application/json",
+              description: `${project.name} / ${material.unitType}`,
+            })),
+          ),
+      };
+    },
+  }),
+  {
+    title: "Reno Material Catalog Item",
+    description: "Read one material catalog item by projectId and materialId",
+    mimeType: "application/json",
+  },
+  async (_uri, variables) => {
+    const projectId = variables.projectId;
+    const materialId = variables.materialId;
+    if (!projectId || !materialId) {
+      throw new Error("projectId and materialId are required.");
+    }
+
+    const project = await renoService.getProjectById(projectId);
+    if (!project) {
+      throw new Error(`Unknown projectId: ${projectId}`);
+    }
+    const material = project.materialCatalog.find(
+      (entry) => entry.id === materialId,
+    );
+    if (!material) {
+      throw new Error(`Unknown materialId: ${materialId}`);
+    }
+
+    return {
+      contents: [
+        {
+          uri: `resource://material/${projectId}/${materialId}`,
+          mimeType: "application/json",
+          text: JSON.stringify(material, null, 2),
+        },
+      ],
+    };
+  },
+);
+
 server.registerTool(
   "reno_list_projects",
   {
@@ -1391,25 +1512,8 @@ server.registerTool(
         .array(
           z.object({
             id: z.string().optional(),
-            name: z.string(),
+            materialId: z.string(),
             quantity: z.number(),
-            unitType: z.enum([
-              "linear_ft",
-              "sqft",
-              "sqm",
-              "piece",
-              "bundle",
-              "box",
-              "roll",
-              "sheet",
-              "bag",
-              "gallon",
-              "liter",
-              "kg",
-              "lb",
-              "meter",
-              "other",
-            ]),
             estimatedPrice: z.number(),
             url: z.string(),
             note: z.string().optional(),
@@ -1438,9 +1542,8 @@ server.registerTool(
         projectId: resolvedProjectId,
         materials: input.materials?.map((material) => ({
           id: material.id ?? randomUUID(),
-          name: material.name,
+          materialId: material.materialId,
           quantity: material.quantity,
-          unitType: material.unitType,
           estimatedPrice: material.estimatedPrice,
           url: material.url,
           note: material.note,
@@ -1613,25 +1716,8 @@ server.registerTool(
         .array(
           z.object({
             id: z.string().optional(),
-            name: z.string(),
+            materialId: z.string(),
             quantity: z.number(),
-            unitType: z.enum([
-              "linear_ft",
-              "sqft",
-              "sqm",
-              "piece",
-              "bundle",
-              "box",
-              "roll",
-              "sheet",
-              "bag",
-              "gallon",
-              "liter",
-              "kg",
-              "lb",
-              "meter",
-              "other",
-            ]),
             estimatedPrice: z.number(),
             url: z.string(),
             note: z.string().optional(),
@@ -1660,9 +1746,8 @@ server.registerTool(
         projectId: resolvedProjectId,
         materials: input.materials?.map((material) => ({
           id: material.id ?? randomUUID(),
-          name: material.name,
+          materialId: material.materialId,
           quantity: material.quantity,
-          unitType: material.unitType,
           estimatedPrice: material.estimatedPrice,
           url: material.url,
           note: material.note,
@@ -1717,14 +1802,169 @@ server.registerTool(
 );
 
 server.registerTool(
-  "reno_add_material",
+  "reno_list_material_categories",
   {
-    description: "Add a material line to an item",
+    description: "List project material categories",
     inputSchema: {
       projectId: z.string().optional(),
-      itemId: z.string(),
+    },
+  },
+  async ({ projectId }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      const project = await renoService.getProjectById(resolvedProjectId);
+      if (!project) {
+        throw new Error(`Unknown projectId: ${resolvedProjectId}`);
+      }
+      return asToolResult({ materialCategories: project.materialCategories });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_add_material_category",
+  {
+    description: "Add a project-level material category",
+    inputSchema: {
+      projectId: z.string().optional(),
       name: z.string(),
-      quantity: z.number(),
+      description: z.string().optional(),
+    },
+  },
+  async (input) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(input.projectId);
+      await renoService.addMaterialCategory({
+        ...input,
+        projectId: resolvedProjectId,
+      });
+      return asToolResult({ ok: true, projectId: resolvedProjectId });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_update_material_category",
+  {
+    description: "Update a project-level material category",
+    inputSchema: {
+      projectId: z.string().optional(),
+      categoryId: z.string(),
+      name: z.string(),
+      description: z.string().optional(),
+    },
+  },
+  async (input) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(input.projectId);
+      await renoService.updateMaterialCategory({
+        ...input,
+        projectId: resolvedProjectId,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        categoryId: input.categoryId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_delete_material_category",
+  {
+    description:
+      "Delete a project-level material category (materials are reassigned to Uncategorized)",
+    inputSchema: {
+      projectId: z.string().optional(),
+      categoryId: z.string(),
+      confirm: z.boolean().optional(),
+    },
+  },
+  async (input) => {
+    try {
+      assertDestructiveAllowed("reno_delete_material_category", input.confirm);
+      const resolvedProjectId = await resolveProjectId(input.projectId);
+      await renoService.deleteMaterialCategory({
+        projectId: resolvedProjectId,
+        categoryId: input.categoryId,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        categoryId: input.categoryId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_move_material_category",
+  {
+    description: "Move material category up or down",
+    inputSchema: {
+      projectId: z.string().optional(),
+      categoryId: z.string(),
+      direction: z.enum(["up", "down"]),
+    },
+  },
+  async (input) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(input.projectId);
+      await renoService.moveMaterialCategory({
+        ...input,
+        projectId: resolvedProjectId,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        categoryId: input.categoryId,
+        direction: input.direction,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_list_material_catalog",
+  {
+    description: "List project material catalog entries",
+    inputSchema: {
+      projectId: z.string().optional(),
+    },
+  },
+  async ({ projectId }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      const project = await renoService.getProjectById(resolvedProjectId);
+      if (!project) {
+        throw new Error(`Unknown projectId: ${resolvedProjectId}`);
+      }
+      return asToolResult({ materialCatalog: project.materialCatalog });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_add_material_catalog_item",
+  {
+    description: "Add a project-level material catalog entry",
+    inputSchema: {
+      projectId: z.string().optional(),
+      categoryId: z.string(),
+      name: z.string(),
       unitType: z.enum([
         "linear_ft",
         "sqft",
@@ -1742,6 +1982,118 @@ server.registerTool(
         "meter",
         "other",
       ]),
+      estimatedPrice: z.number().optional(),
+      sampleUrl: z.string().optional(),
+      notes: z.string().optional(),
+    },
+  },
+  async (input) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(input.projectId);
+      await renoService.addMaterialCatalogItem({
+        ...input,
+        projectId: resolvedProjectId,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_update_material_catalog_item",
+  {
+    description: "Update a project-level material catalog entry",
+    inputSchema: {
+      projectId: z.string().optional(),
+      materialId: z.string(),
+      categoryId: z.string(),
+      name: z.string(),
+      unitType: z.enum([
+        "linear_ft",
+        "sqft",
+        "sqm",
+        "piece",
+        "bundle",
+        "box",
+        "roll",
+        "sheet",
+        "bag",
+        "gallon",
+        "liter",
+        "kg",
+        "lb",
+        "meter",
+        "other",
+      ]),
+      estimatedPrice: z.number().optional(),
+      sampleUrl: z.string().optional(),
+      notes: z.string().optional(),
+    },
+  },
+  async (input) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(input.projectId);
+      await renoService.updateMaterialCatalogItem({
+        ...input,
+        projectId: resolvedProjectId,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        materialId: input.materialId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_delete_material_catalog_item",
+  {
+    description: "Delete a project-level material catalog entry",
+    inputSchema: {
+      projectId: z.string().optional(),
+      materialId: z.string(),
+      confirm: z.boolean().optional(),
+    },
+  },
+  async (input) => {
+    try {
+      assertDestructiveAllowed(
+        "reno_delete_material_catalog_item",
+        input.confirm,
+      );
+      const resolvedProjectId = await resolveProjectId(input.projectId);
+      await renoService.deleteMaterialCatalogItem({
+        projectId: resolvedProjectId,
+        materialId: input.materialId,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        materialId: input.materialId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
+  "reno_add_material",
+  {
+    description: "Add a material line to an item",
+    inputSchema: {
+      projectId: z.string().optional(),
+      itemId: z.string(),
+      materialId: z.string(),
+      quantity: z.number(),
       estimatedPrice: z.number(),
       url: z.string(),
       note: z.string().optional(),
@@ -1773,25 +2125,8 @@ server.registerTool(
       projectId: z.string().optional(),
       itemId: z.string(),
       materialId: z.string(),
-      name: z.string(),
+      catalogMaterialId: z.string(),
       quantity: z.number(),
-      unitType: z.enum([
-        "linear_ft",
-        "sqft",
-        "sqm",
-        "piece",
-        "bundle",
-        "box",
-        "roll",
-        "sheet",
-        "bag",
-        "gallon",
-        "liter",
-        "kg",
-        "lb",
-        "meter",
-        "other",
-      ]),
       estimatedPrice: z.number(),
       url: z.string(),
       note: z.string().optional(),

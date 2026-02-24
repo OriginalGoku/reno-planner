@@ -1,13 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type {
-  ExpenseType,
-  ItemStatus,
-  MaterialUnitType,
-} from "@/lib/reno-data-loader";
+import type { ExpenseType, ItemStatus } from "@/lib/reno-data-loader";
 import {
   renoService,
+  type AddMaterialCategoryInput,
+  type AddMaterialCatalogItemInput,
   type AddExpenseInput,
   type AddMaterialInput,
   type AddProjectNoteInput,
@@ -21,6 +19,8 @@ import {
   type UpdateServiceFieldInput,
   type UpdateServiceSectionInput,
   type UpdateServiceSubsectionInput,
+  type UpdateMaterialCatalogItemInput,
+  type UpdateMaterialCategoryInput,
   type UpdateUnitInput,
   type UpdateUnitRoomInput,
 } from "@/core/reno-service";
@@ -33,6 +33,7 @@ function refreshProjectPaths(projectId: string) {
   revalidatePath(`/app/${projectId}/notes`);
   revalidatePath(`/app/${projectId}/units`);
   revalidatePath(`/app/${projectId}/services`);
+  revalidatePath(`/app/${projectId}/materials`);
 }
 
 export async function updateItemFieldsAction(payload: UpdateItemFieldsInput) {
@@ -108,15 +109,67 @@ export async function updateItemMaterialAction(payload: {
   projectId: string;
   itemId: string;
   materialId: string;
-  name: string;
+  catalogMaterialId: string;
   quantity: number;
-  unitType: MaterialUnitType;
   estimatedPrice: number;
   url: string;
   note?: string;
 }) {
   await renoService.updateItemMaterial(payload);
 
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function addMaterialCatalogItemAction(
+  payload: AddMaterialCatalogItemInput,
+) {
+  await renoService.addMaterialCatalogItem(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function updateMaterialCatalogItemAction(
+  payload: UpdateMaterialCatalogItemInput,
+) {
+  await renoService.updateMaterialCatalogItem(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function deleteMaterialCatalogItemAction(payload: {
+  projectId: string;
+  materialId: string;
+}) {
+  await renoService.deleteMaterialCatalogItem(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function addMaterialCategoryAction(
+  payload: AddMaterialCategoryInput,
+) {
+  await renoService.addMaterialCategory(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function updateMaterialCategoryAction(
+  payload: UpdateMaterialCategoryInput,
+) {
+  await renoService.updateMaterialCategory(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function deleteMaterialCategoryAction(payload: {
+  projectId: string;
+  categoryId: string;
+}) {
+  await renoService.deleteMaterialCategory(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function moveMaterialCategoryAction(payload: {
+  projectId: string;
+  categoryId: string;
+  direction: "up" | "down";
+}) {
+  await renoService.moveMaterialCategory(payload);
   refreshProjectPaths(payload.projectId);
 }
 

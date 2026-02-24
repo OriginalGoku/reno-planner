@@ -42,12 +42,28 @@ export type RenovationExpense = {
 
 export type RenovationMaterial = {
   id: string;
-  name: string;
+  materialId: string;
   quantity: number;
-  unitType: MaterialUnitType;
   estimatedPrice: number;
   url: string;
   note?: string;
+};
+
+export type MaterialCatalogItem = {
+  id: string;
+  categoryId: string;
+  name: string;
+  unitType: MaterialUnitType;
+  estimatedPrice?: number;
+  sampleUrl?: string;
+  notes?: string;
+};
+
+export type MaterialCategory = {
+  id: string;
+  name: string;
+  description?: string;
+  sortOrder: number;
 };
 
 export type RenovationItem = {
@@ -183,6 +199,8 @@ export type RenovationProject = {
   items: RenovationItem[];
   units: RenovationUnit[];
   serviceSections: ServiceSection[];
+  materialCategories: MaterialCategory[];
+  materialCatalog: MaterialCatalogItem[];
   notes: RenovationNote[];
   attachments: RenovationAttachment[];
 };
