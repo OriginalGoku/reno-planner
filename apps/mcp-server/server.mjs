@@ -1451,6 +1451,34 @@ server.registerTool(
 );
 
 server.registerTool(
+  "reno_force_second_pass_invoice_draft",
+  {
+    description:
+      "Force re-extraction of an existing draft invoice using second-pass model and replace draft lines/fields",
+    inputSchema: {
+      projectId: z.string().optional(),
+      invoiceId: z.string(),
+    },
+  },
+  async ({ projectId, invoiceId }) => {
+    try {
+      const resolvedProjectId = await resolveProjectId(projectId);
+      await renoService.forceSecondPassInvoiceDraft({
+        projectId: resolvedProjectId,
+        invoiceId,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        invoiceId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
   "reno_list_invoices",
   {
     description: "List project invoices",

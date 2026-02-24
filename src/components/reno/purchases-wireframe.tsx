@@ -168,6 +168,13 @@ export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
     return Math.abs(lineSubtotal - activeDraft.totals.subTotal) > 0.01;
   }, [activeDraft, lineSubtotal]);
 
+  const subtotalDifference = useMemo(() => {
+    if (!activeDraft) {
+      return 0;
+    }
+    return Math.abs(activeDraft.totals.subTotal - lineSubtotal);
+  }, [activeDraft, lineSubtotal]);
+
   const itemsWithMaterials = useMemo<ItemWithMaterials[]>(() => {
     return project.items
       .filter((item) => item.materials && item.materials.length > 0)
@@ -884,7 +891,11 @@ export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
                 {totalsMismatch ? (
                   <div className="space-y-1">
                     <p className="text-red-700">
-                      Totals mismatch. Confirm requires override.
+                      Totals mismatch: {activeDraft.currency}{" "}
+                      {subtotalDifference.toLocaleString()}
+                    </p>
+                    <p className="text-red-700 text-xs">
+                      Confirm requires override.
                     </p>
                     <label className="flex items-center gap-2 text-xs">
                       <input
