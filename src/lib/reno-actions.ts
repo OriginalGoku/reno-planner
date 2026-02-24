@@ -17,6 +17,7 @@ import {
   type ConfirmInvoiceDraftInput,
   type DeleteInvoiceDraftInput,
   type ExtractInvoiceDraftInput,
+  type ForceSecondPassInvoiceDraftInput,
   type UpdateProjectMetaInput,
   type UpdateItemFieldsInput,
   type UpdateInvoiceDraftInput,
@@ -396,5 +397,12 @@ export async function deleteInvoiceDraftAction(
   payload: DeleteInvoiceDraftInput,
 ) {
   await renoService.deleteInvoiceDraft(payload);
+  refreshProjectPaths(payload.projectId);
+}
+
+export async function forceSecondPassInvoiceDraftAction(
+  payload: ForceSecondPassInvoiceDraftInput,
+) {
+  await renoService.forceSecondPassInvoiceDraft(payload);
   refreshProjectPaths(payload.projectId);
 }

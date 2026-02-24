@@ -548,6 +548,11 @@ export function validateProjectData(value: unknown): RenovationProject {
       "PurchaseInvoice.extraction.extractedAt must be a string.",
     );
     ensure(
+      typeof invoice.extraction.passUsed === "string" &&
+        ["pass1", "pass2"].includes(invoice.extraction.passUsed),
+      "PurchaseInvoice.extraction.passUsed must be pass1 or pass2.",
+    );
+    ensure(
       isRecord(invoice.review),
       "PurchaseInvoice.review must be an object.",
     );

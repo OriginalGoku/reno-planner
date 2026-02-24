@@ -94,6 +94,7 @@ export type PurchaseInvoiceExtraction = {
   provider: string;
   model: string;
   extractedAt: string;
+  passUsed: "pass1" | "pass2";
   rawOutput: unknown;
 };
 

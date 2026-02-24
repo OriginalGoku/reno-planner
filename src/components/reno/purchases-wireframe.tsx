@@ -12,6 +12,7 @@ import {
   confirmInvoiceDraftAction,
   deleteInvoiceDraftAction,
   extractInvoiceDraftAction,
+  forceSecondPassInvoiceDraftAction,
   updateInvoiceDraftAction,
 } from "@/lib/reno-actions";
 import { AttachmentManager } from "@/components/reno/attachment-manager";
@@ -41,6 +42,13 @@ const MATERIAL_UNITS = [
 
 function unitLabel(unitType: string) {
   return unitType.replaceAll("_", " ");
+}
+
+function passLabel(passUsed: "pass1" | "pass2" | undefined) {
+  if (passUsed === "pass2") {
+    return "Second Pass";
+  }
+  return "First Pass";
 }
 
 type PurchasesWireframeProps = {
@@ -374,6 +382,29 @@ export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
     });
   }
 
+  function forceSecondPass() {
+    if (!activeDraft || !selectedInvoice) {
+      return;
+    }
+    setFeedback(null);
+    startTransition(async () => {
+      try {
+        await forceSecondPassInvoiceDraftAction({
+          projectId: project.id,
+          invoiceId: activeDraft.id,
+        });
+        setDraft(null);
+        setFeedback("Second pass complete. Draft refreshed.");
+      } catch (error) {
+        setFeedback(
+          error instanceof Error
+            ? error.message
+            : "Could not run second pass extraction.",
+        );
+      }
+    });
+  }
+
   return (
     <div className="space-y-6">
       <section className="rounded-lg border p-4">
@@ -470,6 +501,25 @@ export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
             </div>
           ) : (
             <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-2">
+                <p className="text-sm text-muted-foreground">
+                  Extraction pass:
+                  <span className="ml-1 rounded bg-muted px-2 py-0.5 text-foreground">
+                    {passLabel(selectedInvoice.extraction.passUsed)}
+                  </span>
+                </p>
+                {selectedInvoice.extraction.passUsed === "pass1" ? (
+                  <button
+                    type="button"
+                    onClick={forceSecondPass}
+                    disabled={isPending}
+                    className="rounded-md border px-3 py-1.5 text-sm disabled:opacity-60"
+                  >
+                    {isPending ? "Running..." : "Force Second Pass"}
+                  </button>
+                ) : null}
+              </div>
+
               <div className="grid gap-2 md:grid-cols-4">
                 <label className="space-y-1 text-sm">
                   <span className="text-xs text-muted-foreground">Vendor</span>

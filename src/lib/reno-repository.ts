@@ -98,6 +98,7 @@ type UpdateInvoiceDraftInput = {
   totals: PurchaseInvoiceTotals;
   lines: PurchaseInvoiceLine[];
   review: PurchaseInvoiceReview;
+  extraction?: PurchaseInvoice["extraction"];
 };
 
 type SectionMoveDirection = "up" | "down";
@@ -594,6 +595,20 @@ export class JsonProjectRepository implements ProjectRepository {
       projectLike.materialCatalog = seededCatalog;
       if (!Array.isArray(projectLike.purchaseInvoices)) {
         projectLike.purchaseInvoices = [];
+      } else {
+        projectLike.purchaseInvoices = projectLike.purchaseInvoices.map(
+          (invoice: RenovationProject["purchaseInvoices"][number]) => ({
+            ...invoice,
+            extraction: {
+              ...(invoice.extraction ?? {}),
+              provider: invoice.extraction?.provider ?? "unknown",
+              model: invoice.extraction?.model ?? "unknown",
+              extractedAt: invoice.extraction?.extractedAt ?? "",
+              passUsed: invoice.extraction?.passUsed ?? "pass1",
+              rawOutput: invoice.extraction?.rawOutput ?? null,
+            },
+          }),
+        );
       }
       if (!Array.isArray(projectLike.purchaseLedger)) {
         projectLike.purchaseLedger = [];
@@ -1574,6 +1589,9 @@ export class JsonProjectRepository implements ProjectRepository {
       invoice.totals = payload.totals;
       invoice.lines = payload.lines;
       invoice.review = payload.review;
+      if (payload.extraction) {
+        invoice.extraction = payload.extraction;
+      }
       invoice.updatedAt = new Date().toISOString();
       return project;
     });

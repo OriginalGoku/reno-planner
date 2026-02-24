@@ -262,6 +262,11 @@ export type DeleteInvoiceDraftInput = {
   invoiceId: string;
 };
 
+export type ForceSecondPassInvoiceDraftInput = {
+  projectId: string;
+  invoiceId: string;
+};
+
 function toSectionId(title: string) {
   return title
     .trim()
@@ -1025,10 +1030,12 @@ export const renoService = {
             process.env.RENO_INVOICE_LLM_PROVIDER?.trim() ||
             "openai",
           model:
+            extracted.modelUsed ||
             payload.model?.trim() ||
             process.env.RENO_INVOICE_LLM_MODEL?.trim() ||
             "gpt-5-nano",
           extractedAt: now,
+          passUsed: extracted.passUsed,
           rawOutput: extracted.rawOutput,
         },
         review: {
@@ -1191,6 +1198,80 @@ export const renoService = {
     return projectRepository.deleteInvoiceDraft(
       payload.projectId,
       payload.invoiceId,
+    );
+  },
+
+  async forceSecondPassInvoiceDraft(payload: ForceSecondPassInvoiceDraftInput) {
+    const project = await projectRepository.getProjectById(payload.projectId);
+    if (!project) {
+      throw new Error(`Unknown projectId: ${payload.projectId}`);
+    }
+    const invoice = project.purchaseInvoices.find(
+      (entry) => entry.id === payload.invoiceId,
+    );
+    if (!invoice) {
+      throw new Error(`Unknown invoiceId: ${payload.invoiceId}`);
+    }
+    if (invoice.status !== "draft") {
+      throw new Error("Only draft invoices can be re-extracted.");
+    }
+    const attachment = project.attachments.find(
+      (entry) => entry.id === invoice.attachmentId,
+    );
+    if (!attachment) {
+      throw new Error(`Unknown attachmentId: ${invoice.attachmentId}`);
+    }
+    if (attachment.category !== "invoice") {
+      throw new Error("Attachment category must be invoice.");
+    }
+
+    const extractor = buildInvoiceExtractor();
+    const fileBuffer = await readStorageFile(attachment.storageKey);
+    const extracted = await extractor.extract({
+      fileBuffer,
+      mimeType: attachment.mimeType || "application/octet-stream",
+      fileName: attachment.fileTitle || attachment.originalName,
+      provider: invoice.extraction.provider,
+      model: invoice.extraction.model,
+      forceSecondPass: true,
+    });
+    const now = new Date().toISOString();
+
+    return projectRepository.updateInvoiceDraft(
+      payload.projectId,
+      payload.invoiceId,
+      {
+        vendorName: extracted.vendorName,
+        invoiceNumber:
+          extracted.invoiceNumber || invoice.invoiceNumber || invoice.id,
+        invoiceDate: extracted.invoiceDate || invoice.invoiceDate,
+        currency: extracted.currency || invoice.currency || "CAD",
+        totals: extracted.totals,
+        lines: extracted.lines.map((line) => ({
+          id: `line-${crypto.randomUUID()}`,
+          sourceText: line.sourceText,
+          description: line.description,
+          quantity: line.quantity,
+          unitType: line.unitType,
+          unitPrice: line.unitPrice,
+          lineTotal: line.lineTotal,
+          materialId: undefined,
+          confidence: line.confidence,
+          needsReview: line.needsReview,
+          notes: line.notes,
+        })),
+        review: {
+          totalsMismatchOverride: false,
+          overrideReason: "",
+        },
+        extraction: {
+          provider: invoice.extraction.provider || "openai",
+          model: extracted.modelUsed || invoice.extraction.model,
+          extractedAt: now,
+          passUsed: extracted.passUsed,
+          rawOutput: extracted.rawOutput,
+        },
+      },
     );
   },
 
