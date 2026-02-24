@@ -371,6 +371,10 @@ export interface ProjectRepository {
       ledgerEntries: PurchaseLedgerEntry[];
     },
   ): Promise<RenovationProject>;
+  deleteInvoiceDraft(
+    projectId: string,
+    invoiceId: string,
+  ): Promise<RenovationProject>;
   deleteAttachment(
     projectId: string,
     attachmentId: string,
@@ -1617,6 +1621,27 @@ export class JsonProjectRepository implements ProjectRepository {
         ...payload.ledgerEntries,
         ...project.purchaseLedger,
       ];
+      return project;
+    });
+  }
+
+  async deleteInvoiceDraft(
+    projectId: string,
+    invoiceId: string,
+  ): Promise<RenovationProject> {
+    return this.mutateProject(projectId, (project) => {
+      const invoice = project.purchaseInvoices.find(
+        (entry) => entry.id === invoiceId,
+      );
+      if (!invoice) {
+        throw new Error(`Unknown invoiceId: ${invoiceId}`);
+      }
+      if (invoice.status !== "draft") {
+        throw new Error("Only draft invoices can be deleted.");
+      }
+      project.purchaseInvoices = project.purchaseInvoices.filter(
+        (entry) => entry.id !== invoiceId,
+      );
       return project;
     });
   }

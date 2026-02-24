@@ -53,6 +53,10 @@ export interface InvoiceExtractor {
   extract(input: InvoiceExtractionInput): Promise<ExtractedInvoice>;
 }
 
+function isDebugEnabled() {
+  return process.env.RENO_INVOICE_DEBUG === "1";
+}
+
 function asNumber(value: unknown) {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value;
@@ -149,8 +153,15 @@ class OpenAiInvoiceExtractor implements InvoiceExtractor {
   }
 
   async extract(input: InvoiceExtractionInput): Promise<ExtractedInvoice> {
+    if (isDebugEnabled()) {
+      console.log(
+        `[invoice-extractor] provider=openai model=${input.model || this.model} mime=${input.mimeType} file=${input.fileName}`,
+      );
+    }
     if (!input.mimeType.startsWith("image/")) {
-      throw new Error("OpenAI invoice extraction currently supports image files only.");
+      throw new Error(
+        "OpenAI invoice extraction currently supports image files only.",
+      );
     }
 
     const dataUrl = `data:${input.mimeType};base64,${input.fileBuffer.toString("base64")}`;
@@ -226,12 +237,39 @@ class OpenAiInvoiceExtractor implements InvoiceExtractor {
     }
 
     const payload = (await response.json()) as Record<string, unknown>;
-    const outputText =
-      typeof payload.output_text === "string"
-        ? payload.output_text
-        : JSON.stringify(payload);
+    const outputTextCandidates: string[] = [];
+    if (typeof payload.output_text === "string" && payload.output_text.trim()) {
+      outputTextCandidates.push(payload.output_text);
+    }
+    const output = payload.output;
+    if (Array.isArray(output)) {
+      for (const item of output) {
+        const content = (item as { content?: unknown }).content;
+        if (!Array.isArray(content)) {
+          continue;
+        }
+        for (const block of content) {
+          const text =
+            (block as { text?: unknown }).text ??
+            (block as { output_text?: unknown }).output_text;
+          if (typeof text === "string" && text.trim()) {
+            outputTextCandidates.push(text);
+          }
+        }
+      }
+    }
 
-    const text = outputText.trim();
+    const outputText = outputTextCandidates.join("\n").trim();
+    if (!outputText) {
+      if (isDebugEnabled()) {
+        console.log(
+          `[invoice-extractor] openai raw payload (no output_text): ${JSON.stringify(payload)}`,
+        );
+      }
+      throw new Error("OpenAI response did not include text output.");
+    }
+
+    const text = outputText;
     let parsed: unknown;
     try {
       parsed = JSON.parse(text);
@@ -242,17 +280,26 @@ class OpenAiInvoiceExtractor implements InvoiceExtractor {
       }
       parsed = JSON.parse(match[0]);
     }
+    if (isDebugEnabled()) {
+      console.log(
+        `[invoice-extractor] openai raw parsed: ${JSON.stringify(parsed)}`,
+      );
+    }
     return normalizeExtracted(parsed);
   }
 }
 
 class FallbackInvoiceExtractor implements InvoiceExtractor {
   async extract(input: InvoiceExtractionInput): Promise<ExtractedInvoice> {
-    const now = new Date().toISOString();
+    if (isDebugEnabled()) {
+      console.log(
+        `[invoice-extractor] provider=fallback mime=${input.mimeType} file=${input.fileName}`,
+      );
+    }
     return {
       vendorName: "",
       invoiceNumber: input.fileName,
-      invoiceDate: now.slice(0, 10),
+      invoiceDate: "",
       currency: "CAD",
       totals: {
         subTotal: 0,
@@ -288,6 +335,11 @@ export function buildInvoiceExtractor(): InvoiceExtractor {
     .toLowerCase();
   if (provider === "openai") {
     const key = process.env.OPENAI_API_KEY?.trim();
+    if (isDebugEnabled()) {
+      console.log(
+        `[invoice-extractor] configured provider=openai key_present=${Boolean(key)} model=${process.env.RENO_INVOICE_LLM_MODEL?.trim() || "gpt-5-nano"}`,
+      );
+    }
     if (!key) {
       return new FallbackInvoiceExtractor();
     }

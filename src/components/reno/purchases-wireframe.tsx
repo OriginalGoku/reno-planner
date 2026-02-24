@@ -10,6 +10,7 @@ import type {
 } from "@/lib/reno-data-loader";
 import {
   confirmInvoiceDraftAction,
+  deleteInvoiceDraftAction,
   extractInvoiceDraftAction,
   updateInvoiceDraftAction,
 } from "@/lib/reno-actions";
@@ -319,6 +320,34 @@ export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
       } catch (error) {
         setFeedback(
           error instanceof Error ? error.message : "Could not confirm invoice.",
+        );
+      }
+    });
+  }
+
+  function deleteDraft() {
+    if (!activeDraft) {
+      return;
+    }
+    const confirmed = window.confirm(
+      `Delete draft "${activeDraft.invoiceNumber || activeDraft.id}"?`,
+    );
+    if (!confirmed) {
+      return;
+    }
+    setFeedback(null);
+    startTransition(async () => {
+      try {
+        await deleteInvoiceDraftAction({
+          projectId: project.id,
+          invoiceId: activeDraft.id,
+        });
+        setDraft(null);
+        setSelectedInvoiceId(null);
+        setFeedback("Invoice draft deleted.");
+      } catch (error) {
+        setFeedback(
+          error instanceof Error ? error.message : "Could not delete draft.",
         );
       }
     });
@@ -857,6 +886,14 @@ export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
                   className="rounded-md bg-foreground px-3 py-1.5 text-sm text-background disabled:opacity-60"
                 >
                   {isPending ? "Confirming..." : "Confirm & Post"}
+                </button>
+                <button
+                  type="button"
+                  onClick={deleteDraft}
+                  disabled={isPending}
+                  className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-700 disabled:opacity-60"
+                >
+                  Delete Draft
                 </button>
               </div>
             </div>

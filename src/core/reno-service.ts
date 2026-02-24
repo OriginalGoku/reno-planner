@@ -257,6 +257,11 @@ export type ConfirmInvoiceDraftInput = {
   review: PurchaseInvoiceReview;
 };
 
+export type DeleteInvoiceDraftInput = {
+  projectId: string;
+  invoiceId: string;
+};
+
 function toSectionId(title: string) {
   return title
     .trim()
@@ -976,6 +981,11 @@ export const renoService = {
       provider: payload.provider,
       model: payload.model,
     });
+    if (process.env.RENO_INVOICE_DEBUG === "1") {
+      console.log(
+        `[invoice-service] extracted invoice lines=${extracted.lines.length} vendor="${extracted.vendorName}" invoice="${extracted.invoiceNumber}" date="${extracted.invoiceDate}"`,
+      );
+    }
 
     const now = new Date().toISOString();
     const invoiceId = `inv-${crypto.randomUUID()}`;
@@ -1175,6 +1185,13 @@ export const renoService = {
       (entry) => !payload.invoiceId || entry.invoiceId === payload.invoiceId,
     );
     return rows.sort((a, b) => b.postedAt.localeCompare(a.postedAt));
+  },
+
+  async deleteInvoiceDraft(payload: DeleteInvoiceDraftInput) {
+    return projectRepository.deleteInvoiceDraft(
+      payload.projectId,
+      payload.invoiceId,
+    );
   },
 
   async getProjectById(projectId: string): Promise<RenovationProject | null> {

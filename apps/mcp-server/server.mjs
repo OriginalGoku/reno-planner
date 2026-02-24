@@ -1421,6 +1421,36 @@ server.registerTool(
 );
 
 server.registerTool(
+  "reno_delete_invoice_draft",
+  {
+    description:
+      "Delete a draft invoice (confirmed/voided invoices are blocked)",
+    inputSchema: {
+      projectId: z.string().optional(),
+      invoiceId: z.string(),
+      confirm: z.boolean().optional(),
+    },
+  },
+  async ({ projectId, invoiceId, confirm }) => {
+    try {
+      assertDestructiveAllowed("reno_delete_invoice_draft", confirm);
+      const resolvedProjectId = await resolveProjectId(projectId);
+      await renoService.deleteInvoiceDraft({
+        projectId: resolvedProjectId,
+        invoiceId,
+      });
+      return asToolResult({
+        ok: true,
+        projectId: resolvedProjectId,
+        invoiceId,
+      });
+    } catch (error) {
+      return asToolError(error);
+    }
+  },
+);
+
+server.registerTool(
   "reno_list_invoices",
   {
     description: "List project invoices",
