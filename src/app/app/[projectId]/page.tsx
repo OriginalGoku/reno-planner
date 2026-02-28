@@ -75,7 +75,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         </div>
       </section>
 
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <div className="rounded-lg border p-4">
           <p className="text-xs text-muted-foreground">Budget Estimate</p>
           <p className="text-2xl font-semibold">
@@ -102,20 +102,23 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           </p>
         </div>
         <div className="rounded-lg border p-4">
-          <p className="text-xs text-muted-foreground">
-            Estimated Material Total
-          </p>
-          <p className="text-2xl font-semibold">
-            ${projectFinancials.estimatedMaterialsTotal.toLocaleString()}
-          </p>
-        </div>
-        <div className="rounded-lg border p-4">
           <p className="text-xs text-muted-foreground">Invoice Drafts</p>
           <p className="text-2xl font-semibold">
             {projectFinancials.draftInvoiceCount}
           </p>
           <p className="text-xs text-muted-foreground">
             Value: ${projectFinancials.draftInvoiceTotal.toLocaleString()}
+          </p>
+        </div>
+      </section>
+
+      <section className="grid gap-3">
+        <div className="rounded-lg border p-4">
+          <p className="text-xs text-muted-foreground">
+            Estimated Material Total
+          </p>
+          <p className="text-2xl font-semibold">
+            ${projectFinancials.estimatedMaterialsTotal.toLocaleString()}
           </p>
         </div>
       </section>
