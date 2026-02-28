@@ -123,6 +123,24 @@ function buildBreadcrumbs(
     return crumbs;
   }
 
+  if (segments[2] === "materials" && segments[3] === "catalog" && segments[4]) {
+    const material = project.materialCatalog.find(
+      (entry) => entry.id === segments[4],
+    );
+    crumbs.push({
+      label: "Materials",
+      href: `/app/${project.id}/materials/new`,
+    });
+    crumbs.push({
+      label: "Catalog Entries",
+      href: `/app/${project.id}/materials/catalog`,
+    });
+    crumbs.push({
+      label: material?.name ?? titleCase(segments[4]),
+    });
+    return crumbs;
+  }
+
   let href = `/app/${project.id}`;
   for (let index = 2; index < segments.length; index += 1) {
     const segment = segments[index];

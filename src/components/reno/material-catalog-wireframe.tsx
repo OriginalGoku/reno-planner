@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
@@ -979,7 +980,14 @@ export function MaterialCatalogWireframe({
                             ) : (
                               <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div>
-                                  <p className="font-medium">{entry.name}</p>
+                                  <p className="font-medium">
+                                    <Link
+                                      href={`/app/${projectId}/materials/catalog/${entry.id}`}
+                                      className="underline underline-offset-2 hover:text-blue-700"
+                                    >
+                                      {entry.name}
+                                    </Link>
+                                  </p>
                                   <p className="text-xs text-muted-foreground">
                                     Unit: {unitLabel(entry.unitType)}
                                     {typeof entry.estimatedPrice === "number"
