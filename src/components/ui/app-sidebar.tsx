@@ -185,7 +185,7 @@ export function AppSidebar() {
       icon: LayoutDashboard,
     },
     {
-      title: project.name,
+      title: "Project Sections",
       href: `/app/${project.id}`,
       icon: FolderKanban,
       childKind: "section",
