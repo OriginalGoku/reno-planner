@@ -872,6 +872,9 @@ export function ItemDetailWireframe({
                       ?.estimatedPrice ?? 0
                   ).toLocaleString()}
                 </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Price source: Material Catalog
+                </p>
                 {(materialCatalogMap.get(selectedMaterialId)?.estimatedPrice ??
                   0) === 0 ? (
                   <p className="text-[11px] text-amber-700">
@@ -924,7 +927,12 @@ export function ItemDetailWireframe({
             ) : null}
 
             <div className="space-y-2">
-              <h2 className="text-sm font-semibold">Materials List</h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-sm font-semibold">Materials List</h2>
+                <span className="rounded-full border border-blue-300 bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-800">
+                  Price source: Material Catalog
+                </span>
+              </div>
               {materials.length ? (
                 <div className="space-y-2">
                   {materials.map((material) => (
@@ -1093,6 +1101,9 @@ export function ItemDetailWireframe({
                                   )?.estimatedPrice ?? 0
                                 ).toLocaleString()}
                               </div>
+                              <p className="text-[11px] text-muted-foreground">
+                                Price source: Material Catalog
+                              </p>
                             </div>
                           </div>
                           <div className="flex gap-2">

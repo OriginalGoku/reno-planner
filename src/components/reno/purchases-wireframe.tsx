@@ -1005,6 +1005,11 @@ export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
           Materials Rollup
         </p>
         <h2 className="mt-1 text-xl font-semibold">Materials Planner</h2>
+        <div className="mt-2">
+          <span className="rounded-full border border-blue-300 bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-800">
+            Price source: Material Catalog
+          </span>
+        </div>
         <p className="text-sm text-muted-foreground">
           Materials grouped by section and item for purchase planning.
         </p>
@@ -1118,6 +1123,9 @@ export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
                                       materialCatalogMap,
                                       material.materialId,
                                     ).toLocaleString()}
+                                  </p>
+                                  <p className="text-[11px] text-muted-foreground">
+                                    Price source: Material Catalog
                                   </p>
                                   {catalogUnitPrice(
                                     materialCatalogMap,
