@@ -44,6 +44,13 @@ function unitLabel(unitType: string) {
   return unitType.replaceAll("_", " ");
 }
 
+function catalogUnitPrice(
+  materialCatalogMap: Map<string, RenovationProject["materialCatalog"][number]>,
+  materialId: string,
+) {
+  return materialCatalogMap.get(materialId)?.estimatedPrice ?? 0;
+}
+
 function passLabel(passUsed: "pass1" | "pass2" | undefined) {
   if (passUsed === "pass2") {
     return "Second Pass";
@@ -208,12 +215,14 @@ export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
     return itemsWithMaterials.reduce((sum, item) => {
       const itemTotal = item.materials.reduce(
         (lineSum, material) =>
-          lineSum + material.quantity * material.estimatedPrice,
+          lineSum +
+          material.quantity *
+            catalogUnitPrice(materialCatalogMap, material.materialId),
         0,
       );
       return sum + itemTotal;
     }, 0);
-  }, [itemsWithMaterials]);
+  }, [itemsWithMaterials, materialCatalogMap]);
 
   const ledgerRows = useMemo(
     () =>
@@ -1021,7 +1030,9 @@ export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
           const sectionTotal = items.reduce((sum, item) => {
             const itemTotal = item.materials.reduce(
               (lineSum, material) =>
-                lineSum + material.quantity * material.estimatedPrice,
+                lineSum +
+                material.quantity *
+                  catalogUnitPrice(materialCatalogMap, material.materialId),
               0,
             );
             return sum + itemTotal;
@@ -1045,7 +1056,12 @@ export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
                   {items.map((item) => {
                     const itemTotal = item.materials.reduce(
                       (sum, material) =>
-                        sum + material.quantity * material.estimatedPrice,
+                        sum +
+                        material.quantity *
+                          catalogUnitPrice(
+                            materialCatalogMap,
+                            material.materialId,
+                          ),
                       0,
                     );
 
@@ -1098,8 +1114,19 @@ export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
                                       )?.unitType ?? "other",
                                     )}{" "}
                                     • Unit est: $
-                                    {material.estimatedPrice.toLocaleString()}
+                                    {catalogUnitPrice(
+                                      materialCatalogMap,
+                                      material.materialId,
+                                    ).toLocaleString()}
                                   </p>
+                                  {catalogUnitPrice(
+                                    materialCatalogMap,
+                                    material.materialId,
+                                  ) === 0 ? (
+                                    <p className="text-amber-700">
+                                      Warning: catalog unit estimate is 0.
+                                    </p>
+                                  ) : null}
                                   {material.note ? (
                                     <p>{material.note}</p>
                                   ) : null}
@@ -1107,7 +1134,11 @@ export function PurchasesWireframe({ project }: PurchasesWireframeProps) {
                                 <p className="font-medium text-foreground">
                                   $
                                   {(
-                                    material.quantity * material.estimatedPrice
+                                    material.quantity *
+                                    catalogUnitPrice(
+                                      materialCatalogMap,
+                                      material.materialId,
+                                    )
                                   ).toLocaleString()}
                                 </p>
                               </div>

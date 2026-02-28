@@ -404,10 +404,6 @@ export function validateProjectData(value: unknown): RenovationProject {
           "Material.materialId must reference a valid project materialCatalog entry.",
         );
         ensure(
-          typeof material.estimatedPrice === "number",
-          "Material.estimatedPrice must be a number.",
-        );
-        ensure(
           typeof material.url === "string",
           "Material.url must be a string.",
         );

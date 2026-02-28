@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "validate:data": "node scripts/validate-reno-data.mjs",
+    "migrate:material-pricing": "node scripts/migrate-material-unit-pricing.mjs",
     "import:data": "node scripts/import-project.mjs",
     "import:data:dry-run": "node scripts/import-project.mjs --dry-run",
     "mcp:server": "node --experimental-strip-types apps/mcp-server/server.mjs",

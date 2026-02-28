@@ -41,7 +41,7 @@ export default async function MaterialUsagePage({
         sectionTitle: section?.title ?? item.sectionId,
         unitName: unit?.name ?? null,
         quantity: line.quantity,
-        estimatedPrice: line.estimatedPrice,
+        unitEstimate: material.estimatedPrice ?? 0,
       };
     })
     .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
@@ -91,8 +91,9 @@ export default async function MaterialUsagePage({
                     </p>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Qty: {usage.quantity} • Est: $
-                    {usage.estimatedPrice.toLocaleString()}
+                    Qty: {usage.quantity} • Unit est: $
+                    {usage.unitEstimate.toLocaleString()} • Line est: $
+                    {(usage.quantity * usage.unitEstimate).toLocaleString()}
                   </p>
                 </div>
               </article>

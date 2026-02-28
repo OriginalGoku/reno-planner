@@ -68,7 +68,6 @@ export type AddMaterialInput = {
   itemId: string;
   materialId: string;
   quantity: number;
-  estimatedPrice: number;
   url: string;
   note?: string;
 };
@@ -79,7 +78,6 @@ export type UpdateMaterialInput = {
   materialId: string;
   catalogMaterialId: string;
   quantity: number;
-  estimatedPrice: number;
   url: string;
   note?: string;
 };
@@ -418,7 +416,6 @@ export const renoService = {
         id: crypto.randomUUID(),
         materialId: payload.materialId,
         quantity: payload.quantity,
-        estimatedPrice: payload.estimatedPrice,
         url: payload.url,
         note: payload.note,
       },
@@ -445,7 +442,6 @@ export const renoService = {
         id: payload.materialId,
         materialId: payload.catalogMaterialId,
         quantity: payload.quantity,
-        estimatedPrice: payload.estimatedPrice,
         url: payload.url,
         note: payload.note,
       },

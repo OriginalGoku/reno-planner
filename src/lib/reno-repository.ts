@@ -558,6 +558,38 @@ export class JsonProjectRepository implements ProjectRepository {
         return nextId;
       };
 
+      const setCatalogUnitPriceFromLegacy = (
+        materialId: string | null,
+        legacyEstimatedPrice: unknown,
+        quantity: unknown,
+      ) => {
+        if (!materialId) {
+          return;
+        }
+        if (
+          typeof legacyEstimatedPrice !== "number" ||
+          legacyEstimatedPrice <= 0
+        ) {
+          return;
+        }
+        if (typeof quantity !== "number" || quantity <= 0) {
+          return;
+        }
+        const catalogEntry = seededCatalog.find(
+          (entry) => entry.id === materialId,
+        );
+        if (!catalogEntry) {
+          return;
+        }
+        if (
+          typeof catalogEntry.estimatedPrice === "number" &&
+          catalogEntry.estimatedPrice > 0
+        ) {
+          return;
+        }
+        catalogEntry.estimatedPrice = legacyEstimatedPrice / quantity;
+      };
+
       if (Array.isArray(projectLike.items)) {
         const items = projectLike.items;
         for (const item of items) {
@@ -567,11 +599,31 @@ export class JsonProjectRepository implements ProjectRepository {
           }
           item.materials = item.materials.map((material) => {
             if (material.materialId) {
-              return material;
+              setCatalogUnitPriceFromLegacy(
+                material.materialId,
+                (material as { estimatedPrice?: unknown }).estimatedPrice,
+                material.quantity,
+              );
+              return {
+                id:
+                  typeof material.id === "string" && material.id.length > 0
+                    ? material.id
+                    : randomUUID(),
+                materialId: material.materialId,
+                quantity:
+                  typeof material.quantity === "number" ? material.quantity : 0,
+                url: typeof material.url === "string" ? material.url : "",
+                note: material.note,
+              };
             }
             const materialId = upsertCatalogFromLegacy(
               (material as { name?: string }).name ?? "Uncategorized Material",
               (material as { unitType?: MaterialUnitType }).unitType,
+            );
+            setCatalogUnitPriceFromLegacy(
+              materialId,
+              (material as { estimatedPrice?: unknown }).estimatedPrice,
+              material.quantity,
             );
             return {
               id:
@@ -581,10 +633,6 @@ export class JsonProjectRepository implements ProjectRepository {
               materialId: materialId ?? "uncategorized-material",
               quantity:
                 typeof material.quantity === "number" ? material.quantity : 0,
-              estimatedPrice:
-                typeof material.estimatedPrice === "number"
-                  ? material.estimatedPrice
-                  : 0,
               url: typeof material.url === "string" ? material.url : "",
               note: material.note,
             };

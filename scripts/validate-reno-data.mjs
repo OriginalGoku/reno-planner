@@ -134,8 +134,8 @@ function validateProject(project, fileName) {
         `${fileName}: item ${item.id} material quantity must be number`,
       );
       assert(
-        typeof material.estimatedPrice === "number",
-        `${fileName}: item ${item.id} material estimatedPrice must be number`,
+        typeof material.url === "string",
+        `${fileName}: item ${item.id} material url must be string`,
       );
     }
   }

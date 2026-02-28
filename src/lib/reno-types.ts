@@ -44,7 +44,6 @@ export type RenovationMaterial = {
   id: string;
   materialId: string;
   quantity: number;
-  estimatedPrice: number;
   url: string;
   note?: string;
 };

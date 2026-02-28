@@ -118,7 +118,6 @@ export async function updateItemMaterialAction(payload: {
   materialId: string;
   catalogMaterialId: string;
   quantity: number;
-  estimatedPrice: number;
   url: string;
   note?: string;
 }) {

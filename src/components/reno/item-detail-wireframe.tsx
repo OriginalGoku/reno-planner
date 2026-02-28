@@ -120,7 +120,6 @@ export function ItemDetailWireframe({
     materialCatalog[0]?.id ?? "",
   );
   const [materialQuantity, setMaterialQuantity] = useState("");
-  const [materialEstimatedPrice, setMaterialEstimatedPrice] = useState("");
   const [materialUrl, setMaterialUrl] = useState("");
   const [materialNote, setMaterialNote] = useState("");
   const [editingMaterialId, setEditingMaterialId] = useState<string | null>(
@@ -427,17 +426,12 @@ export function ItemDetailWireframe({
   function addMaterial() {
     const materialId = selectedMaterialId;
     const quantity = Number(materialQuantity);
-    const estimatedPrice = Number(materialEstimatedPrice);
     const catalogEntry = materialCatalogMap.get(materialId);
 
-    if (
-      !catalogEntry ||
-      Number.isNaN(quantity) ||
-      Number.isNaN(estimatedPrice)
-    ) {
+    if (!catalogEntry || Number.isNaN(quantity)) {
       return;
     }
-    if (quantity <= 0 || estimatedPrice < 0) {
+    if (quantity <= 0) {
       return;
     }
 
@@ -445,7 +439,6 @@ export function ItemDetailWireframe({
       id: `local-material-${Date.now()}`,
       materialId,
       quantity,
-      estimatedPrice,
       url: materialUrl.trim(),
       note: materialNote.trim() || undefined,
     };
@@ -457,7 +450,6 @@ export function ItemDetailWireframe({
     );
     setSelectedMaterialId(firstInCategory?.id ?? "");
     setMaterialQuantity("");
-    setMaterialEstimatedPrice("");
     setMaterialUrl("");
     setMaterialNote("");
 
@@ -468,7 +460,6 @@ export function ItemDetailWireframe({
           itemId: item.id,
           materialId: newMaterial.materialId,
           quantity: newMaterial.quantity,
-          estimatedPrice: newMaterial.estimatedPrice,
           url: newMaterial.url,
           note: newMaterial.note,
         });
@@ -540,8 +531,7 @@ export function ItemDetailWireframe({
     }
     if (
       !materialCatalogMap.has(editingMaterialDraft.materialId) ||
-      editingMaterialDraft.quantity < 0 ||
-      editingMaterialDraft.estimatedPrice < 0
+      editingMaterialDraft.quantity < 0
     ) {
       return;
     }
@@ -570,7 +560,6 @@ export function ItemDetailWireframe({
           materialId,
           catalogMaterialId: materialDraft.materialId,
           quantity: materialDraft.quantity,
-          estimatedPrice: materialDraft.estimatedPrice,
           url: materialDraft.url,
           note: materialDraft.note,
         });
@@ -874,19 +863,22 @@ export function ItemDetailWireframe({
               </div>
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground">
-                  Estimated Price (unit)
+                  Catalog Unit Estimate
                 </label>
-                <input
-                  value={materialEstimatedPrice}
-                  onChange={(event) =>
-                    setMaterialEstimatedPrice(event.target.value)
-                  }
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-                />
+                <div className="rounded-md border bg-muted px-2 py-1.5 text-sm">
+                  $
+                  {(
+                    materialCatalogMap.get(selectedMaterialId)
+                      ?.estimatedPrice ?? 0
+                  ).toLocaleString()}
+                </div>
+                {(materialCatalogMap.get(selectedMaterialId)?.estimatedPrice ??
+                  0) === 0 ? (
+                  <p className="text-[11px] text-amber-700">
+                    Catalog default is 0. Set default estimated price in Catalog
+                    Entries.
+                  </p>
+                ) : null}
               </div>
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground">
@@ -1091,27 +1083,16 @@ export function ItemDetailWireframe({
                             </div>
                             <div className="space-y-1">
                               <label className="text-xs text-muted-foreground">
-                                Estimated Price (Unit)
+                                Catalog Unit Estimate
                               </label>
-                              <input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={editingMaterialDraft.estimatedPrice}
-                                onChange={(event) =>
-                                  setEditingMaterialDraft((current) =>
-                                    current
-                                      ? {
-                                          ...current,
-                                          estimatedPrice:
-                                            Number(event.target.value) || 0,
-                                        }
-                                      : current,
-                                  )
-                                }
-                                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
-                                placeholder="Estimated price"
-                              />
+                              <div className="rounded-md border bg-muted px-2 py-1.5 text-sm text-foreground">
+                                $
+                                {(
+                                  materialCatalogMap.get(
+                                    editingMaterialDraft.materialId,
+                                  )?.estimatedPrice ?? 0
+                                ).toLocaleString()}
+                              </div>
                             </div>
                           </div>
                           <div className="flex gap-2">
@@ -1152,7 +1133,9 @@ export function ItemDetailWireframe({
                                       catalogEntry?.unitType ?? "other",
                                     )}{" "}
                                     • Unit est: $
-                                    {material.estimatedPrice.toLocaleString()}
+                                    {(
+                                      catalogEntry?.estimatedPrice ?? 0
+                                    ).toLocaleString()}
                                   </p>
                                 </>
                               );
@@ -1160,9 +1143,18 @@ export function ItemDetailWireframe({
                             <p>
                               Line est: $
                               {(
-                                material.quantity * material.estimatedPrice
+                                material.quantity *
+                                (materialCatalogMap.get(material.materialId)
+                                  ?.estimatedPrice ?? 0)
                               ).toLocaleString()}
                             </p>
+                            {(materialCatalogMap.get(material.materialId)
+                              ?.estimatedPrice ?? 0) === 0 ? (
+                              <p className="text-amber-700">
+                                Warning: catalog unit estimate is 0 for this
+                                material.
+                              </p>
+                            ) : null}
                             {material.note ? <p>{material.note}</p> : null}
                             {material.url ? (
                               <p>
