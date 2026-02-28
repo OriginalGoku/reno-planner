@@ -26,6 +26,7 @@ import { useTransition, type ComponentType } from "react";
 import {
   ChevronRight,
   ClipboardList,
+  FolderTree,
   FileText,
   FolderKanban,
   Home,
@@ -210,7 +211,7 @@ export function AppSidebar() {
     ...serviceNavItems,
     {
       title: "Materials",
-      href: `/app/${project.id}/materials/new`,
+      href: `/app/${project.id}/materials`,
       icon: Package,
       children: [
         {
@@ -247,6 +248,11 @@ export function AppSidebar() {
       title: "Settings",
       href: `/app/${project.id}/settings`,
       icon: Settings,
+    },
+    {
+      title: "Manage Sections",
+      href: `/app/${project.id}/settings#sections`,
+      icon: FolderTree,
     },
   ];
 

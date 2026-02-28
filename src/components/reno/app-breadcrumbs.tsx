@@ -129,7 +129,7 @@ function buildBreadcrumbs(
     );
     crumbs.push({
       label: "Materials",
-      href: `/app/${project.id}/materials/new`,
+      href: `/app/${project.id}/materials`,
     });
     crumbs.push({
       label: "Catalog Entries",

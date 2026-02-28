@@ -1,5 +1,5 @@
 import {
-  getProjectFinancials,
+  getProjectFinancialSnapshot,
   getProjectSummary,
   getSectionFinancials,
   getTotalActualForItem,
@@ -7,7 +7,12 @@ import {
   type ItemStatus,
 } from "@/lib/reno-data-loader";
 import { loadRenoProject } from "@/lib/reno-project-service";
-import { SectionManager } from "@/components/reno/section-manager";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ChevronRight } from "lucide-react";
 
 const statusStyles: Record<ItemStatus, string> = {
   todo: "bg-slate-100 text-slate-700",
@@ -29,7 +34,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   const { projectId } = await params;
   const project = await loadRenoProject(projectId);
   const summary = getProjectSummary(project);
-  const projectFinancials = getProjectFinancials(project);
+  const projectFinancials = getProjectFinancialSnapshot(project);
   const upcomingPurchases = project.items
     .filter((item) => item.status !== "done" && item.estimate > 0)
     .slice(0, 5);
@@ -70,32 +75,64 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         </div>
       </section>
 
-      <section className="grid gap-3 sm:grid-cols-3">
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
         <div className="rounded-lg border p-4">
-          <p className="text-xs text-muted-foreground">Project Estimate</p>
+          <p className="text-xs text-muted-foreground">Budget Estimate</p>
           <p className="text-2xl font-semibold">
-            ${projectFinancials.estimateTotal.toLocaleString()}
+            ${projectFinancials.estimateFromItems.toLocaleString()}
           </p>
         </div>
         <div className="rounded-lg border p-4">
-          <p className="text-xs text-muted-foreground">Project Actual</p>
+          <p className="text-xs text-muted-foreground">Actual (Purchased)</p>
           <p className="text-2xl font-semibold">
-            ${projectFinancials.actualTotal.toLocaleString()}
+            ${projectFinancials.actualFromLedger.toLocaleString()}
           </p>
         </div>
         <div className="rounded-lg border p-4">
-          <p className="text-xs text-muted-foreground">Project Variance</p>
+          <p className="text-xs text-muted-foreground">Actual (Expenses)</p>
           <p className="text-2xl font-semibold">
-            {projectFinancials.variance >= 0 ? "+" : "-"}$
-            {Math.abs(projectFinancials.variance).toLocaleString()}
+            ${projectFinancials.actualFromExpenses.toLocaleString()}
+          </p>
+        </div>
+        <div className="rounded-lg border p-4">
+          <p className="text-xs text-muted-foreground">Variance vs Purchased</p>
+          <p className="text-2xl font-semibold">
+            {projectFinancials.varianceVsLedger >= 0 ? "+" : "-"}$
+            {Math.abs(projectFinancials.varianceVsLedger).toLocaleString()}
+          </p>
+        </div>
+        <div className="rounded-lg border p-4">
+          <p className="text-xs text-muted-foreground">
+            Estimated Material Total
+          </p>
+          <p className="text-2xl font-semibold">
+            ${projectFinancials.estimatedMaterialsTotal.toLocaleString()}
+          </p>
+        </div>
+        <div className="rounded-lg border p-4">
+          <p className="text-xs text-muted-foreground">Invoice Drafts</p>
+          <p className="text-2xl font-semibold">
+            {projectFinancials.draftInvoiceCount}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Value: ${projectFinancials.draftInvoiceTotal.toLocaleString()}
           </p>
         </div>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-3">
-        <div className="rounded-lg border p-4 lg:col-span-2">
-          <h2 className="text-base font-semibold">Section Progress</h2>
-          <div className="mt-4 space-y-4">
+        <Collapsible
+          defaultOpen
+          className="rounded-lg border p-4 lg:col-span-2"
+        >
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold">Section Progress</h2>
+            <CollapsibleTrigger className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs hover:bg-muted">
+              <ChevronRight className="size-3.5" />
+              Toggle
+            </CollapsibleTrigger>
+          </div>
+          <CollapsibleContent className="mt-4 space-y-4">
             {project.sections.map((section) => {
               const sectionItems = project.items.filter(
                 (item) => item.sectionId === section.id,
@@ -136,16 +173,17 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Estimate: $
-                    {sectionFinancials.estimateTotal.toLocaleString()} • Actual:
-                    ${sectionFinancials.actualTotal.toLocaleString()} •
-                    Variance: {sectionFinancials.variance >= 0 ? "+" : "-"}$
+                    {sectionFinancials.estimateTotal.toLocaleString()} • Actual
+                    (Expenses): $
+                    {sectionFinancials.actualTotal.toLocaleString()} • Variance:{" "}
+                    {sectionFinancials.variance >= 0 ? "+" : "-"}$
                     {Math.abs(sectionFinancials.variance).toLocaleString()}
                   </p>
                 </div>
               );
             })}
-          </div>
-        </div>
+          </CollapsibleContent>
+        </Collapsible>
 
         <div className="space-y-6">
           <div className="rounded-lg border p-4">
@@ -163,31 +201,15 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     • Est. ${item.estimate}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Actual: ${getTotalActualForItem(item).toLocaleString()}
+                    Actual (Expenses): $
+                    {getTotalActualForItem(item).toLocaleString()}
                   </p>
                 </div>
               ))}
             </div>
           </div>
-
-          <div className="rounded-lg border p-4">
-            <h2 className="text-base font-semibold">Lessons Learned</h2>
-            <ul className="mt-3 list-inside list-disc space-y-2 text-sm text-muted-foreground">
-              {project.notes
-                .filter((note) => !note.linkedSectionId)
-                .slice(0, 4)
-                .map((note) => (
-                  <li key={note.id}>{note.content}</li>
-                ))}
-            </ul>
-          </div>
         </div>
       </section>
-
-      <SectionManager
-        projectId={project.id}
-        initialSections={project.sections}
-      />
     </div>
   );
 }

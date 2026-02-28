@@ -1,5 +1,6 @@
 import { ProjectSettingsForm } from "@/components/reno/project-settings-form";
 import { AttachmentManager } from "@/components/reno/attachment-manager";
+import { SectionManager } from "@/components/reno/section-manager";
 import { loadRenoProject } from "@/lib/reno-project-service";
 
 type SettingsPageProps = {
@@ -22,6 +23,23 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
         </p>
       </section>
       <ProjectSettingsForm project={project} />
+
+      <section id="sections" className="space-y-2">
+        <div className="rounded-lg border p-4">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+            Structure
+          </p>
+          <h2 className="mt-1 text-xl font-semibold">Section Management</h2>
+          <p className="text-sm text-muted-foreground">
+            Add, edit, delete, and reorder project sections.
+          </p>
+        </div>
+        <SectionManager
+          projectId={project.id}
+          initialSections={project.sections}
+        />
+      </section>
+
       <AttachmentManager
         projectId={project.id}
         scopeType="project"

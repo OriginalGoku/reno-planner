@@ -89,6 +89,53 @@ export function getProjectFinancials(project: RenovationProject) {
   };
 }
 
+export function getProjectFinancialSnapshot(project: RenovationProject) {
+  const estimateFromItems = project.items.reduce(
+    (sum, item) => sum + item.estimate,
+    0,
+  );
+  const actualFromExpenses = project.items.reduce(
+    (sum, item) => sum + getTotalActualForItem(item),
+    0,
+  );
+  const actualFromLedger = project.purchaseLedger.reduce(
+    (sum, row) => sum + row.lineTotal,
+    0,
+  );
+  const draftInvoices = project.purchaseInvoices.filter(
+    (invoice) => invoice.status === "draft",
+  );
+  const draftInvoiceCount = draftInvoices.length;
+  const draftInvoiceTotal = draftInvoices.reduce(
+    (sum, invoice) => sum + invoice.totals.grandTotal,
+    0,
+  );
+  const estimatedMaterialsTotal = project.items.reduce((sum, item) => {
+    const itemMaterialsTotal = (item.materials ?? []).reduce(
+      (lineSum, materialLine) => {
+        const catalogEntry = project.materialCatalog.find(
+          (entry) => entry.id === materialLine.materialId,
+        );
+        const unitEstimate = catalogEntry?.estimatedPrice ?? 0;
+        return lineSum + materialLine.quantity * unitEstimate;
+      },
+      0,
+    );
+    return sum + itemMaterialsTotal;
+  }, 0);
+
+  return {
+    estimateFromItems,
+    actualFromExpenses,
+    actualFromLedger,
+    estimatedMaterialsTotal,
+    varianceVsLedger: estimateFromItems - actualFromLedger,
+    varianceVsExpenses: estimateFromItems - actualFromExpenses,
+    draftInvoiceCount,
+    draftInvoiceTotal,
+  };
+}
+
 export function getSectionFinancials(
   project: RenovationProject,
   sectionId: string,
