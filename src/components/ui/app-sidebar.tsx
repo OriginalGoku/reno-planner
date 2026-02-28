@@ -210,8 +210,20 @@ export function AppSidebar() {
     ...serviceNavItems,
     {
       title: "Materials",
-      href: `/app/${project.id}/materials`,
+      href: `/app/${project.id}/materials/new`,
       icon: Package,
+      children: [
+        {
+          id: "materials-new",
+          title: "New Materials",
+          href: `/app/${project.id}/materials/new`,
+        },
+        {
+          id: "materials-catalog",
+          title: "Catalog Entries",
+          href: `/app/${project.id}/materials/catalog`,
+        },
+      ],
     },
     {
       title: "Purchases",

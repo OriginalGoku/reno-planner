@@ -39,6 +39,8 @@ function refreshProjectPaths(projectId: string) {
   revalidatePath(`/app/${projectId}/units`);
   revalidatePath(`/app/${projectId}/services`);
   revalidatePath(`/app/${projectId}/materials`);
+  revalidatePath(`/app/${projectId}/materials/new`);
+  revalidatePath(`/app/${projectId}/materials/catalog`);
 }
 
 export async function updateItemFieldsAction(payload: UpdateItemFieldsInput) {

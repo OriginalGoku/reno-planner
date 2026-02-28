@@ -27,6 +27,7 @@ type MaterialCatalogWireframeProps = {
   projectId: string;
   initialCatalog: MaterialCatalogItem[];
   initialCategories: MaterialCategory[];
+  mode?: "new" | "catalog";
 };
 
 type Feedback = {
@@ -87,7 +88,9 @@ function toCatalogDraft(item: MaterialCatalogItem): CatalogDraft {
     name: item.name,
     unitType: item.unitType,
     estimatedPrice:
-      typeof item.estimatedPrice === "number" ? String(item.estimatedPrice) : "",
+      typeof item.estimatedPrice === "number"
+        ? String(item.estimatedPrice)
+        : "",
     sampleUrl: item.sampleUrl ?? "",
     notes: item.notes ?? "",
   };
@@ -111,6 +114,7 @@ export function MaterialCatalogWireframe({
   projectId,
   initialCatalog,
   initialCategories,
+  mode = "new",
 }: MaterialCatalogWireframeProps) {
   const [catalog, setCatalog] = useState(initialCatalog);
   const [categories, setCategories] = useState(initialCategories);
@@ -126,9 +130,8 @@ export function MaterialCatalogWireframe({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingDraft, setEditingDraft] = useState<CatalogDraft | null>(null);
 
-  const [newCategory, setNewCategory] = useState<CategoryDraft>(
-    emptyCategoryDraft,
-  );
+  const [newCategory, setNewCategory] =
+    useState<CategoryDraft>(emptyCategoryDraft);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(
     null,
   );
@@ -164,6 +167,9 @@ export function MaterialCatalogWireframe({
       ),
     }));
   }, [catalog, sortedCategories]);
+
+  const isNewMode = mode === "new";
+  const isCatalogMode = mode === "catalog";
 
   function addCategory() {
     const name = newCategory.name.trim();
@@ -223,7 +229,9 @@ export function MaterialCatalogWireframe({
 
     setCategories((current) =>
       current.map((category) =>
-        category.id === categoryId ? { ...category, name, description } : category,
+        category.id === categoryId
+          ? { ...category, name, description }
+          : category,
       ),
     );
     cancelEditCategory();
@@ -303,7 +311,9 @@ export function MaterialCatalogWireframe({
       return;
     }
 
-    setCategories((current) => current.filter((entry) => entry.id !== categoryId));
+    setCategories((current) =>
+      current.filter((entry) => entry.id !== categoryId),
+    );
     setCatalog((current) =>
       current.map((entry) =>
         entry.categoryId === categoryId
@@ -493,244 +503,284 @@ export function MaterialCatalogWireframe({
         <p className="text-xs uppercase tracking-wide text-muted-foreground">
           Materials
         </p>
-        <h1 className="mt-1 text-2xl font-semibold">Material Catalog</h1>
+        <h1 className="mt-1 text-2xl font-semibold">
+          {isNewMode ? "New Materials" : "Catalog Entries"}
+        </h1>
         <p className="text-sm text-muted-foreground">
-          Manage categories and catalog entries used by item material lines.
+          {isNewMode
+            ? "Manage material categories and add new catalog entries."
+            : "Browse and edit existing catalog entries by category."}
         </p>
       </section>
 
-      <section className="space-y-3 rounded-lg border p-4">
-        <h2 className="text-sm font-semibold">Material Categories</h2>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">Category Name</label>
-            <input
-              value={newCategory.name}
-              onChange={(event) =>
-                setNewCategory((current) => ({ ...current, name: event.target.value }))
-              }
-              className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-              placeholder="Drywall"
-            />
+      {isNewMode ? (
+        <section className="space-y-3 rounded-lg border p-4">
+          <h2 className="text-sm font-semibold">Material Categories</h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">
+                Category Name
+              </label>
+              <input
+                value={newCategory.name}
+                onChange={(event) =>
+                  setNewCategory((current) => ({
+                    ...current,
+                    name: event.target.value,
+                  }))
+                }
+                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                placeholder="Drywall"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">
+                Description (optional)
+              </label>
+              <input
+                value={newCategory.description}
+                onChange={(event) =>
+                  setNewCategory((current) => ({
+                    ...current,
+                    description: event.target.value,
+                  }))
+                }
+                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+              />
+            </div>
           </div>
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">Description (optional)</label>
-            <input
-              value={newCategory.description}
-              onChange={(event) =>
-                setNewCategory((current) => ({
-                  ...current,
-                  description: event.target.value,
-                }))
-              }
-              className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-            />
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={addCategory}
-          disabled={isPending || !newCategory.name.trim()}
-          className="rounded-md border px-3 py-2 text-sm"
-        >
-          Add Category
-        </button>
+          <button
+            type="button"
+            onClick={addCategory}
+            disabled={isPending || !newCategory.name.trim()}
+            className="rounded-md border px-3 py-2 text-sm"
+          >
+            Add Category
+          </button>
 
-        <div className="space-y-2">
-          {sortedCategories.map((category) => (
-            <article key={category.id} className="rounded-md border p-3">
-              {editingCategoryId === category.id && editingCategoryDraft ? (
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground">Category Name</label>
-                    <input
-                      value={editingCategoryDraft.name}
-                      onChange={(event) =>
-                        setEditingCategoryDraft((current) =>
-                          current ? { ...current, name: event.target.value } : current,
-                        )
-                      }
-                      className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-                    />
+          <div className="space-y-2">
+            {sortedCategories.map((category) => (
+              <article key={category.id} className="rounded-md border p-3">
+                {editingCategoryId === category.id && editingCategoryDraft ? (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <div className="space-y-1">
+                      <label className="text-xs text-muted-foreground">
+                        Category Name
+                      </label>
+                      <input
+                        value={editingCategoryDraft.name}
+                        onChange={(event) =>
+                          setEditingCategoryDraft((current) =>
+                            current
+                              ? { ...current, name: event.target.value }
+                              : current,
+                          )
+                        }
+                        className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs text-muted-foreground">
+                        Description
+                      </label>
+                      <input
+                        value={editingCategoryDraft.description}
+                        onChange={(event) =>
+                          setEditingCategoryDraft((current) =>
+                            current
+                              ? { ...current, description: event.target.value }
+                              : current,
+                          )
+                        }
+                        className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                      />
+                    </div>
+                    <div className="sm:col-span-2 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={saveCategory}
+                        className="rounded-md border px-3 py-1.5 text-sm"
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelEditCategory}
+                        className="rounded-md border px-3 py-1.5 text-sm"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground">Description</label>
-                    <input
-                      value={editingCategoryDraft.description}
-                      onChange={(event) =>
-                        setEditingCategoryDraft((current) =>
-                          current
-                            ? { ...current, description: event.target.value }
-                            : current,
-                        )
-                      }
-                      className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-                    />
+                ) : (
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="font-medium">{category.name}</p>
+                      {category.description ? (
+                        <p className="text-sm text-muted-foreground">
+                          {category.description}
+                        </p>
+                      ) : null}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => moveCategory(category.id, "up")}
+                        className="rounded-md border px-2 py-1 text-xs"
+                        disabled={isPending}
+                      >
+                        Up
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveCategory(category.id, "down")}
+                        className="rounded-md border px-2 py-1 text-xs"
+                        disabled={isPending}
+                      >
+                        Down
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => beginEditCategory(category)}
+                        className="rounded-md border px-2 py-1 text-xs"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteCategory(category.id)}
+                        className="rounded-md border px-2 py-1 text-xs"
+                        disabled={category.id === "uncategorized"}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                  <div className="sm:col-span-2 flex gap-2">
-                    <button
-                      type="button"
-                      onClick={saveCategory}
-                      className="rounded-md border px-3 py-1.5 text-sm"
-                    >
-                      Save
-                    </button>
-                    <button
-                      type="button"
-                      onClick={cancelEditCategory}
-                      className="rounded-md border px-3 py-1.5 text-sm"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium">{category.name}</p>
-                    {category.description ? (
-                      <p className="text-sm text-muted-foreground">{category.description}</p>
-                    ) : null}
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => moveCategory(category.id, "up")}
-                      className="rounded-md border px-2 py-1 text-xs"
-                      disabled={isPending}
-                    >
-                      Up
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => moveCategory(category.id, "down")}
-                      className="rounded-md border px-2 py-1 text-xs"
-                      disabled={isPending}
-                    >
-                      Down
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => beginEditCategory(category)}
-                      className="rounded-md border px-2 py-1 text-xs"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => deleteCategory(category.id)}
-                      className="rounded-md border px-2 py-1 text-xs"
-                      disabled={category.id === "uncategorized"}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              )}
-            </article>
-          ))}
-        </div>
-      </section>
+                )}
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
-      <section className="space-y-3 rounded-lg border p-4">
-        <h2 className="text-sm font-semibold">Add Material</h2>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1 sm:col-span-2">
-            <label className="text-xs text-muted-foreground">Category</label>
-            <select
-              value={newEntry.categoryId}
-              onChange={(event) =>
-                setNewEntry((current) => ({
-                  ...current,
-                  categoryId: event.target.value,
-                }))
-              }
-              className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-            >
-              {sortedCategories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
+      {isNewMode ? (
+        <section className="space-y-3 rounded-lg border p-4">
+          <h2 className="text-sm font-semibold">Add Material</h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1 sm:col-span-2">
+              <label className="text-xs text-muted-foreground">Category</label>
+              <select
+                value={newEntry.categoryId}
+                onChange={(event) =>
+                  setNewEntry((current) => ({
+                    ...current,
+                    categoryId: event.target.value,
+                  }))
+                }
+                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+              >
+                {sortedCategories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1 sm:col-span-2">
+              <label className="text-xs text-muted-foreground">Name</label>
+              <input
+                value={newEntry.name}
+                onChange={(event) =>
+                  setNewEntry((current) => ({
+                    ...current,
+                    name: event.target.value,
+                  }))
+                }
+                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                placeholder="Drywall 5/8 Type X"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Unit Type</label>
+              <select
+                value={newEntry.unitType}
+                onChange={(event) =>
+                  setNewEntry((current) => ({
+                    ...current,
+                    unitType: event.target.value as MaterialUnitType,
+                  }))
+                }
+                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+              >
+                {materialUnitOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">
+                Default Estimated Price (optional)
+              </label>
+              <input
+                value={newEntry.estimatedPrice}
+                onChange={(event) =>
+                  setNewEntry((current) => ({
+                    ...current,
+                    estimatedPrice: event.target.value,
+                  }))
+                }
+                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                type="number"
+                min="0"
+                step="0.01"
+              />
+            </div>
+            <div className="space-y-1 sm:col-span-2">
+              <label className="text-xs text-muted-foreground">
+                Sample URL (optional)
+              </label>
+              <input
+                value={newEntry.sampleUrl}
+                onChange={(event) =>
+                  setNewEntry((current) => ({
+                    ...current,
+                    sampleUrl: event.target.value,
+                  }))
+                }
+                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                placeholder="https://example.com/product"
+              />
+            </div>
+            <div className="space-y-1 sm:col-span-2">
+              <label className="text-xs text-muted-foreground">
+                Notes (optional)
+              </label>
+              <textarea
+                value={newEntry.notes}
+                onChange={(event) =>
+                  setNewEntry((current) => ({
+                    ...current,
+                    notes: event.target.value,
+                  }))
+                }
+                className="min-h-20 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+              />
+            </div>
           </div>
-          <div className="space-y-1 sm:col-span-2">
-            <label className="text-xs text-muted-foreground">Name</label>
-            <input
-              value={newEntry.name}
-              onChange={(event) =>
-                setNewEntry((current) => ({ ...current, name: event.target.value }))
-              }
-              className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-              placeholder="Drywall 5/8 Type X"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">Unit Type</label>
-            <select
-              value={newEntry.unitType}
-              onChange={(event) =>
-                setNewEntry((current) => ({
-                  ...current,
-                  unitType: event.target.value as MaterialUnitType,
-                }))
-              }
-              className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-            >
-              {materialUnitOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">Default Estimated Price (optional)</label>
-            <input
-              value={newEntry.estimatedPrice}
-              onChange={(event) =>
-                setNewEntry((current) => ({
-                  ...current,
-                  estimatedPrice: event.target.value,
-                }))
-              }
-              className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-              type="number"
-              min="0"
-              step="0.01"
-            />
-          </div>
-          <div className="space-y-1 sm:col-span-2">
-            <label className="text-xs text-muted-foreground">Sample URL (optional)</label>
-            <input
-              value={newEntry.sampleUrl}
-              onChange={(event) =>
-                setNewEntry((current) => ({ ...current, sampleUrl: event.target.value }))
-              }
-              className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-              placeholder="https://example.com/product"
-            />
-          </div>
-          <div className="space-y-1 sm:col-span-2">
-            <label className="text-xs text-muted-foreground">Notes (optional)</label>
-            <textarea
-              value={newEntry.notes}
-              onChange={(event) =>
-                setNewEntry((current) => ({ ...current, notes: event.target.value }))
-              }
-              className="min-h-20 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-            />
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={addEntry}
-          disabled={isPending || !newEntry.name.trim() || !newEntry.categoryId}
-          className="rounded-md border px-3 py-2 text-sm"
-        >
-          Add Material
-        </button>
-      </section>
+          <button
+            type="button"
+            onClick={addEntry}
+            disabled={
+              isPending || !newEntry.name.trim() || !newEntry.categoryId
+            }
+            className="rounded-md border px-3 py-2 text-sm"
+          >
+            Add Material
+          </button>
+        </section>
+      ) : null}
 
       {feedback ? (
         <p
@@ -742,225 +792,253 @@ export function MaterialCatalogWireframe({
         </p>
       ) : null}
 
-      <section className="space-y-3 rounded-lg border p-4">
-        <h2 className="text-sm font-semibold">Catalog Entries by Category</h2>
-        {groupedCatalog.length ? (
-          <div className="space-y-2">
-            {groupedCatalog.map(({ category, items }) => (
-              <Collapsible key={category.id} defaultOpen>
-                <div className="rounded-md border">
-                  <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-2 text-left">
-                    <div>
-                      <p className="font-medium">{category.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {items.length} material{items.length !== 1 ? "s" : ""}
-                      </p>
-                    </div>
-                    <ChevronRight className="size-4 transition-transform data-[state=open]:rotate-90" />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="space-y-2 border-t px-3 py-2">
-                    {items.length ? (
-                      items.map((entry) => (
-                        <article key={entry.id} className="rounded-md border p-3">
-                          {editingId === entry.id && editingDraft ? (
-                            <div className="space-y-3">
-                              <div className="grid gap-3 sm:grid-cols-2">
-                                <div className="space-y-1 sm:col-span-2">
-                                  <label className="text-xs text-muted-foreground">Category</label>
-                                  <select
-                                    value={editingDraft.categoryId}
-                                    onChange={(event) =>
-                                      setEditingDraft((current) =>
-                                        current
-                                          ? {
-                                              ...current,
-                                              categoryId: event.target.value,
-                                            }
-                                          : current,
-                                      )
-                                    }
-                                    className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+      {isCatalogMode ? (
+        <section className="space-y-3 rounded-lg border p-4">
+          <h2 className="text-sm font-semibold">Catalog Entries by Category</h2>
+          {groupedCatalog.length ? (
+            <div className="space-y-2">
+              {groupedCatalog.map(({ category, items }) => (
+                <Collapsible key={category.id} defaultOpen>
+                  <div className="rounded-md border">
+                    <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-2 text-left">
+                      <div>
+                        <p className="font-medium">{category.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {items.length} material{items.length !== 1 ? "s" : ""}
+                        </p>
+                      </div>
+                      <ChevronRight className="size-4 transition-transform data-[state=open]:rotate-90" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="space-y-2 border-t px-3 py-2">
+                      {items.length ? (
+                        items.map((entry) => (
+                          <article
+                            key={entry.id}
+                            className="rounded-md border p-3"
+                          >
+                            {editingId === entry.id && editingDraft ? (
+                              <div className="space-y-3">
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                  <div className="space-y-1 sm:col-span-2">
+                                    <label className="text-xs text-muted-foreground">
+                                      Category
+                                    </label>
+                                    <select
+                                      value={editingDraft.categoryId}
+                                      onChange={(event) =>
+                                        setEditingDraft((current) =>
+                                          current
+                                            ? {
+                                                ...current,
+                                                categoryId: event.target.value,
+                                              }
+                                            : current,
+                                        )
+                                      }
+                                      className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                                    >
+                                      {sortedCategories.map(
+                                        (categoryOption) => (
+                                          <option
+                                            key={categoryOption.id}
+                                            value={categoryOption.id}
+                                          >
+                                            {categoryOption.name}
+                                          </option>
+                                        ),
+                                      )}
+                                    </select>
+                                  </div>
+                                  <div className="space-y-1 sm:col-span-2">
+                                    <label className="text-xs text-muted-foreground">
+                                      Name
+                                    </label>
+                                    <input
+                                      value={editingDraft.name}
+                                      onChange={(event) =>
+                                        setEditingDraft((current) =>
+                                          current
+                                            ? {
+                                                ...current,
+                                                name: event.target.value,
+                                              }
+                                            : current,
+                                        )
+                                      }
+                                      className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-xs text-muted-foreground">
+                                      Unit Type
+                                    </label>
+                                    <select
+                                      value={editingDraft.unitType}
+                                      onChange={(event) =>
+                                        setEditingDraft((current) =>
+                                          current
+                                            ? {
+                                                ...current,
+                                                unitType: event.target
+                                                  .value as MaterialUnitType,
+                                              }
+                                            : current,
+                                        )
+                                      }
+                                      className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                                    >
+                                      {materialUnitOptions.map((option) => (
+                                        <option
+                                          key={option.value}
+                                          value={option.value}
+                                        >
+                                          {option.label}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-xs text-muted-foreground">
+                                      Default Estimated Price
+                                    </label>
+                                    <input
+                                      value={editingDraft.estimatedPrice}
+                                      onChange={(event) =>
+                                        setEditingDraft((current) =>
+                                          current
+                                            ? {
+                                                ...current,
+                                                estimatedPrice:
+                                                  event.target.value,
+                                              }
+                                            : current,
+                                        )
+                                      }
+                                      className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                                      type="number"
+                                      min="0"
+                                      step="0.01"
+                                    />
+                                  </div>
+                                  <div className="space-y-1 sm:col-span-2">
+                                    <label className="text-xs text-muted-foreground">
+                                      Sample URL
+                                    </label>
+                                    <input
+                                      value={editingDraft.sampleUrl}
+                                      onChange={(event) =>
+                                        setEditingDraft((current) =>
+                                          current
+                                            ? {
+                                                ...current,
+                                                sampleUrl: event.target.value,
+                                              }
+                                            : current,
+                                        )
+                                      }
+                                      className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                                    />
+                                  </div>
+                                  <div className="space-y-1 sm:col-span-2">
+                                    <label className="text-xs text-muted-foreground">
+                                      Notes
+                                    </label>
+                                    <textarea
+                                      value={editingDraft.notes}
+                                      onChange={(event) =>
+                                        setEditingDraft((current) =>
+                                          current
+                                            ? {
+                                                ...current,
+                                                notes: event.target.value,
+                                              }
+                                            : current,
+                                        )
+                                      }
+                                      className="min-h-20 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="flex gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={saveEdit}
+                                    className="rounded-md border px-3 py-1.5 text-sm"
                                   >
-                                    {sortedCategories.map((categoryOption) => (
-                                      <option
-                                        key={categoryOption.id}
-                                        value={categoryOption.id}
-                                      >
-                                        {categoryOption.name}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </div>
-                                <div className="space-y-1 sm:col-span-2">
-                                  <label className="text-xs text-muted-foreground">Name</label>
-                                  <input
-                                    value={editingDraft.name}
-                                    onChange={(event) =>
-                                      setEditingDraft((current) =>
-                                        current
-                                          ? { ...current, name: event.target.value }
-                                          : current,
-                                      )
-                                    }
-                                    className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-                                  />
-                                </div>
-                                <div className="space-y-1">
-                                  <label className="text-xs text-muted-foreground">Unit Type</label>
-                                  <select
-                                    value={editingDraft.unitType}
-                                    onChange={(event) =>
-                                      setEditingDraft((current) =>
-                                        current
-                                          ? {
-                                              ...current,
-                                              unitType:
-                                                event.target.value as MaterialUnitType,
-                                            }
-                                          : current,
-                                      )
-                                    }
-                                    className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                                    Save
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={cancelEdit}
+                                    className="rounded-md border px-3 py-1.5 text-sm"
                                   >
-                                    {materialUnitOptions.map((option) => (
-                                      <option key={option.value} value={option.value}>
-                                        {option.label}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </div>
-                                <div className="space-y-1">
-                                  <label className="text-xs text-muted-foreground">Default Estimated Price</label>
-                                  <input
-                                    value={editingDraft.estimatedPrice}
-                                    onChange={(event) =>
-                                      setEditingDraft((current) =>
-                                        current
-                                          ? {
-                                              ...current,
-                                              estimatedPrice: event.target.value,
-                                            }
-                                          : current,
-                                      )
-                                    }
-                                    className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                  />
-                                </div>
-                                <div className="space-y-1 sm:col-span-2">
-                                  <label className="text-xs text-muted-foreground">Sample URL</label>
-                                  <input
-                                    value={editingDraft.sampleUrl}
-                                    onChange={(event) =>
-                                      setEditingDraft((current) =>
-                                        current
-                                          ? {
-                                              ...current,
-                                              sampleUrl: event.target.value,
-                                            }
-                                          : current,
-                                      )
-                                    }
-                                    className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-                                  />
-                                </div>
-                                <div className="space-y-1 sm:col-span-2">
-                                  <label className="text-xs text-muted-foreground">Notes</label>
-                                  <textarea
-                                    value={editingDraft.notes}
-                                    onChange={(event) =>
-                                      setEditingDraft((current) =>
-                                        current
-                                          ? {
-                                              ...current,
-                                              notes: event.target.value,
-                                            }
-                                          : current,
-                                      )
-                                    }
-                                    className="min-h-20 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-                                  />
+                                    Cancel
+                                  </button>
                                 </div>
                               </div>
-                              <div className="flex gap-2">
-                                <button
-                                  type="button"
-                                  onClick={saveEdit}
-                                  className="rounded-md border px-3 py-1.5 text-sm"
-                                >
-                                  Save
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={cancelEdit}
-                                  className="rounded-md border px-3 py-1.5 text-sm"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex flex-wrap items-start justify-between gap-3">
-                              <div>
-                                <p className="font-medium">{entry.name}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  Unit: {unitLabel(entry.unitType)}
-                                  {typeof entry.estimatedPrice === "number"
-                                    ? ` • Default est: $${entry.estimatedPrice.toLocaleString()}`
-                                    : ""}
-                                </p>
-                                {entry.notes ? (
-                                  <p className="text-sm text-muted-foreground">{entry.notes}</p>
-                                ) : null}
-                                {entry.sampleUrl ? (
-                                  <a
-                                    href={entry.sampleUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="text-xs text-blue-600 underline"
+                            ) : (
+                              <div className="flex flex-wrap items-start justify-between gap-3">
+                                <div>
+                                  <p className="font-medium">{entry.name}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    Unit: {unitLabel(entry.unitType)}
+                                    {typeof entry.estimatedPrice === "number"
+                                      ? ` • Default est: $${entry.estimatedPrice.toLocaleString()}`
+                                      : ""}
+                                  </p>
+                                  {entry.notes ? (
+                                    <p className="text-sm text-muted-foreground">
+                                      {entry.notes}
+                                    </p>
+                                  ) : null}
+                                  {entry.sampleUrl ? (
+                                    <a
+                                      href={entry.sampleUrl}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-xs text-blue-600 underline"
+                                    >
+                                      Open sample URL
+                                    </a>
+                                  ) : null}
+                                </div>
+                                <div className="flex gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => beginEdit(entry)}
+                                    className="rounded-md border px-2 py-1 text-xs"
                                   >
-                                    Open sample URL
-                                  </a>
-                                ) : null}
+                                    Edit
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => deleteEntry(entry.id)}
+                                    className="rounded-md border px-2 py-1 text-xs"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
                               </div>
-                              <div className="flex gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => beginEdit(entry)}
-                                  className="rounded-md border px-2 py-1 text-xs"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => deleteEntry(entry.id)}
-                                  className="rounded-md border px-2 py-1 text-xs"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </article>
-                      ))
-                    ) : (
-                      <p className="text-sm text-muted-foreground">
-                        No materials in this category.
-                      </p>
-                    )}
-                  </CollapsibleContent>
-                </div>
-              </Collapsible>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            No material catalog entries yet.
-          </p>
-        )}
-      </section>
+                            )}
+                          </article>
+                        ))
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          No materials in this category.
+                        </p>
+                      )}
+                    </CollapsibleContent>
+                  </div>
+                </Collapsible>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No material catalog entries yet.
+            </p>
+          )}
+        </section>
+      ) : null}
     </div>
   );
 }

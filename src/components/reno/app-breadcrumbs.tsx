@@ -27,6 +27,8 @@ const ROUTE_LABELS: Record<string, string> = {
   items: "All Items",
   purchases: "Purchases",
   materials: "Materials",
+  new: "New Materials",
+  catalog: "Catalog Entries",
   expenses: "Expenses",
   units: "Units",
   services: "Mechanical & Building Services",
